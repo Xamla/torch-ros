@@ -7,7 +7,6 @@ require 'ros.StringVector'
 -- ros
 require 'ros.MsgSpec'
 require 'ros.Message'
-require 'ros.ros'
 require 'ros.Time'
 require 'ros.Duration'
 require 'ros.AsyncSpinner'

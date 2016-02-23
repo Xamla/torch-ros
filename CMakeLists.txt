@@ -4,7 +4,7 @@ PROJECT(torch-ros)
 
 FIND_PACKAGE(Torch REQUIRED)
 find_package(Boost 1.47.0 REQUIRED COMPONENTS system)
-find_package(catkin REQUIRED COMPONENTS roscpp)
+find_package(catkin REQUIRED COMPONENTS roscpp std_msgs tf)
 
 SET(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
