@@ -8,16 +8,8 @@ local MsgSpec = torch.class('ros.MsgSpec', ros)
 local msgspec_cache = {}
 
 local BUILTIN_TYPES = {
-  'int8', 'uint8',
-  'int16', 'uint16',
-  'int32', 'uint32',
-  'int64', 'uint64',
-  'float32',
-  'float64',
-  'string',
-  'bool',
-  'byte',
-  'char' 
+  'bool', 'byte', 'char', 'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 
+  'int64', 'uint64',  'float32', 'float64', 'string'
 }
 
 for _,v in ipairs(BUILTIN_TYPES) do
@@ -25,41 +17,49 @@ for _,v in ipairs(BUILTIN_TYPES) do
 end
 
 local EXTENDED_TYPES = {
-  time      = { 'uint32', 'uint32' },
-  duration  = { 'int32', 'int32' }
+  time = { 'uint32', 'uint32' },
+  duration = { 'int32', 'int32' }
 }
 
 local DEFAULT_PACKAGE = 'std_msgs'
 
--- Get message specification.
+--- Check if type is an array type.
+-- @param type type to check
+-- @return true if given type is an array type, false otherwise
+local function is_array_type(type)
+  return type:find("%[") ~= nil
+end
+
+--- Get the base version of type, i.e. the non-array type.
+-- @param type type to get base type for
+-- @return base type, for array types returns the non-array type, for non-array
+-- type returns the given value.
+local function base_type(type)
+   return type:match("^([^%[]+)") or type
+end
+
+--- Get message specification.
 -- @param msg_type message type (e.g. std_msgs/String). The name must include
 -- the package.
 local function get_msgspec(msg_type, specstr)
-  roslua.utils.assert_rospack()
-
   if not msgspec_cache[msg_type] then
     msgspec_cache[msg_type] = ros.MsgSpec.new(msg_type, specstr)
   end
 
   return msgspec_cache[msg_type]
 end
+ros.get_msgspec = get_msgspec
 
--- Check if given type is a built-in type.
+--- Check if given type is a built-in type.
 -- @param type type to check
 -- @return true if type is a built-in type, false otherwise
 local function is_builtin_type(type)
   local t = base_type(type)
   return BUILTIN_TYPES[t] ~= nil or  EXTENDED_TYPES[t] ~= nil
 end
-
-local function is_array_type(type)
-  return type:find("%[") ~= nil
-end
-
-ros.get_msgspec = get_msgspec
 ros.is_builtin_type = is_builtin_type
 
--- (internal) load from iterator
+--- (internal) load from iterator
 -- @param iterator iterator that returns one line of the specification at a time
 local function load_from_iterator(self, iterator)
   self.fields = {}
@@ -116,16 +116,16 @@ local function load_from_iterator(self, iterator)
    end
 end
 
--- (internal) Load message specification from file.
+--- (internal) Load message specification from file.
 -- Will search for the appropriate message specification file (using rospack)
 -- and will then read and parse the file.
 local function load_msgspec(self)
-  local package_path = roslua.utils.find_rospack(self.package)
+  local package_path = ros.find_package(self.package)
   self.file = path.join(package_path, 'msg', self.short_type .. '.msg')
   return load_from_iterator(self, io.lines(self.file))
 end
 
--- (internal) Load specification from string.
+--- (internal) Load specification from string.
 -- @param s string containing the message specification
 local function load_from_string(self, s)
   return load_from_iterator(self, s:gmatch('(.-)\n'))
@@ -182,7 +182,7 @@ local function generate_base_format(self, prefix)
    return format, farray
 end
 
--- (internal) create string representation appropriate to generate the hash
+--- (internal) create string representation appropriate to generate the hash
 -- @return string representation
 local function generate_hashtext(self)
   local lines = {}
@@ -203,15 +203,15 @@ local function generate_hashtext(self)
   return table.concat(lines)
 end
 
--- (internal) Calculate MD5 sum.
+--- (internal) Calculate MD5 sum.
 -- Generates the MD5 sum for this message type.
 -- @return MD5 sum as text
 local function calc_md5(self)
-   self.md5sum = md5.sumhexa(self:generate_hashtext())
+   self.md5sum = md5.sumhexa(generate_hashtext(self))
    return self.md5sum
 end
 
--- Resolve the given type.
+--- Resolve the given type.
 -- @param type to resolve
 -- @param package to which the type should be resolve relatively
 -- @return the given value if it is either a base type or contains a slash,
@@ -254,22 +254,24 @@ function MsgSpec:md5()
  return self.md5sum or calc_md5(self)
 end
 
-function MsgSpec:print(indent)
+local function format_spec(spec, ln, indent)
   local indent = indent or ''
-  print(indent .. 'Message ' .. self.type)
-  print(indent .. 'Fields:')
-  for _,s in ipairs(self.fields) do
-    print(indent .. '  ' .. s[1] .. ' ' .. s[2])
+  table.insert(ln, indent .. 'Message ' .. spec.type)
+  table.insert(ln, indent .. 'Fields:')
+  for _,s in ipairs(spec.fields) do
+    table.insert(ln, indent .. '  ' .. s[1] .. ' ' .. s[2])
     if not is_builtin_type(s[1]) then
       local msgspec = get_msgspec(base_type(s[1]))
-      msgspec:print(indent .. '    ')
+      format_spec(msgspec, ln, indent .. '    ')
     end
   end
-
-  print(indent .. 'MD5:    ' .. self:md5())
-  print(indent .. 'Format: ' .. self.base_format)
+  table.insert(ln, indent .. 'MD5:    ' .. spec:md5())
+  table.insert(ln, indent .. 'Format: ' .. spec.base_format)
+  return ln
 end
 
 function MsgSpec:__tostring()
-  return self:print()
+  local lines = format_spec(self, {})
+  table.insert(lines, '')
+  return table.concat(lines, '\n')
 end

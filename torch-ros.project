@@ -65,6 +65,7 @@
       <File Name="utils.lua"/>
       <File Name="Time.lua"/>
     </VirtualDirectory>
+    <File Name=".gitignore"/>
   </VirtualDirectory>
   <Settings Type="Dynamic Library">
     <GlobalSettings>
