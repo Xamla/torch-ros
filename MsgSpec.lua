@@ -1,32 +1,214 @@
-
-
-
 local md5 = require 'md5'
+local path = require 'pl.path'
 local torch = require 'torch'
-local ros = require 'utils'
+local ros = require 'ros.env'
 
 local MsgSpec = torch.class('ros.MsgSpec', ros)
 
 local msgspec_cache = {}
 
-BUILTIN_TYPES = {
-  "int8", "uint8", "int16", "uint16", "int32", "uint32",
-  "int64", "uint64", "float32", "float64", "string", "bool",
-  "byte", "char" }
+local BUILTIN_TYPES = {
+  'int8', 'uint8',
+  'int16', 'uint16',
+  'int32', 'uint32',
+  'int64', 'uint64',
+  'float32',
+  'float64',
+  'string',
+  'bool',
+  'byte',
+  'char' 
+}
+
 for _,v in ipairs(BUILTIN_TYPES) do
    BUILTIN_TYPES[v] = v
 end
 
-EXTENDED_TYPES = { time={"uint32", "uint32"}, duration={"int32", "int32"} }
+local EXTENDED_TYPES = {
+  time      = { 'uint32', 'uint32' },
+  duration  = { 'int32', 'int32' }
+}
 
-DEFAULT_PACKAGE = "std_msgs"
+local DEFAULT_PACKAGE = 'std_msgs'
+
+-- Get message specification.
+-- @param msg_type message type (e.g. std_msgs/String). The name must include
+-- the package.
+local function get_msgspec(msg_type, specstr)
+  roslua.utils.assert_rospack()
+
+  if not msgspec_cache[msg_type] then
+    msgspec_cache[msg_type] = ros.MsgSpec.new(msg_type, specstr)
+  end
+
+  return msgspec_cache[msg_type]
+end
 
 -- Check if given type is a built-in type.
 -- @param type type to check
 -- @return true if type is a built-in type, false otherwise
-function ros.is_builtin_type(type)
+local function is_builtin_type(type)
   local t = base_type(type)
   return BUILTIN_TYPES[t] ~= nil or  EXTENDED_TYPES[t] ~= nil
+end
+
+local function is_array_type(type)
+  return type:find("%[") ~= nil
+end
+
+ros.get_msgspec = get_msgspec
+ros.is_builtin_type = is_builtin_type
+
+-- (internal) load from iterator
+-- @param iterator iterator that returns one line of the specification at a time
+local function load_from_iterator(self, iterator)
+  self.fields = {}
+  self.constants = {}
+
+  local field_index = 1
+
+  for line in iterator do
+    line = line:match('^([^#]*)') or ''     -- strip comment
+    line = line:match('(.-)%s+$') or line   -- strip trailing whitespace
+
+    if line ~= '' then
+      local ftype, fname = string.match(line, '^([%w_/%[%]]+)[%s]+([%w_%[%]]+)$')
+      if ftype and fname then
+        if ftype == 'Header' then ftype = DEFAULT_PACKAGE .. '/Header' end
+        ftype = self:resolve_type(ftype)
+        
+        local msgspec
+        if not is_builtin_type(ftype) then
+          msgspec = get_msgspec(base_type(ftype))   -- load sub-spec
+        end
+        
+        local typeinfo = { 
+          -- allow array like access by index
+          ftype, fname, msgspec,
+          
+          -- and access by key
+          type = ftype,
+          name = fname,
+          base_type = base_type(ftype),
+          spec = msgspec,
+          is_array = is_array_type(ftype),
+          is_builtin = is_builtin_type(ftype),
+          value_index = field_index
+        }
+        
+        self.fields[fname] = typeinfo
+        table.insert(self.fields, typeinfo)
+        field_index = field_index + 1
+      else -- check for constant
+        local ctype, cname, cvalue =
+          line:match('^([%w_]+)[%s]+([%w_]+)[%s]*=[%s]*([%w%s\'._-]+)$')
+        if ctype and cname and cvalue then
+          local nv = tonumber(cvalue)
+          if nv ~= nil then cvalue = nv end
+          self.constants[cname] = { ctype, cvalue, type=ctype, value=cvalue }
+          table.insert(self.constants, {ctype, cname, cvalue})
+        else
+          error(self.type .. ' invalid line: ' .. line)
+        end
+      end
+    end
+    
+   end
+end
+
+-- (internal) Load message specification from file.
+-- Will search for the appropriate message specification file (using rospack)
+-- and will then read and parse the file.
+local function load_msgspec(self)
+  local package_path = roslua.utils.find_rospack(self.package)
+  self.file = path.join(package_path, 'msg', self.short_type .. '.msg')
+  return load_from_iterator(self, io.lines(self.file))
+end
+
+-- (internal) Load specification from string.
+-- @param s string containing the message specification
+local function load_from_string(self, s)
+  return load_from_iterator(self, s:gmatch('(.-)\n'))
+end
+
+local function generate_base_format(self, prefix)
+  local format = prefix or '<!1'
+  local farray = {}
+  local curfor = ''
+
+  for _, f in ipairs(self.fields) do
+    local fname = f.name
+    local ftype = f.type
+    local is_array   = f.is_array
+    local is_builtin = f.is_builtin
+
+    if is_array then
+      format = format .. 'I4('
+      if curfor ~= '' then
+        table.insert(farray, curfor)
+        curfor = ''
+      end
+      if is_builtin then
+        format = format .. ros.Message.builtin_formats[f.base_type]
+        table.insert(farray, { ros.Message.builtin_formats[f.base_type] })
+      else
+        local subformat, subfarray = generate_base_format(f.spec, '')
+        format = format .. subformat
+        table.insert(farray, subfarray)
+      end
+      format = format .. ')'
+    else
+      if is_builtin then
+        format = format .. ros.Message.builtin_formats[ftype]
+        curfor = curfor .. ros.Message.builtin_formats[ftype]
+      else
+        local subformat, subfarray = generate_base_format(f.spec, '')
+        format = format .. subformat
+        if curfor ~= '' then
+          table.insert(farray, curfor)
+          curfor = ''
+        end
+        for _, sa in ipairs(subfarray) do
+          table.insert(farray, sa)
+        end
+      end
+    end
+   end
+   
+   if curfor ~= '' then
+      table.insert(farray, curfor)
+   end
+   
+   return format, farray
+end
+
+-- (internal) create string representation appropriate to generate the hash
+-- @return string representation
+local function generate_hashtext(self)
+  local lines = {}
+  for _, spec in ipairs(self.constants) do
+    if #lines > 0 then table.insert(lines, '\n') end
+    table.insert(lines, string.format('%s %s=%s', spec[1], spec[2], spec[3]))
+  end
+
+  for _, spec in ipairs(self.fields) do
+    if #lines > 0 then table.insert(lines, '\n') end
+    if is_builtin_type(spec[1]) then
+      table.insert(lines, string.format('%s %s', spec[1], spec[2]))
+    else
+      local type_md5 = get_msgspec(base_type(spec[1])):md5()
+      table.insert(lines, string.format('%s %s', type_md5, spec[2]))
+    end
+  end
+  return table.concat(lines)
+end
+
+-- (internal) Calculate MD5 sum.
+-- Generates the MD5 sum for this message type.
+-- @return MD5 sum as text
+local function calc_md5(self)
+   self.md5sum = md5.sumhexa(self:generate_hashtext())
+   return self.md5sum
 end
 
 -- Resolve the given type.
@@ -35,116 +217,57 @@ end
 -- @return the given value if it is either a base type or contains a slash,
 -- otherwise returns package/type.
 local function resolve_type(type, package)
-  if ros.is_builtin_type(type) or type:find("/") then
+  if is_builtin_type(type) or type:find('/') then
     return type
   else
-    return string.format("%s/%s", package, type)
+    return string.format('%s/%s', package, type)
   end
 end
 
--- Get message specification.
--- @param msg_type message type (e.g. std_msgs/String). The name must include
--- the package.
-function ros.get_msgspec(msg_type, specstr)
-  roslua.utils.assert_rospack()
-
-  if not msgspec_cache[msg_type] then
-    msgspec_cache[msg_type] = MsgSpec.new{type=msg_type, specstr=specstr}
-  end
-
-  return msgspec_cache[msg_type]
-end
-
-function MsgSpec:__init(o)
-  assert(o.type, "Message type is missing")
-
-  local slashpos = o.type:find("/")
+function MsgSpec:__init(type, specstr)
+  assert(type, 'Message type is expected')
+  self.type = type
+  
+  local slashpos = type:find('/')
   if slashpos then
-    o.package    = o.type:sub(1, slashpos - 1)
-    o.short_type = o.type:sub(slashpos + 1)
+    self.package    = type:sub(1, slashpos - 1)
+    self.short_type = type:sub(slashpos + 1)
   else
-    o.package    = DEFAULT_PACKAGE
-    o.short_type = o.type
+    self.package    = DEFAULT_PACKAGE
+    self.short_type = type
   end
 
-   if o.specstr then
-      o:load_from_string(o.specstr)
-   else
-      o:load()
-   end
+  if specstr then
+    load_from_string(self, specstr)
+  else
+    load_msgspec(self)
+  end
 
-   o.base_format, o.base_farray = o:generate_base_format()
-end
-
---- Load message specification from file.
--- Will search for the appropriate message specification file (using rospack)
--- and will then read and parse the file.
-function MsgSpec:load()
-   local package_path = roslua.utils.find_rospack(self.package)
-   self.file = package_path .. "/msg/" .. self.short_type .. ".msg"
-
-   return self:load_from_iterator(io.lines(self.file))
-end
-
-
---- Load specification from string.
--- @param s string containing the message specification
-function MsgSpec:load_from_string(s)
-   return self:load_from_iterator(s:gmatch("(.-)\n"))
+  self.base_format, self.base_farray = generate_base_format(self)
 end
 
 function MsgSpec:resolve_type(type)
-   return resolve_type(type, self.package)
-end
-
-
--- (internal) create string representation appropriate to generate the hash
--- @return string representation
-function MsgSpec:generate_hashtext()
-   local s = ""
-   for _, spec in ipairs(self.constants) do
-      s = s .. string.format("%s %s=%s\n", spec[1], spec[2], spec[3])
-   end
-
-   for _, spec in ipairs(self.fields) do
-      if is_builtin_type(spec[1]) then
-	 s = s .. string.format("%s %s\n", spec[1], spec[2])
-      else
-	 local msgspec = get_msgspec(base_type(spec[1]))
-	 s = s .. msgspec:md5() .. " " .. spec[2] .. "\n"
-      end
-   end
-   s = string.gsub(s, "^(.+)\n$", "%1") -- strip trailing newline
-
-   return s
-end
-
--- (internal) Calculate MD5 sum.
--- Generates the MD5 sum for this message type.
--- @return MD5 sum as text
-function MsgSpec:calc_md5()
-   self.md5sum = md5.sumhexa(self:generate_hashtext())
-   return self.md5sum
+  return resolve_type(type, self.package)
 end
 
 function MsgSpec:md5()
- return self.md5sum or self:calc_md5()
+ return self.md5sum or calc_md5(self)
 end
 
 function MsgSpec:print(indent)
-  local indent = indent or ""
-  print(indent .. "Message " .. self.type)
-  print(indent .. "Fields:")
+  local indent = indent or ''
+  print(indent .. 'Message ' .. self.type)
+  print(indent .. 'Fields:')
   for _,s in ipairs(self.fields) do
-    print(indent .. "  " .. s[1] .. " " .. s[2])
+    print(indent .. '  ' .. s[1] .. ' ' .. s[2])
     if not is_builtin_type(s[1]) then
       local msgspec = get_msgspec(base_type(s[1]))
-      msgspec:print(indent .. "    ")
+      msgspec:print(indent .. '    ')
     end
   end
 
-  print(indent .. "MD5:    " .. self:md5())
-  print(indent .. "Format: " .. self.base_format)
+  print(indent .. 'MD5:    ' .. self:md5())
+  print(indent .. 'Format: ' .. self.base_format)
 end
 
 function MsgSpec:__tostring()
