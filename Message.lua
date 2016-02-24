@@ -29,5 +29,68 @@ Message.builtin_formats = {
    string   = "i4c0",  array   = "I4"
 }
 
-function Message:__init()
+function Message:__init(spec)
+  assert(spec, "Message specification must not be nil.")
+  self.spec = spec
+  self.values = {}
 end
+
+
+function Message:deserialize(buffer)
+  local farray = self.spec.base_farray
+  for j, f in ipairs(farray) do
+    if type(f) == "string" then
+    
+    else
+    
+    end
+  end
+end
+
+-- write to an underlying byte stream
+local function read_numeric(type)
+  local ptr = ffi.type(type .. '*')()
+  local size = ffi.sizeof(type)
+  return function(p)
+    return ffi.cast(p, ptr_ct)[0], p + size
+  end
+end
+
+local read_table = 
+{  
+  i1 = read_numeric('int8_t'),
+  i2 = read_numeric('int16_t'),
+  i4 = read_numeric('int32_t'),
+  i8 = read_numeric('int64_t'),
+  I1 = read_numeric('uint8_t'),
+  I2 = read_numeric('uint16_t'),
+  I4 = read_numeric('uint32_t'),
+  I8 = read_numeric('uint64_t'),
+  f = read_numeric('float'),
+  d = read_numeric('double')
+  c0 = 
+}
+
+
+function interpret(ptr, format)
+
+
+  for i=1,#format do
+    format:byte(i)
+  end
+end
+
+local types = {
+  'bool*',
+  'uint8_t*',
+  'int8_t*',
+  'int16_t*',
+}
+
+local pos = 1
+
+function read(ct)
+  ptr = ptr + sizeof()
+end
+
+
