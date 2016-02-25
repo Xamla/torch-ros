@@ -59,6 +59,24 @@ local function is_builtin_type(type)
 end
 ros.is_builtin_type = is_builtin_type
 
+local tensor_type_map = {
+  byte = torch.ByteTensor(),
+  int8 = torch.CharTensor(),
+  uint8 = torch.ByteTensor(),
+  int16 = torch.ShortTensor(),
+  uint16 = torch.ShortTensor(),
+  int32 = torch.IntTensor(),
+  uint32 = torch.IntTensor(),
+  float32 = torch.FloatTensor(),
+  float64 = torch.DoubleTensor()
+}
+
+local function compatible_tensor_type(element_type)
+  if element_type == 'float32' then
+    return torch.FloatTensor()
+  elseif element_type ==
+end
+
 --- (internal) load from iterator
 -- @param iterator iterator that returns one line of the specification at a time
 local function load_from_iterator(self, iterator)
@@ -96,6 +114,11 @@ local function load_from_iterator(self, iterator)
           value_index = field_index
         }
         
+        -- check tensor mapping
+        if typeinfo.is_array then
+          typeinfo.tensor_type = tensor_type_map[typeinfo.base_type]
+        end
+        
         self.fields[fname] = typeinfo
         table.insert(self.fields, typeinfo)
         field_index = field_index + 1
@@ -132,7 +155,7 @@ local function load_from_string(self, s)
 end
 
 local function generate_base_format(self, prefix)
-  local format = prefix or '<!1'
+  local format = prefix or ''
   local farray = {}
   local curfor = ''
 
@@ -268,6 +291,10 @@ local function format_spec(spec, ln, indent)
   table.insert(ln, indent .. 'MD5:    ' .. spec:md5())
   table.insert(ln, indent .. 'Format: ' .. spec.base_format)
   return ln
+end
+
+function MsgSpec:instantiate(no_prefill)
+  return ros.Message:new(self, no_prefill)
 end
 
 function MsgSpec:__tostring()

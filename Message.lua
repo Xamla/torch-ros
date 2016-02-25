@@ -18,23 +18,116 @@ Message.default_values = {
 
 -- (internal) table of formats for built-in types
 Message.builtin_formats = {
-   bool     = "I1",
-   int8     = "i1",    uint8   = "I1",
-   int16    = "i2",    uint16  = "I2",
-   int32    = "i4",    uint32  = "I4",
-   int64    = "i8",    uint64  = "I8",
-   float32  = "f",     float64 = "d",
-   char     = "i1",    byte    = "I1",
-   duration = "i4i4",  time    = "I4I4",
-   string   = "i4c0",  array   = "I4"
+   bool     = "B",
+   int8     = "c",    uint8   = "C",
+   int16    = "w",    uint16  = "W",
+   int32    = "i",    uint32  = "I",
+   int64    = "q",    uint64  = "Q",
+   float32  = "f",    float64 = "F",
+   char     = "B",    byte    = "B",
+   duration = "ii",   time    = "II",
+   string   = "s",    array   = "I"
 }
 
-function Message:__init(spec)
+function Message:__init(spec, no_prefill)
   assert(spec, "Message specification must not be nil.")
   self.spec = spec
   self.values = {}
+  if not no_prefill then 
+    o:prefill() 
+  end
 end
 
+--- Prefill message with default values.
+function Message:prefill()
+  for _, f in ipairs(self.spec.fields) do
+    if not self.values[f.name] then
+      if f.is_array then
+        if f.tensor_type then
+          self.values[f.name] = f.tensor_type:new()         -- empty tensor
+        else
+          self.values[f.name] = {}                          -- empty array
+        end
+      elseif f.is_builtin then
+        self.values[f.name] = self.default_values[f.type]   -- set default builtin value
+      else 
+        self.values[f.name] = ros.Message.new(f.spec)       -- generate sub-message with default values
+      end
+    end
+  end
+end
+
+function Message:clone()
+  local m = ros.Message:new(self.spec, true)
+  
+  
+  
+  return m 
+end
+
+function Message:copy()
+end
+
+-- write to an underlying byte stream
+local function create_read_numeric(type)
+  local ptr = ffi.type(type .. '*')()
+  local size = ffi.sizeof(type)
+  return function(p)
+    return ffi.cast(p, ptr)[0], p + size
+  end
+end
+
+local function create_read_string()
+  local uint32_ptr = ffi.type('uint32_t*')()
+  return function(p)
+    local length = ffi.cast(p, uint32_ptr)[0]
+    p = p + 4
+    return ffi.string(p, length), p + length
+  end
+end
+
+local read_table = 
+{  
+  b = create_read_numeric('int8_t'),
+  w = create_read_numeric('int16_t'),
+  i = create_read_numeric('int32_t'),
+  q = create_read_numeric('int64_t'),
+  B = create_read_numeric('uint8_t'),
+  W = create_read_numeric('uint16_t'),
+  D = create_read_numeric('uint32_t'),
+  Q = create_read_numeric('uint64_t'),
+  f = create_read_numeric('float'),
+  F = create_read_numeric('double'),
+  s = create_read_string()
+}
+
+-- Add numeric conversions of characters to 
+-- allow format interpretation without string
+-- allocation.
+for k,v in pairs(read_table) do
+  if type(k) == 'string' then
+    read_table[string.byte(k)] = v
+  end
+end
+
+local function unpack_table(format, buffer, offset)
+  local t = {}
+  
+  local p = buffer
+  local c, fn, v
+  
+  for i=1,#format do
+    c = format:byte(i)
+    fn = read_table[c]
+    if not fn then
+      error(string.format('Mising read function for type \'%c\' at pos %d.', i, c))
+    end
+    v, ptr = fn(ptr)     -- decode value
+    t[#t+1] = v
+  end
+  
+  return t
+end
 
 function Message:deserialize(buffer)
   local farray = self.spec.base_farray
@@ -46,51 +139,3 @@ function Message:deserialize(buffer)
     end
   end
 end
-
--- write to an underlying byte stream
-local function read_numeric(type)
-  local ptr = ffi.type(type .. '*')()
-  local size = ffi.sizeof(type)
-  return function(p)
-    return ffi.cast(p, ptr_ct)[0], p + size
-  end
-end
-
-local read_table = 
-{  
-  i1 = read_numeric('int8_t'),
-  i2 = read_numeric('int16_t'),
-  i4 = read_numeric('int32_t'),
-  i8 = read_numeric('int64_t'),
-  I1 = read_numeric('uint8_t'),
-  I2 = read_numeric('uint16_t'),
-  I4 = read_numeric('uint32_t'),
-  I8 = read_numeric('uint64_t'),
-  f = read_numeric('float'),
-  d = read_numeric('double')
-  c0 = 
-}
-
-
-function interpret(ptr, format)
-
-
-  for i=1,#format do
-    format:byte(i)
-  end
-end
-
-local types = {
-  'bool*',
-  'uint8_t*',
-  'int8_t*',
-  'int16_t*',
-}
-
-local pos = 1
-
-function read(ct)
-  ptr = ptr + sizeof()
-end
-
-
