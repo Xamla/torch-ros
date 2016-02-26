@@ -55,7 +55,7 @@ ros.get_msgspec = get_msgspec
 -- @return true if type is a built-in type, false otherwise
 local function is_builtin_type(type)
   local t = base_type(type)
-  return BUILTIN_TYPES[t] ~= nil or  EXTENDED_TYPES[t] ~= nil
+  return BUILTIN_TYPES[t] ~= nil or EXTENDED_TYPES[t] ~= nil
 end
 ros.is_builtin_type = is_builtin_type
 

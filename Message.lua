@@ -59,13 +59,82 @@ end
 
 function Message:clone()
   local m = ros.Message:new(self.spec, true)
-  
-  
-  
+  for _,f in ipairs(self.spec.fields) do
+    local v = self.values[f.name]
+    if f.is_array then
+      if f.tensor_type then
+        v = v:clone()
+      else
+        local a = {}
+        if f.is_builtin then
+          if f.base_type == 'duration' or f.base_type == 'time' then
+            -- special handling of duration and time fields
+            for i,x in ipairs(v) do
+              a[i] = { x[1], x[2] }
+            end
+          else
+            -- copy array of immutable objects
+            for i,x in ipairs(v) do
+              a[i] = x
+            end
+          end
+        else
+          -- clone element-wise
+          for i,x in ipairs(v) do
+            a[i] = x:clone()
+          end
+        end
+        v = a
+      end
+    else  -- single element field
+      if not f.is_builtin then
+        v = v:clone()
+      end
+    end
+    m.values[f.name] = v
+  end
   return m 
 end
 
-function Message:copy()
+function Message:copy(source)
+  for _,f in ipairs(self.spec.fields) do
+    local v = source.values[f.name]   -- source value
+    local y = self.values[f.name]     -- destination value
+    if v ~= nil then
+      if f.is_array then
+        if f.tensor_type then
+          y:resizeAs(v)
+          y:copy(v)
+        else
+          if f.is_builtin then
+            if f.base_type == 'duration' or f.base_type == 'time' then
+              -- special handling of duration and time fields
+              for i,x in ipairs(v) do
+                a[i] = { x[1], x[2] }
+              end
+            else
+              -- copy array of immutable objects
+              for i,x in ipairs(v) do
+                y[i] = x
+              end
+            end
+          else
+            -- copy element-wise
+            for i,x in ipairs(v) do
+              if a[i] then
+                a[i]:copy() = x:clone()
+            end
+          end
+          self.values[f.name] = a
+        end
+      else    -- single element field
+        if f.is_builtin then
+          self.values[f.name] = source.values[f.name]
+        else
+          self.values[f.name] = source.values[f.name]:clone()
+      end
+    end
+  end
 end
 
 -- write to an underlying byte stream
