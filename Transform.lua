@@ -98,7 +98,7 @@ end
 
 function Transform:fromTensor(t)
   self:getBasis()[{}] = t[{{1,3},{1,3}}]
-  self:getOrigin()[{}] = t[{{4},{1,3}}]
+  self:getOrigin()[{}] = t[{{1,3},{4}}]
 end
 
 function Transform:getRotation(output)

@@ -71,12 +71,6 @@ local tensor_type_map = {
   float64 = torch.DoubleTensor()
 }
 
-local function compatible_tensor_type(element_type)
-  if element_type == 'float32' then
-    return torch.FloatTensor()
-  elseif element_type ==
-end
-
 --- (internal) load from iterator
 -- @param iterator iterator that returns one line of the specification at a time
 local function load_from_iterator(self, iterator)

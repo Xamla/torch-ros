@@ -66,6 +66,9 @@
       <File Name="Time.lua"/>
     </VirtualDirectory>
     <File Name=".gitignore"/>
+    <VirtualDirectory Name="test">
+      <File Name="test/test_serialization.lua"/>
+    </VirtualDirectory>
   </VirtualDirectory>
   <Settings Type="Dynamic Library">
     <GlobalSettings>
