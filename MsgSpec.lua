@@ -78,6 +78,7 @@ local function load_from_iterator(self, iterator)
   self.constants = {}
 
   local field_index = 1
+  local fixed_size = true
 
   for line in iterator do
     line = line:match('^([^#]*)') or ''     -- strip comment
@@ -92,12 +93,13 @@ local function load_from_iterator(self, iterator)
         local msgspec
         if not is_builtin_type(ftype) then
           msgspec = get_msgspec(base_type(ftype))   -- load sub-spec
+          fixed_size = msgspec.fixed_size
         end
         
         local typeinfo = { 
           -- allow array like access by index
           ftype, fname, msgspec,
-          
+
           -- and access by key
           type = ftype,
           name = fname,
@@ -107,12 +109,15 @@ local function load_from_iterator(self, iterator)
           is_builtin = is_builtin_type(ftype),
           value_index = field_index
         }
-        
+
         -- check tensor mapping
         if typeinfo.is_array then
           typeinfo.tensor_type = tensor_type_map[typeinfo.base_type]
+          fixed_size = false
+        elseif typeinfo.is_builtin and typeinfo.type == 'string' then
+          fixed_size = false
         end
-        
+
         self.fields[fname] = typeinfo
         table.insert(self.fields, typeinfo)
         field_index = field_index + 1
@@ -129,8 +134,10 @@ local function load_from_iterator(self, iterator)
         end
       end
     end
-    
+
    end
+
+   self.fixed_size = fixed_size
 end
 
 --- (internal) Load message specification from file.

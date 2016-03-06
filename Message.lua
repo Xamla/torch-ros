@@ -298,3 +298,37 @@ function Message:deserialize(buffer)
     end
   end
 end
+
+-- determine total message size
+
+-- serialization method
+
+-- create byte stream class to serialize to memory or file via ffi?
+
+-- create write methods
+
+local function write_field(strage, offset, ftype, fvalue)
+  
+end
+
+function Message:write(storage, offset)
+
+  for _, f in ipairs(self.spec.fields) do
+    if f.is_array then
+      if f.tensor_type then
+        -- tensor
+        
+      else
+        -- regular array
+        
+      end
+    elseif f.is_builtin then
+      -- builtin type
+      offset = write_field(storage, offset, f.type, self.values[f.name])
+    else
+      -- complex message
+      offset = f.values[f.name]:write(storage, offset)
+    end
+  end
+end
+
