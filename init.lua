@@ -5,6 +5,8 @@ require 'ros.String'
 require 'ros.StringVector'
 
 -- ros
+require 'ros.StorageWriter'
+require 'ros.StorageReader'
 require 'ros.MsgSpec'
 require 'ros.Message'
 require 'ros.Time'

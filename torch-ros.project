@@ -64,6 +64,8 @@
       <File Name="TransformListener.lua"/>
       <File Name="utils.lua"/>
       <File Name="Time.lua"/>
+      <File Name="StorageWriter.lua"/>
+      <File Name="StorageReader.lua"/>
     </VirtualDirectory>
     <File Name=".gitignore"/>
     <VirtualDirectory Name="test">

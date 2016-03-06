@@ -229,15 +229,15 @@ end
 
 -- write to an underlying byte stream
 local function create_read_numeric(type)
-  local ptr = ffi.typeof(type .. '*')()
+  local ptr_type = ffi.typeof(type .. '*')
   local size = ffi.sizeof(type)
   return function(p)
-    return ffi.cast(p, ptr)[0], p + size
+    return ffi.cast(ptr_type, p)[0], p + size
   end
 end
 
 local function create_read_string()
-  local uint32_ptr = ffi.typeof('uint32_t*')()
+  local uint32_ptr = ffi.typeof('uint32_t*')
   return function(p)
     local length = ffi.cast(p, uint32_ptr)[0]
     p = p + 4
@@ -286,6 +286,14 @@ local function unpack_table(format, buffer, offset)
   end
   
   return t
+end
+
+function Message:sizeInBytes()
+  
+end
+
+function Message:serialize()
+  -- 
 end
 
 function Message:deserialize(buffer)
