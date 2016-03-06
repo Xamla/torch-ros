@@ -48,7 +48,7 @@ function StorageWriter:setCapacity(capacity)
 end
 
 function StorageWriter:shrinkToFit()
-  self.setCapacity(self.length)
+  self:setCapacity(self.length)
 end
 
 function StorageWriter:setLength(length, shrinkToFit)
@@ -91,7 +91,7 @@ end
 
 function StorageWriter:writeTensor(value)
   -- only tensors with a single dimension are supported for now (sufficient for ROS array support)
-  if not torch.isTensor(value) or value:nDimension() ~= 1 then
+  if not torch.isTensor(value) or value:nDimension() > 1 then
     error('argument 1: tensor with one dimension expected')
   end
 

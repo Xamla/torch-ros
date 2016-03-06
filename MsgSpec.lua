@@ -60,15 +60,15 @@ end
 ros.is_builtin_type = is_builtin_type
 
 local tensor_type_map = {
-  byte = torch.ByteTensor(),
-  int8 = torch.CharTensor(),
-  uint8 = torch.ByteTensor(),
-  int16 = torch.ShortTensor(),
-  uint16 = torch.ShortTensor(),
-  int32 = torch.IntTensor(),
-  uint32 = torch.IntTensor(),
-  float32 = torch.FloatTensor(),
-  float64 = torch.DoubleTensor()
+  byte = torch.ByteTensor,
+  int8 = torch.CharTensor,
+  uint8 = torch.ByteTensor,
+  int16 = torch.ShortTensor,
+  uint16 = torch.ShortTensor,
+  int32 = torch.IntTensor,
+  uint32 = torch.IntTensor,
+  float32 = torch.FloatTensor,
+  float64 = torch.DoubleTensor
 }
 
 --- (internal) load from iterator

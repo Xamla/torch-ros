@@ -60,7 +60,7 @@ function Message:prefill()
     if not self.values[f.name] then
       if f.is_array then
         if f.tensor_type then
-          self.values[f.name] = f.tensor_type:new()         -- empty tensor
+          self.values[f.name] = f.tensor_type()             -- empty tensor
         else
           self.values[f.name] = {}                          -- empty array
         end
@@ -227,116 +227,129 @@ function Message:__tostring()
   return table.concat(lines, '\n')
 end
 
--- write to an underlying byte stream
-local function create_read_numeric(type)
-  local ptr_type = ffi.typeof(type .. '*')
-  local size = ffi.sizeof(type)
-  return function(p)
-    return ffi.cast(ptr_type, p)[0], p + size
+local writeMethods = {
+  bool    = ros.StorageWriter.writeInt8,
+  byte    = ros.StorageWriter.writeUInt8,
+  char    = ros.StorageWriter.writeInt8,
+  int8    = ros.StorageWriter.writeInt8,
+  uint8   = ros.StorageWriter.writeUInt8, 
+  int16   = ros.StorageWriter.writeInt16,
+  uint16  = ros.StorageWriter.writeUInt16,
+  int32   = ros.StorageWriter.writeInt32,
+  uint32  = ros.StorageWriter.writeUInt32,
+  int64   = ros.StorageWriter.writeInt64,
+  uint64  = ros.StorageWriter.writeUInt64,
+  float32 = ros.StorageWriter.writeFloat32,
+  float64 = ros.StorageWriter.writeFloat64,
+  string  = ros.StorageWriter.writeString,
+  time    = function(sw, value)
+    sw:writeUInt32(value[1])
+    sw:writeUInt32(value[2])
+  end,
+  duration = function(sw, value)
+    sw:writeInt32(value[1])
+    sw:writeInt32(value[2])
   end
-end
-
-local function create_read_string()
-  local uint32_ptr = ffi.typeof('uint32_t*')
-  return function(p)
-    local length = ffi.cast(p, uint32_ptr)[0]
-    p = p + 4
-    return ffi.string(p, length), p + length
-  end
-end
-
-local read_table = 
-{  
-  b = create_read_numeric('int8_t'),
-  w = create_read_numeric('int16_t'),
-  i = create_read_numeric('int32_t'),
-  q = create_read_numeric('int64_t'),
-  B = create_read_numeric('uint8_t'),
-  W = create_read_numeric('uint16_t'),
-  D = create_read_numeric('uint32_t'),
-  Q = create_read_numeric('uint64_t'),
-  f = create_read_numeric('float'),
-  F = create_read_numeric('double'),
-  s = create_read_string()
 }
 
--- Add numeric conversions of characters to 
--- allow format interpretation without string
--- allocation.
-for k,v in pairs(read_table) do
-  if type(k) == 'string' then
-    read_table[string.byte(k)] = v
-  end
-end
+function Message:serialize(sw)
+  sw = sw or ros.StorageWriter()
 
-local function unpack_table(format, buffer, offset)
-  local t = {}
-  
-  local p = buffer
-  local c, fn, v
-  
-  for i=1,#format do
-    c = format:byte(i)
-    fn = read_table[c]
-    if not fn then
-      error(string.format('Mising read function for type \'%c\' at pos %d.', i, c))
-    end
-    v, ptr = fn(ptr)     -- decode value
-    t[#t+1] = v
-  end
-  
-  return t
-end
-
-function Message:sizeInBytes()
-  
-end
-
-function Message:serialize()
-  -- 
-end
-
-function Message:deserialize(buffer)
-  local farray = self.spec.base_farray
-  for j, f in ipairs(farray) do
-    if type(f) == "string" then
-    
+  for _, f in ipairs(self.spec.fields) do
+    local v = self.values[f.name]
+    if f.is_array then
+      if f.tensor_type then
+        -- tensor
+        sw:writeTensor(v)
+      else
+        -- regular array
+        local n = #v
+        sw:writeUInt32(n)    -- element count
+        local write = writeMethods[f.base_type]
+        if not write then
+          error(string.format('Mising write function for type \'%s\'.', f.base_type))
+        end
+        for i=1,n do
+          write(sw, v[i])
+        end
+      end
+    elseif f.is_builtin then
+      -- builtin type
+      local write = writeMethods[f.type]
+      if not write then
+        error(string.format('Mising write function for type \'%s\'.', f.type))
+      end
+      write(sw, v)
     else
-    
+      -- complex message
+      v:serialize(sw)
     end
   end
-end
-
--- determine total message size
-
--- serialization method
-
--- create byte stream class to serialize to memory or file via ffi?
-
--- create write methods
-
-local function write_field(strage, offset, ftype, fvalue)
   
+  return sw
 end
 
-function Message:write(storage, offset)
+local readMethods = {
+  bool    = ros.StorageReader.readInt8,
+  byte    = ros.StorageReader.readUInt8,
+  char    = ros.StorageReader.readInt8,
+  int8    = ros.StorageReader.readInt8,
+  uint8   = ros.StorageReader.readUInt8, 
+  int16   = ros.StorageReader.readInt16,
+  uint16  = ros.StorageReader.readUInt16,
+  int32   = ros.StorageReader.readInt32,
+  uint32  = ros.StorageReader.readUInt32,
+  int64   = ros.StorageReader.readInt64,
+  uint64  = ros.StorageReader.readUInt64,
+  float32 = ros.StorageReader.readFloat32,
+  float64 = ros.StorageReader.readFloat64,
+  string  = ros.StorageReader.readString,
+  time    = function(sr)
+    return { sr:readUInt32(), sr:readUInt32() }
+  end,
+  duration = function(sr)
+    return { sr:readInt32(), sr:readInt32() }
+  end
+}
+
+function Message:deserialize(sr)
+  if torch.isTypeOf(sr, torch.ByteStorage) then
+    sr = ros.StorageReader(sr)
+  end
+  if not sr then
+    error('argument 1: storage reader object expected')
+  end
 
   for _, f in ipairs(self.spec.fields) do
     if f.is_array then
       if f.tensor_type then
         -- tensor
-        
+        self.values[f.name]:set(sr:readTensor(f.tensor_type))
       else
         -- regular array
-        
+        local n = sr:readUInt32(n)    -- element count
+        local read = writeMethods[f.base_type]
+        if not read then
+          error(string.format('Mising write function for type \'%s\'.', f.base_type))
+        end
+        local t = {}
+        for i=1,n do
+          t[#t] = read(sr)
+        end
+        self.values[f.name] = t
       end
     elseif f.is_builtin then
       -- builtin type
-      offset = write_field(storage, offset, f.type, self.values[f.name])
+      local read = readMethods[f.type]
+      if not read then
+        error(string.format('Mising read function for type \'%s\'.', f.type))
+      end
+      self.values[f.name] = read(sr)
     else
       -- complex message
-      offset = f.values[f.name]:write(storage, offset)
+      self.values[f.name]:deserialize(sr)
     end
   end
+  
+  return sr
 end
-

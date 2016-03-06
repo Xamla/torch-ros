@@ -67,23 +67,27 @@ function StorageReader:readString(offset)
   return ffi.string(self.data + offset_, length)
 end
 
+function StorageReader:readTensor(tensor_ctor, offset)
+  local offset_ = offset or self.offset
+  local n = self:readUInt32(offset)
+  local t = tensor_ctor()
+  local sizeInBytes = n * t:elementSize()
+  offset_ = offset_ + SIZE_OF_UINT32
+  ensurePosReadable(self, offset_ + sizeInBytes - 1)
+  t:resize(n)
+  ffi.copy(t:data(), self.data + offset_, sizeInBytes)
+  return t
+end
+
 local function createReadTensorMethod(tensor_ctor)
   return function(self, offset)
-    local offset_ = offset or self.offset
-    local n = self:readUInt32(offset)
-    local t = tensor_ctor()
-    local sizeInBytes = n * t:elementSize()
-    offset_ = offset_ + SIZE_OF_UINT32
-    ensurePosReadable(self, offset_ + sizeInBytes - 1)
-    t:resize(n)
-    ffi.copy(t:data(), self.data + offset_, sizeInBytes)
-    return t
+    return self:readTensor(tensor_ctor, offset)
   end
 end
 
 StorageReader.readByteTensor   = createReadTensorMethod(torch.ByteTensor)
 StorageReader.readIntTensor    = createReadTensorMethod(torch.IntTensor)
-StorageReader.readShortTensor    = createReadTensorMethod(torch.ShortTensor)
+StorageReader.readShortTensor  = createReadTensorMethod(torch.ShortTensor)
 StorageReader.readLongTensor   = createReadTensorMethod(torch.LongTensor)
 StorageReader.readFloatTensor  = createReadTensorMethod(torch.FloatTensor)
 StorageReader.readDoubleTensor = createReadTensorMethod(torch.DoubleTensor)
