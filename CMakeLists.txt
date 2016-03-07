@@ -13,6 +13,7 @@ SET(src
   "${SOURCE_DIR}/std/string_vector.cpp"
   
   "${SOURCE_DIR}/ros/init.cpp"
+  "${SOURCE_DIR}/ros/node_handle.cpp"
   "${SOURCE_DIR}/ros/async_spinner.cpp"
   "${SOURCE_DIR}/ros/time.cpp"
   "${SOURCE_DIR}/ros/duration.cpp"

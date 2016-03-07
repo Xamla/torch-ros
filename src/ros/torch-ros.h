@@ -11,12 +11,10 @@ extern "C" {
 #define ROSIMP(return_type, class_name, name) extern "C" return_type TH_CONCAT_4(ros_, class_name, _, name)
 
 class RosWrapperException
-  : public std::runtime_error
-{
+  : public std::runtime_error {
 public:
   RosWrapperException(const std::string& reason)
-    : runtime_error(reason)
-  {
+    : runtime_error(reason) {
   }
 };
 

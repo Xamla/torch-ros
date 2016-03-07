@@ -31,7 +31,7 @@ msg.header.seq = 918273
 msg.width = 123
 msg.height = 456
 msg.step = 987
-msg.data = torch.ByteTensor(10)
+msg.data = torch.ByteTensor(10):fill(1)
 
 v = msg:serialize()
 v:shrinkToFit()

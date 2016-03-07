@@ -24,6 +24,8 @@
       <File Name="src/ros/init.cpp"/>
       <File Name="src/ros/time.cpp"/>
       <File Name="src/ros/torch-ros.h"/>
+      <File Name="src/ros/node_handle.cpp"/>
+      <File Name="src/ros/MessageCallbackHelper.cpp"/>
     </VirtualDirectory>
     <VirtualDirectory Name="tf">
       <File Name="src/tf/transform.cpp"/>
@@ -32,9 +34,9 @@
       <File Name="src/tf/transform_broadcaster.cpp"/>
       <File Name="src/tf/torch-tf.h"/>
       <File Name="src/tf/stamped_transform.cpp"/>
+      <File Name="src/std/torch-std.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="std">
-      <File Name="src/std/torch-std.h"/>
       <File Name="src/std/string.cpp"/>
       <File Name="src/std/string_vector.cpp"/>
     </VirtualDirectory>
