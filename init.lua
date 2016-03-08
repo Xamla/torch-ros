@@ -12,6 +12,9 @@ require 'ros.Message'
 require 'ros.Time'
 require 'ros.Duration'
 require 'ros.AsyncSpinner'
+require 'ros.MessageBuffer'
+require 'ros.Subscriber'
+require 'ros.NodeHandle'
 
 -- tf
 require 'ros.Quaternion'

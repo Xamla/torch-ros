@@ -159,6 +159,25 @@ double ros_Duration_toSec(ros_Duration *self);
 void ros_Duration_fromSec(ros_Duration *self, double t);
 bool ros_Duration_isZero(ros_Duration *self);
 void ros_Duration_sleep(ros_Duration *self);
+
+typedef struct ros_Subscriber {} ros_Subscriber;
+ros_Subscriber *ros_Subscriber_clone(ros_Subscriber *self);
+void ros_Subscriber_delete(ros_Subscriber *self);
+void ros_Subscriber_shutdown(ros_Subscriber *self);
+const char *ros_Subscriber_getTopic(ros_Subscriber *self);
+int ros_Subscriber_getNumPublishers(ros_Subscriber *self);
+
+typedef struct MessageBuffer {} MessageBuffer;
+MessageBuffer *ros_MessageBuffer_new(int max_backlog);
+void ros_MessageBuffer_delete(MessageBuffer *self);
+int ros_MessageBuffer_count(MessageBuffer *self);
+void ros_MessageBuffer_clear(MessageBuffer *self);
+bool ros_MessageBuffer_read(MessageBuffer *self, int timeout_milliseconds, THByteStorage *output);
+
+typedef struct ros_NodeHandle {} ros_NodeHandle;
+ros_NodeHandle *ros_NodeHandle_new();
+void ros_NodeHandle_delete(ros_NodeHandle *self);
+ros_Subscriber *ros_NodeHandle_subscribe(ros_NodeHandle *self, MessageBuffer *message_buffer, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype);
 ]]
 
 ffi.cdef(ros_cdef)

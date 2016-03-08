@@ -25,7 +25,9 @@
       <File Name="src/ros/time.cpp"/>
       <File Name="src/ros/torch-ros.h"/>
       <File Name="src/ros/node_handle.cpp"/>
-      <File Name="src/ros/MessageCallbackHelper.cpp"/>
+      <File Name="src/ros/subscriber.cpp"/>
+      <File Name="src/ros/message_buffer.h"/>
+      <File Name="src/ros/message_buffer.cpp"/>
     </VirtualDirectory>
     <VirtualDirectory Name="tf">
       <File Name="src/tf/transform.cpp"/>
@@ -57,7 +59,6 @@
       <File Name="Message.lua"/>
       <File Name="MsgSpec.lua"/>
       <File Name="Quaternion.lua"/>
-      <File Name="ROSSerializer.lua"/>
       <File Name="StampedTransform.lua"/>
       <File Name="String.lua"/>
       <File Name="StringVector.lua"/>
@@ -68,6 +69,9 @@
       <File Name="Time.lua"/>
       <File Name="StorageWriter.lua"/>
       <File Name="StorageReader.lua"/>
+      <File Name="Subscriber.lua"/>
+      <File Name="MessageBuffer.lua"/>
+      <File Name="NodeHandle.lua"/>
     </VirtualDirectory>
     <File Name=".gitignore"/>
     <VirtualDirectory Name="test">

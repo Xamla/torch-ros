@@ -14,6 +14,8 @@ SET(src
   
   "${SOURCE_DIR}/ros/init.cpp"
   "${SOURCE_DIR}/ros/node_handle.cpp"
+  "${SOURCE_DIR}/ros/message_buffer.cpp"
+  "${SOURCE_DIR}/ros/subscriber.cpp"
   "${SOURCE_DIR}/ros/async_spinner.cpp"
   "${SOURCE_DIR}/ros/time.cpp"
   "${SOURCE_DIR}/ros/duration.cpp"
