@@ -12,32 +12,28 @@ extern "C" {
 
 typedef boost::shared_ptr<std::vector<std::string> > StringsPtr;
 
-inline void viewMatrix3x3(tf::Matrix3x3& m, THDoubleTensor *t)
-{
+inline void viewMatrix3x3(tf::Matrix3x3& m, THDoubleTensor *t) {
   THDoubleStorage* storage = THDoubleStorage_newWithData(m[0].m_floats, sizeof(m) / sizeof(double));
   THDoubleStorage_clearFlag(storage, TH_STORAGE_FREEMEM | TH_STORAGE_RESIZABLE);
   THDoubleTensor_setStorage2d(t, storage, 0, 3, sizeof(m[0]) / sizeof(double), 3, 1);
   THDoubleStorage_free(storage);   // tensor took ownership
 }
 
-inline void viewVector3(tf::Vector3& v, THDoubleTensor *t)
-{
+inline void viewVector3(tf::Vector3& v, THDoubleTensor *t) {
   THDoubleStorage* storage = THDoubleStorage_newWithData(v.m_floats, sizeof(v.m_floats) / sizeof(double));
   THDoubleStorage_clearFlag(storage, TH_STORAGE_FREEMEM | TH_STORAGE_RESIZABLE);
   THDoubleTensor_setStorage1d(t, storage, 0, 3, 1);
   THDoubleStorage_free(storage);   // tensor took ownership
 }
 
-inline void viewQuaternion(tf::Quaternion& q, THDoubleTensor *t)
-{
+inline void viewQuaternion(tf::Quaternion& q, THDoubleTensor *t) {
   THDoubleStorage* storage = THDoubleStorage_newWithData(static_cast<double*>(q), sizeof(q) / sizeof(double));
   THDoubleStorage_clearFlag(storage, TH_STORAGE_FREEMEM | TH_STORAGE_RESIZABLE);
   THDoubleTensor_setStorage1d(t, storage, 0, 4, 1);
   THDoubleStorage_free(storage);   // tensor took ownership
 }
 
-inline void copyVector3ToTensor(const tf::Vector3& v, THDoubleTensor *tensor)
-{
+inline void copyVector3ToTensor(const tf::Vector3 &v, THDoubleTensor *tensor) {
   THDoubleTensor_resize1d(tensor, 3);
   THDoubleTensor* output_ = THDoubleTensor_newContiguous(tensor);
   double *data = THDoubleTensor_data(output_);
@@ -47,8 +43,7 @@ inline void copyVector3ToTensor(const tf::Vector3& v, THDoubleTensor *tensor)
   THDoubleTensor_freeCopyTo(output_, tensor);
 }
 
-inline void copyTensorToVector3(THDoubleTensor *tensor, tf::Vector3& v)
-{
+inline void copyTensorToVector3(THDoubleTensor *tensor, tf::Vector3 &v) {
   if (!tensor || THDoubleTensor_nElement(tensor) < 3)
     throw std::runtime_error("A Tensor with at least 3 elements was expected.");
     
