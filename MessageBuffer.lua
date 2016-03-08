@@ -20,6 +20,8 @@ function init()
   f = utils.create_method_table("ros_MessageBuffer_", MessageBuffer_method_names)
 end
 
+init()
+
 function MessageBuffer:__init(max_backlog)
   self.o = f.new(max_backlog or -1)
 end
@@ -38,7 +40,7 @@ end
 
 function MessageBuffer:read(timeout_milliseconds, result)
   result = result or torch.ByteStorage()
-  if not f.read(self.o, timeout_milliseconds, result:cdata()) then
+  if not f.read(self.o, timeout_milliseconds or 100, result:cdata()) then
     return nil
   end
   return result

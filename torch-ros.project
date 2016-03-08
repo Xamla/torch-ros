@@ -72,10 +72,12 @@
       <File Name="Subscriber.lua"/>
       <File Name="MessageBuffer.lua"/>
       <File Name="NodeHandle.lua"/>
+      <File Name="ros.lua"/>
     </VirtualDirectory>
     <File Name=".gitignore"/>
     <VirtualDirectory Name="test">
       <File Name="test/test_serialization.lua"/>
+      <File Name="test/test_subscription.lua"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Settings Type="Dynamic Library">

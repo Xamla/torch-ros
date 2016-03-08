@@ -8,7 +8,7 @@ function utils.create_method_table(prefix, names)
   for i,n in ipairs(names) do
     local full_name = prefix .. n
     -- use pcall since not all types support all functions
-    local ok,v = pcall(function() return moveit.lib[full_name] end)
+    local ok,v = pcall(function() return ros.lib[full_name] end)
     if ok then
       map[n] = v
     end

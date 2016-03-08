@@ -3,8 +3,8 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
 PROJECT(torch-ros)
 
 FIND_PACKAGE(Torch REQUIRED)
-find_package(Boost 1.47.0 REQUIRED COMPONENTS system)
-find_package(catkin REQUIRED COMPONENTS roscpp std_msgs tf)
+FIND_PACKAGE(Boost 1.47.0 REQUIRED COMPONENTS system thread chrono)
+FIND_PACKAGE(catkin REQUIRED COMPONENTS roscpp std_msgs tf)
 
 SET(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 
@@ -42,7 +42,7 @@ FILE(GLOB luasrc *.lua)
 
 ADD_LIBRARY(torch-ros MODULE ${src})
 
-target_link_libraries(torch-ros TH ${catkin_LIBRARIES})
+target_link_libraries(torch-ros TH ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
 
 INSTALL(TARGETS torch-ros LIBRARY DESTINATION ${Torch_INSTALL_LUA_CPATH_SUBDIR})
 #INSTALL(DIRECTORY "doc" DESTINATION "${Torch_INSTALL_LUA_PATH_SUBDIR}/ros")

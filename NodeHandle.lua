@@ -10,13 +10,15 @@ local f
 
 function init()
   local NodeHandle_method_names = {
-    "new",
-    "delete",
-    "subscribe"
+    'new',
+    'delete',
+    'subscribe'
   }
   
-  f = utils.create_method_table("ros_NodeHandle_", NodeHandle_method_names)
+  f = utils.create_method_table('ros_NodeHandle_', NodeHandle_method_names)
 end
+
+init()
 
 function NodeHandle:__init()
   self.o = f.new()
@@ -26,10 +28,11 @@ function NodeHandle:cdata()
   return self.o
 end
 
-function NodeHandle:suscribe(topic, msg_spec, queue_size)
+function NodeHandle:subscribe(topic, msg_spec, queue_size, buffer)
   if type(msg_spec) == 'string' then
     msg_spec = ros.MsgSpec(msg_spec)
   end
-  local s = f.subscribe(self.o, queue_size or 1000, msg_spec:md5(), msg_spec.type)
-  return ros.Subscriber(s)
+  buffer = buffer or ros.MessageBuffer()
+  local s = f.subscribe(self.o, buffer:cdata(), topic, queue_size or 1000, msg_spec:md5(), msg_spec.type)
+  return ros.Subscriber(s), buffer
 end

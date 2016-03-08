@@ -19,6 +19,8 @@ function init()
   f = utils.create_method_table("ros_Subscriber_", Subscriber_method_names)
 end
 
+init()
+
 function Subscriber:__init(ptr)
   if not ptr or not ffi.typeof(ptr) == Subscriber_ptr_ct then
     error('argument 1: ros.Subscriber * expected.')

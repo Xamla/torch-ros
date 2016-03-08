@@ -31,6 +31,9 @@ Message.builtin_formats = {
 }
 
 function Message:__init(spec, no_prefill)
+  if type(spec) == 'string' then
+    spec = ros.MsgSpec(spec)
+  end
   assert(spec, "Message specification must not be nil.")
   rawset(self, 'spec', spec)
   rawset(self, 'values', {})
