@@ -155,57 +155,6 @@ local function load_from_string(self, s)
   return load_from_iterator(self, s:gmatch('(.-)\n'))
 end
 
-local function generate_base_format(self, prefix)
-  local format = prefix or ''
-  local farray = {}
-  local curfor = ''
-
-  for _, f in ipairs(self.fields) do
-    local fname = f.name
-    local ftype = f.type
-    local is_array   = f.is_array
-    local is_builtin = f.is_builtin
-
-    if is_array then
-      format = format .. 'I4('
-      if curfor ~= '' then
-        table.insert(farray, curfor)
-        curfor = ''
-      end
-      if is_builtin then
-        format = format .. ros.Message.builtin_formats[f.base_type]
-        table.insert(farray, { ros.Message.builtin_formats[f.base_type] })
-      else
-        local subformat, subfarray = generate_base_format(f.spec, '')
-        format = format .. subformat
-        table.insert(farray, subfarray)
-      end
-      format = format .. ')'
-    else
-      if is_builtin then
-        format = format .. ros.Message.builtin_formats[ftype]
-        curfor = curfor .. ros.Message.builtin_formats[ftype]
-      else
-        local subformat, subfarray = generate_base_format(f.spec, '')
-        format = format .. subformat
-        if curfor ~= '' then
-          table.insert(farray, curfor)
-          curfor = ''
-        end
-        for _, sa in ipairs(subfarray) do
-          table.insert(farray, sa)
-        end
-      end
-    end
-   end
-   
-   if curfor ~= '' then
-      table.insert(farray, curfor)
-   end
-   
-   return format, farray
-end
-
 --- (internal) create string representation appropriate to generate the hash
 -- @return string representation
 local function generate_hashtext(self)
@@ -266,8 +215,6 @@ function MsgSpec:__init(type, specstr)
   else
     load_msgspec(self)
   end
-
-  self.base_format, self.base_farray = generate_base_format(self)
 end
 
 function MsgSpec:resolve_type(type)
@@ -290,7 +237,6 @@ local function format_spec(spec, ln, indent)
     end
   end
   table.insert(ln, indent .. 'MD5:    ' .. spec:md5())
-  table.insert(ln, indent .. 'Format: ' .. spec.base_format)
   return ln
 end
 

@@ -17,21 +17,8 @@ Message.default_values = {
   string   = "",      array   = {}
 }
 
--- (internal) table of formats for built-in types
-Message.builtin_formats = {
-  bool     = "B",
-  int8     = "c",    uint8   = "C",
-  int16    = "w",    uint16  = "W",
-  int32    = "i",    uint32  = "I",
-  int64    = "q",    uint64  = "Q",
-  float32  = "f",    float64 = "F",
-  char     = "B",    byte    = "B",
-  duration = "ii",   time    = "II",
-  string   = "s",    array   = "I"
-}
-
 function Message:__init(spec, no_prefill)
-  if type(spec) == 'string' then
+  if not torch.isTypeOf(spec, ros.MsgSpec) and type(spec) == 'string' then
     spec = ros.MsgSpec(spec)
   end
   assert(spec, "Message specification must not be nil.")

@@ -15,6 +15,7 @@ require 'ros.Duration'
 require 'ros.AsyncSpinner'
 require 'ros.MessageBuffer'
 require 'ros.Subscriber'
+require 'ros.Publisher'
 require 'ros.NodeHandle'
 
 -- tf

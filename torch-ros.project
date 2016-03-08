@@ -28,6 +28,7 @@
       <File Name="src/ros/subscriber.cpp"/>
       <File Name="src/ros/message_buffer.h"/>
       <File Name="src/ros/message_buffer.cpp"/>
+      <File Name="src/ros/publisher.cpp"/>
     </VirtualDirectory>
     <VirtualDirectory Name="tf">
       <File Name="src/tf/transform.cpp"/>
@@ -73,6 +74,7 @@
       <File Name="MessageBuffer.lua"/>
       <File Name="NodeHandle.lua"/>
       <File Name="ros.lua"/>
+      <File Name="Publisher.lua"/>
     </VirtualDirectory>
     <File Name=".gitignore"/>
     <VirtualDirectory Name="test">
