@@ -21,3 +21,15 @@ ROSIMP(ros::Subscriber *, NodeHandle, subscribe)(
   so.helper = *message_buffer;
   return new ros::Subscriber(self->subscribe(so));
 }
+
+ROSIMP(ros::Publisher *, NodeHandle, advertise)(
+  ros::NodeHandle *self,
+  const char *topic,
+  unsigned int queue_size,
+  const char *md5sum,
+  const char *datatype,
+  const char *message_definition
+) {
+  ros::AdvertiseOptions ao(topic, queue_size, datatype, message_definition);
+  return new ros::Publisher(self->advertise(ao));
+}

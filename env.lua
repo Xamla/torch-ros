@@ -186,6 +186,7 @@ typedef struct ros_NodeHandle {} ros_NodeHandle;
 ros_NodeHandle *ros_NodeHandle_new();
 void ros_NodeHandle_delete(ros_NodeHandle *self);
 ros_Subscriber *ros_NodeHandle_subscribe(ros_NodeHandle *self, MessageBuffer *message_buffer, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype);
+ros_Publisher *ros_NodeHandle_advertise(ros_NodeHandle *self, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype, const char *message_definition);
 ]]
 
 ffi.cdef(ros_cdef)
