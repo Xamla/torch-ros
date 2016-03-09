@@ -30,6 +30,6 @@ ROSIMP(ros::Publisher *, NodeHandle, advertise)(
   const char *datatype,
   const char *message_definition
 ) {
-  ros::AdvertiseOptions ao(topic, queue_size, datatype, message_definition);
+  ros::AdvertiseOptions ao(topic, queue_size, md5sum, datatype, message_definition);
   return new ros::Publisher(self->advertise(ao));
 }

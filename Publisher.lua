@@ -9,15 +9,16 @@ local Publisher_ptr_ct = ffi.typeof('ros_Publisher *')
 
 function init()
   local Publisher_method_names = {
-    "clone",
-    "delete",
-    "shutdown",
-    "getTopic",
-    "getNumSubscribers",
-    "isLatched"
+    'clone',
+    'delete',
+    'shutdown',
+    'getTopic',
+    'getNumSubscribers',
+    'isLatched',
+    'publish'
   }
   
-  f = utils.create_method_table("ros_Publisher_", Publisher_method_names)
+  f = utils.create_method_table('ros_Publisher_', Publisher_method_names)
 end
 
 init()
@@ -54,4 +55,11 @@ end
 
 function Publisher:isLatched()
   return f.isLatched(self.o)
+end
+
+function Publisher:publish(msg)
+  -- serialize message to byte storage
+  v = msg:serialize()
+  v:shrinkToFit()
+  f.publish(self.o, v.storage:cdata())
 end

@@ -18,4 +18,16 @@ public:
   }
 };
 
+class NotImplementedException
+  : public std::logic_error {
+public:
+  NotImplementedException()
+    : logic_error("Function not implemented.") {
+  }
+
+  NotImplementedException(const std::string &msg)
+    : logic_error(msg) {
+  }
+};
+
 #endif  // torch_ros_h

@@ -61,10 +61,13 @@ end
 local function createWriteMethod(type)
   local ptr_type = ffi.typeof(type .. '*')
   local element_size = ffi.sizeof(type)
-  return function(self, value)
-    ensurePosWriteable(self, self.offset + element_size)
-    ffi.cast(ptr_type, self.data + self.offset)[0] = value  
-    self.offset = self.offset + element_size
+  return function(self, value, offset)
+    local offset_ = offset or self.offset
+    ensurePosWriteable(self, offset_ + element_size)
+    ffi.cast(ptr_type, self.data + offset_)[0] = value
+    if not offset then
+      self.offset = self.offset + element_size
+    end
   end
 end
 

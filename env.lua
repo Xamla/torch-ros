@@ -168,12 +168,13 @@ const char *ros_Subscriber_getTopic(ros_Subscriber *self);
 int ros_Subscriber_getNumPublishers(ros_Subscriber *self);
 
 typedef struct ros_Publisher {} ros_Publisher;
-ros_Publisher* ros_Publisher_clone(ros_Publisher *self);
+ros_Publisher *ros_Publisher_clone(ros_Publisher *self);
 void ros_Publisher_delete(ros_Publisher *self);
 void ros_Publisher_shutdown(ros_Publisher *self);
-const char * ros_Publisher_getTopic(ros_Publisher *self);
+const char *ros_Publisher_getTopic(ros_Publisher *self);
 int ros_Publisher_getNumSubscribers(ros_Publisher *self);
-bool ros_Publisher__isLatched(ros_Publisher *self);
+bool ros_Publisher_isLatched(ros_Publisher *self);
+void ros_Publisher_publish(ros_Publisher *self, THByteStorage *serialized_msg);
 
 typedef struct MessageBuffer {} MessageBuffer;
 MessageBuffer *ros_MessageBuffer_new(int max_backlog);

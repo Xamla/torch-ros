@@ -242,8 +242,7 @@ local writeMethods = {
   end
 }
 
-function Message:serialize(sw)
-  sw = sw or ros.StorageWriter()
+local function serialize_inner(self, sw)
 
   for _, f in ipairs(self.spec.fields) do
     local v = self.values[f.name]
@@ -272,10 +271,20 @@ function Message:serialize(sw)
       write(sw, v)
     else
       -- complex message
-      v:serialize(sw)
+      serialize_inner(v, sw)
     end
   end
-  
+end
+
+function Message:serialize(sw)
+  sw = sw or ros.StorageWriter()
+  local offset = sw.offset
+  sw:writeUInt32(0)   -- reserve space for message size
+
+  serialize_inner(self, sw)
+
+  sw:writeUInt32(sw.offset - offset - 4, offset)
+
   return sw
 end
 
@@ -306,6 +315,7 @@ function Message:deserialize(sr)
   if torch.isTypeOf(sr, torch.ByteStorage) then
     sr = ros.StorageReader(sr)
   end
+
   if not sr then
     error('argument 1: storage reader object expected')
   end
@@ -317,10 +327,10 @@ function Message:deserialize(sr)
         self.values[f.name]:set(sr:readTensor(f.tensor_type))
       else
         -- regular array
-        local n = sr:readUInt32(n)    -- element count
-        local read = writeMethods[f.base_type]
+        local n = sr:readUInt32()    -- element count
+        local read = readMethods[f.base_type]
         if not read then
-          error(string.format('Mising write function for type \'%s\'.', f.base_type))
+          error(string.format('Mising read function for type \'%s\'.', f.base_type))
         end
         local t = {}
         for i=1,n do
@@ -340,6 +350,6 @@ function Message:deserialize(sr)
       self.values[f.name]:deserialize(sr)
     end
   end
-  
+
   return sr
 end

@@ -1,4 +1,5 @@
 #include "torch-ros.h"
+#include "raw_message.h"
 
 ROSIMP(ros::Publisher*, Publisher, clone)(ros::Publisher *self) {
   return new ros::Publisher(*self);
@@ -22,4 +23,10 @@ ROSIMP(int, Publisher, getNumSubscribers)(ros::Publisher *self) {
 
 ROSIMP(bool, Publisher, isLatched)(ros::Publisher *self) {
   return self->isLatched();
+}
+
+ROSIMP(void, Publisher, publish)(ros::Publisher *self, THByteStorage *serialized_msg) {
+  RawMessage msg;
+  msg.assign(THByteStorage_data(serialized_msg), THByteStorage_size(serialized_msg));
+  self->publish(msg);
 }

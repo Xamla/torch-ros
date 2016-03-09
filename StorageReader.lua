@@ -59,6 +59,7 @@ StorageReader.readFloat64 = createReadMethod('double')
 function StorageReader:readString(offset)
   local offset_ = offset or self.offset
   local length = self:readUInt32(offset)
+  print(length)
   offset_ = offset_ + SIZE_OF_UINT32
   ensurePosReadable(self, offset_ + length - 1)
   if not offset then

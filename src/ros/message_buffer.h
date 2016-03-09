@@ -1,5 +1,5 @@
-#ifndef MessageBuffer_h
-#define MessageBuffer_h
+#ifndef message_buffer_h
+#define message_buffer_h
 
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
@@ -110,4 +110,4 @@ private:
   std::deque<boost::shared_ptr<RawMessage> > message_queue;
 };
 
-#endif   // MessageBuffer_h
+#endif   // message_buffer_h

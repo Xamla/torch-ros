@@ -29,6 +29,7 @@
       <File Name="src/ros/message_buffer.h"/>
       <File Name="src/ros/message_buffer.cpp"/>
       <File Name="src/ros/publisher.cpp"/>
+      <File Name="src/ros/raw_message.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="tf">
       <File Name="src/tf/transform.cpp"/>
@@ -43,6 +44,7 @@
       <File Name="src/std/string.cpp"/>
       <File Name="src/std/string_vector.cpp"/>
     </VirtualDirectory>
+    <File Name="src/utils.h"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
@@ -170,4 +172,8 @@
       </Completion>
     </Configuration>
   </Settings>
+  <VirtualDirectory Name="demo">
+    <File Name="demo/listener.lua"/>
+    <File Name="demo/talker.lua"/>
+  </VirtualDirectory>
 </CodeLite_Project>
