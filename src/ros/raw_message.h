@@ -3,18 +3,33 @@
 
 class RawMessage {
 public:
-  boost::shared_array<uint8_t> buf;
-  size_t num_bytes;
-
   RawMessage()
     : num_bytes(0) {
   }
 
-  void assign(uint8_t *source, size_t length) {
-    buf = boost::shared_array<uint8_t>(new uint8_t[length]);
-    memcpy(buf.get(), source, length);
-    num_bytes = length;
+  RawMessage(size_t length)
+    : buffer(new uint8_t[length])
+    , num_bytes(length)
+  {
   }
+
+  void copyFrom(uint8_t *source, size_t length) {
+    buffer = boost::shared_array<uint8_t>(new uint8_t[length]);
+    memcpy(buffer.get(), source, length);
+    this->num_bytes = length;
+  }
+
+  size_t get_length() const {
+    return num_bytes;
+  }
+
+  const boost::shared_array<uint8_t>& get_buffer() const {
+    return buffer;
+  }
+
+private:
+  size_t num_bytes;
+  boost::shared_array<uint8_t> buffer;
 };
 
 namespace ros {
@@ -23,7 +38,7 @@ namespace serialization {
 template<>
 inline SerializedMessage serializeMessage(const RawMessage &message)
 {
-  return SerializedMessage(message.buf, message.num_bytes);
+  return SerializedMessage(message.get_buffer(), message.get_length());
 }
 
 }   // namespace serialization

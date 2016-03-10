@@ -27,6 +27,6 @@ ROSIMP(bool, Publisher, isLatched)(ros::Publisher *self) {
 
 ROSIMP(void, Publisher, publish)(ros::Publisher *self, THByteStorage *serialized_msg) {
   RawMessage msg;
-  msg.assign(THByteStorage_data(serialized_msg), THByteStorage_size(serialized_msg));
+  msg.copyFrom(THByteStorage_data(serialized_msg), THByteStorage_size(serialized_msg));
   self->publish(msg);
 }

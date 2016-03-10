@@ -5,45 +5,22 @@
 #include <boost/thread/condition_variable.hpp>
 #include <boost/thread/locks.hpp>
 #include <deque>
+#include "raw_message.h"
 
 class MessageBuffer
   : public ros::SubscriptionCallbackHelper {
 public:
-
-  class RawMessage {
-  public:
-    RawMessage(size_t length)
-      : buffer(new uint8_t[length])
-      , length(length)
-    {
-    }
-    
-    ~RawMessage() {
-      delete[] buffer;
-    }
-    
-    uint8_t *get_buffer() {
-      return buffer;
-    }
-    
-    size_t get_length() {
-      return length;
-    }
-    
-  private:
-    uint8_t *buffer;
-    size_t length;
-  };
-
   MessageBuffer(int max_backlog = -1)
     : max_backlog(max_backlog) {
   }
   
   virtual ros::VoidConstPtr deserialize(const ros::SubscriptionCallbackHelperDeserializeParams &params) {
+
     // create buffer and copy message bytes
-    boost::shared_ptr<RawMessage> buffer(new RawMessage(params.length));
-    memcpy(buffer->get_buffer(), params.buffer, params.length);
-    
+    boost::shared_ptr<RawMessage> buffer(new RawMessage());
+    ROS_INFO("blub: %d", params.length);
+    buffer->copyFrom(params.buffer, params.length);
+
     // lock queue mutex and add new message buffer to queue
     {
       boost::unique_lock<boost::mutex> lock(queue_lock);
@@ -54,6 +31,7 @@ public:
     
     // notify potentially waiting thread
     message_available.notify_one();
+    return ros::VoidConstPtr();
   }
   
   virtual void call(ros::SubscriptionCallbackHelperCallParams &params) {

@@ -20,14 +20,14 @@ ROSIMP(void, MessageBuffer, clear)(MessageBuffer_ptr *self) {
 }
 
 ROSIMP(bool, MessageBuffer, read)(MessageBuffer_ptr *self, int timeout_milliseconds, THByteStorage *output) {
-  boost::shared_ptr<MessageBuffer::RawMessage> buffer = (*self)->read(timeout_milliseconds);
-  if (!buffer)  
+  boost::shared_ptr<RawMessage> buffer = (*self)->read(timeout_milliseconds);
+  if (!buffer)
     return false;
-  
+
   // copy message to output byte storage
   THByteStorage_resize(output, buffer->get_length());
   uint8_t* dst = THByteStorage_data(output);
-  memcpy(dst, buffer->get_buffer(), buffer->get_length());
-  
+  memcpy(dst, buffer->get_buffer().get(), buffer->get_length());
+
   return true;
 }
