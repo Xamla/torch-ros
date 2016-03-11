@@ -11,7 +11,7 @@ SET(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 SET(src
   "${SOURCE_DIR}/std/string.cpp"
   "${SOURCE_DIR}/std/string_vector.cpp"
-  
+
   "${SOURCE_DIR}/ros/init.cpp"
   "${SOURCE_DIR}/ros/node_handle.cpp"
   "${SOURCE_DIR}/ros/message_buffer.cpp"
@@ -20,7 +20,8 @@ SET(src
   "${SOURCE_DIR}/ros/async_spinner.cpp"
   "${SOURCE_DIR}/ros/time.cpp"
   "${SOURCE_DIR}/ros/duration.cpp"
-  
+  "${SOURCE_DIR}/ros/console.cpp"
+
   "${SOURCE_DIR}/tf/transform.cpp"
   "${SOURCE_DIR}/tf/quaternion.cpp"
   "${SOURCE_DIR}/tf/stamped_transform.cpp"

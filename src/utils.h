@@ -74,7 +74,7 @@ template<int rows, int cols> void copyMatrix(const Eigen::Matrix<double, rows, c
 #define DECL_vector2Tensor(T, name) inline void vector2Tensor(const std::vector<T> &v, TH##name##Tensor *output) \
 { \
   TH##name##Tensor_resize1d(output, v.size()); \
-  TH##name##Tensor* output_ = TH##name##Tensor_newContiguous(output); \
+  TH##name##Tensor *output_ = TH##name##Tensor_newContiguous(output); \
   std::copy(v.begin(), v.end(), TH##name##Tensor_data(output_)); \
   TH##name##Tensor_freeCopyTo(output_, output); \
 }
