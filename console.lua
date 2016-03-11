@@ -69,9 +69,9 @@ local function create_trace(level)
 end
 
 local function create_trace_named(level)
-  return function(...)
+  return function(name, ...)
     local logger = console.get_logger(name)
-    local msg = string.format(name, ...)
+    local msg = string.format(...)
     local caller = debug.getinfo(2, 'nSl')
     console.print(logger, level, msg, caller.short_src, caller.name, caller.currentline or caller.linedefined)
   end

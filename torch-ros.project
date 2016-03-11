@@ -177,5 +177,6 @@
   <VirtualDirectory Name="demo">
     <File Name="demo/listener.lua"/>
     <File Name="demo/talker.lua"/>
+    <File Name="demo/logging.lua"/>
   </VirtualDirectory>
 </CodeLite_Project>
