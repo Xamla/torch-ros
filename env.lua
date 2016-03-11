@@ -27,15 +27,15 @@ function ros.version()
     local p = io.popen("rosversion roscpp 2>/dev/null")
     local version = p:read("*l")
     p:close()
-    
+
     if not version or #version == 0 then
       error("Cannot determine ROS version")
     end
-    
+
     local p = io.popen("rosversion -d 2>/dev/null")
     local codename = p:read("*l")
     p:close()
-    
+
     local v = string.split(version, "%.")
     ROS_VER = {
       version = { tonumber(v[1]), tonumber(v[2]), tonumber(v[3]) },
@@ -58,7 +58,7 @@ function ros.find_package(package)
     p:close()
   end
 
-  assert(rospack_path_cache[package] and #rospack_path_cache[package] > 0, 
+  assert(rospack_path_cache[package] and #rospack_path_cache[package] > 0,
     "Package path could not be found for " .. package)
   return rospack_path_cache[package]
 end
@@ -174,7 +174,7 @@ void ros_Publisher_shutdown(ros_Publisher *self);
 const char *ros_Publisher_getTopic(ros_Publisher *self);
 int ros_Publisher_getNumSubscribers(ros_Publisher *self);
 bool ros_Publisher_isLatched(ros_Publisher *self);
-void ros_Publisher_publish(ros_Publisher *self, THByteStorage *serialized_msg);
+void ros_Publisher_publish(ros_Publisher *self, THByteStorage *serialized_msg, ptrdiff_t offset, size_t length);
 
 typedef struct MessageBuffer {} MessageBuffer;
 MessageBuffer *ros_MessageBuffer_new(int max_backlog);
@@ -184,10 +184,37 @@ void ros_MessageBuffer_clear(MessageBuffer *self);
 bool ros_MessageBuffer_read(MessageBuffer *self, int timeout_milliseconds, THByteStorage *output);
 
 typedef struct ros_NodeHandle {} ros_NodeHandle;
-ros_NodeHandle *ros_NodeHandle_new();
+ros_NodeHandle *ros_NodeHandle_new(const char *ns);
 void ros_NodeHandle_delete(ros_NodeHandle *self);
+void ros_NodeHandle_shutdown(ros_NodeHandle *self);
+bool ros_NodeHandle_ok(ros_NodeHandle *self);
+const char *ros_NodeHandle_getNamespace(ros_NodeHandle *self);
+const char *ros_NodeHandle_getUnresolvedNamespace(ros_NodeHandle *self);
+void ros_NodeHandle_resolveName(ros_NodeHandle *self, const char *name, bool remap, std_string *result);
 ros_Subscriber *ros_NodeHandle_subscribe(ros_NodeHandle *self, MessageBuffer *message_buffer, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype);
 ros_Publisher *ros_NodeHandle_advertise(ros_NodeHandle *self, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype, const char *message_definition);
+bool ros_NodeHandle_hasParam(ros_NodeHandle *self, const char *key);
+bool ros_NodeHandle_deleteParam(ros_NodeHandle *self, const char *key);
+bool ros_NodeHandle_getParamString(ros_NodeHandle *self, const char *key, std_string *result);
+bool ros_NodeHandle_getParamDouble(ros_NodeHandle *self, const char *key, double *result);
+bool ros_NodeHandle_getParamFloat(ros_NodeHandle *self, const char *key, float *result);
+bool ros_NodeHandle_getParamInt(ros_NodeHandle *self, const char *key, int *result);
+bool ros_NodeHandle_getParamBool(ros_NodeHandle *self, const char *key, bool *result);
+void ros_NodeHandle_setParamString(ros_NodeHandle *self, const char *key, const char *value);
+void ros_NodeHandle_setParamDouble(ros_NodeHandle *self, const char *key, double value);
+void ros_NodeHandle_setParamFloat(ros_NodeHandle *self, const char *key, float value);
+void ros_NodeHandle_setParamInt(ros_NodeHandle *self, const char *key, int value);
+void ros_NodeHandle_setParamBool(ros_NodeHandle *self, const char *key, bool value);
+bool ros_NodeHandle_getParamStringVector(ros_NodeHandle *self, const char *key, std_StringVector *value);
+bool ros_NodeHandle_getParamBoolVector(ros_NodeHandle *self, const char *key, THByteTensor *result);
+bool ros_NodeHandle_getParamIntVector(ros_NodeHandle *self, const char *key, THIntTensor *result);
+bool ros_NodeHandle_getParamDoubleVector(ros_NodeHandle *self, const char *key, THDoubleTensor *result);
+bool ros_NodeHandle_getParamFloatVector(ros_NodeHandle *self, const char *key, THFloatTensor *result);
+void ros_NodeHandle_setParamStringVector(ros_NodeHandle *self, const char *key, std_StringVector *value);
+void ros_NodeHandle_setParamBoolVector(ros_NodeHandle *self, const char *key, THByteTensor *value);
+void ros_NodeHandle_setParamIntVector(ros_NodeHandle *self, const char *key, THIntTensor *value);
+void ros_NodeHandle_setParamDoubleVector(ros_NodeHandle *self, const char *key, THDoubleTensor *value);
+void ros_NodeHandle_setParamFloatVector(ros_NodeHandle *self, const char *key, THFloatTensor *value);
 ]]
 
 ffi.cdef(ros_cdef)

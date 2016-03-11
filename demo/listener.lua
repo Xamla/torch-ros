@@ -14,6 +14,7 @@ string_spec = ros.MsgSpec('std_msgs/String')
 nodehandle:subscribe("dummy_chat", string_spec, 100, msgbuf)
 
 while ros.ok() do
+  ros.spinOnce()
   sys.sleep(0.1)
   while msgbuf:count() > 0 do
     local msg_bytes = msgbuf:read()

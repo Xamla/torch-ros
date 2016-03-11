@@ -15,16 +15,16 @@ function StorageReader:__init(storage, offset, length)
   if not ffi.abi('le') then
     error('Big-endian systems not yet supported.')
   end
-  
+
   if not torch.isTypeOf(storage, torch.ByteStorage) then
     error('argument 1: torch.ByteStorage expected')
   end
-  
+
   offset = offset or 0
   if offset < 0 or offset > storage:size() then
     error('argument 2: offset outside storage bounds')
   end
-  
+
   self.storage = storage
   self.data = storage:data()
   self.offset = offset or 0
@@ -59,7 +59,6 @@ StorageReader.readFloat64 = createReadMethod('double')
 function StorageReader:readString(offset)
   local offset_ = offset or self.offset
   local length = self:readUInt32(offset)
-  print(length)
   offset_ = offset_ + SIZE_OF_UINT32
   ensurePosReadable(self, offset_ + length - 1)
   if not offset then

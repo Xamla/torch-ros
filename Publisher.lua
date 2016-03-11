@@ -17,7 +17,7 @@ function init()
     'isLatched',
     'publish'
   }
-  
+
   f = utils.create_method_table('ros_Publisher_', Publisher_method_names)
 end
 
@@ -36,7 +36,7 @@ function Publisher:cdata()
 end
 
 function Publisher:clone()
-  local c = torch.factory('ros.Publisher')() 
+  local c = torch.factory('ros.Publisher')()
   rawset(c, 'o', f.clone(self.o))
   return c
 end
@@ -61,5 +61,5 @@ function Publisher:publish(msg)
   -- serialize message to byte storage
   v = msg:serialize()
   v:shrinkToFit()
-  f.publish(self.o, v.storage:cdata())
+  f.publish(self.o, v.storage:cdata(), 0, v.length)
 end
