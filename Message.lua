@@ -320,6 +320,8 @@ function Message:deserialize(sr)
     error('argument 1: storage reader object expected')
   end
 
+  local totalLength = sr:readUInt32()
+
   for _, f in ipairs(self.spec.fields) do
     if f.is_array then
       if f.tensor_type then

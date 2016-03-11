@@ -9,8 +9,7 @@ public:
 
   RawMessage(size_t length)
     : buffer(new uint8_t[length])
-    , num_bytes(length)
-  {
+    , num_bytes(length) {
   }
 
   void copyFrom(uint8_t *source, size_t length) {
@@ -21,6 +20,18 @@ public:
 
   size_t get_length() const {
     return num_bytes;
+  }
+
+  uint8_t *get() const {
+    return buffer.get();
+  }
+
+  ros::serialization::IStream get_IStream() const {
+    return ros::serialization::IStream(buffer.get(), num_bytes);
+  }
+
+  ros::serialization::OStream get_OStream() const {
+    return ros::serialization::OStream(buffer.get(), num_bytes);
   }
 
   const boost::shared_array<uint8_t>& get_buffer() const {

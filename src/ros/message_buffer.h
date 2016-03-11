@@ -13,13 +13,14 @@ public:
   MessageBuffer(int max_backlog = -1)
     : max_backlog(max_backlog) {
   }
-  
+
   virtual ros::VoidConstPtr deserialize(const ros::SubscriptionCallbackHelperDeserializeParams &params) {
 
     // create buffer and copy message bytes
-    boost::shared_ptr<RawMessage> buffer(new RawMessage());
-    ROS_INFO("blub: %d", params.length);
-    buffer->copyFrom(params.buffer, params.length);
+    boost::shared_ptr<RawMessage> buffer(new RawMessage(params.length + 4));
+    ros::serialization::OStream stream(buffer->get_OStream());
+    stream.next((uint32_t)params.length);
+    memcpy(buffer->get() + 4, params.buffer, params.length);
 
     // lock queue mutex and add new message buffer to queue
     {
@@ -28,37 +29,37 @@ public:
         message_queue.pop_front();
       message_queue.push_back(buffer);
     }
-    
+
     // notify potentially waiting thread
     message_available.notify_one();
     return ros::VoidConstPtr();
   }
-  
+
   virtual void call(ros::SubscriptionCallbackHelperCallParams &params) {
   }
-  
+
   virtual const std::type_info& getTypeInfo() {
     return typeid(void);
   }
-  
+
   virtual bool isConst() {
     return false;
   }
-  
+
   virtual bool hasHeader() {
     return false;
   }
-  
+
   boost::shared_ptr<RawMessage> read(int timeout_milliseconds) {
     boost::unique_lock<boost::mutex> lock(queue_lock);
-    
-    boost::chrono::system_clock::time_point timeout = boost::chrono::system_clock::now() 
+
+    boost::chrono::system_clock::time_point timeout = boost::chrono::system_clock::now()
       + boost::chrono::milliseconds(timeout_milliseconds);
-      
+
     do {
       // check if messages are available
       if (!message_queue.empty()) {
-        boost::shared_ptr<RawMessage> msg = message_queue.front(); 
+        boost::shared_ptr<RawMessage> msg = message_queue.front();
         message_queue.pop_front();
         return msg;
       }
@@ -70,12 +71,12 @@ public:
 
     return boost::shared_ptr<RawMessage>();
   }
-  
+
   size_t count() {
     boost::unique_lock<boost::mutex> lock(queue_lock);
     return message_queue.size();
   }
-  
+
   void clear() {
     boost::unique_lock<boost::mutex> lock(queue_lock);
     message_queue.clear();
