@@ -6,6 +6,7 @@ require 'ros.StringVector'
 
 -- ros
 require 'ros.ros'
+require 'ros.console'
 require 'ros.StorageWriter'
 require 'ros.StorageReader'
 require 'ros.MsgSpec'

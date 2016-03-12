@@ -30,6 +30,7 @@
       <File Name="src/ros/message_buffer.cpp"/>
       <File Name="src/ros/publisher.cpp"/>
       <File Name="src/ros/raw_message.h"/>
+      <File Name="src/ros/console.cpp"/>
     </VirtualDirectory>
     <VirtualDirectory Name="tf">
       <File Name="src/tf/transform.cpp"/>
@@ -77,6 +78,7 @@
       <File Name="NodeHandle.lua"/>
       <File Name="ros.lua"/>
       <File Name="Publisher.lua"/>
+      <File Name="console.lua"/>
     </VirtualDirectory>
     <File Name=".gitignore"/>
     <VirtualDirectory Name="test">
@@ -175,5 +177,6 @@
   <VirtualDirectory Name="demo">
     <File Name="demo/listener.lua"/>
     <File Name="demo/talker.lua"/>
+    <File Name="demo/logging.lua"/>
   </VirtualDirectory>
 </CodeLite_Project>
