@@ -23,7 +23,7 @@ function init()
     "setData",
     "eq"
   }
-  
+
   f = utils.create_method_table("tf_StampedTransform_", StampedTransform_method_names)
 end
 
@@ -48,6 +48,10 @@ function StampedTransform:clone()
   return c
 end
 
+function StampedTransform:toTransform()
+  return tf.Transform.fromStamped(self)
+end
+
 function StampedTransform:get_stamp(result)
   result = result or ros.Time()
   f.get_stamp(self.t, result:cdata())
@@ -69,7 +73,7 @@ end
 function StampedTransform:get_child_frame_id()
   return ffi.string(f.get_child_frame_id(self.t))
 end
-    
+
 function StampedTransform:set_child_frame_id(child_frame_id)
   f.set_child_frame_id(self.t, child_frame_id)
 end
@@ -83,10 +87,10 @@ function StampedTransform:__eq(other)
 end
 
 function StampedTransform:__tostring()
-  local s = string.format('{\n  stamp: %s\n  frame_id: \'%s\'\n  child_frame_id: \'%s\'\n  transform:\n%s\n}', 
-    tostring(self:get_stamp()), 
-    self:get_frame_id(), 
-    self:get_child_frame_id(), 
+  local s = string.format('{\n  stamp: %s\n  frame_id: \'%s\'\n  child_frame_id: \'%s\'\n  transform:\n%s\n}',
+    tostring(self:get_stamp()),
+    self:get_frame_id(),
+    self:get_child_frame_id(),
     parent.__tostring(self)
   )
   return s

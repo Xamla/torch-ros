@@ -20,6 +20,49 @@ end
 local CModel_robot_input_spec = ros.MsgSpec('robotiq_c_model_control/CModel_robot_input')
 local CModel_robot_output_spec = ros.MsgSpec('robotiq_c_model_control/CModel_robot_output')
 
+
+local InitStatus = {
+  Reset = 0,                  -- Gripper reset.
+  Activation = 1              -- Gripper activation.
+}
+
+local ActionStatus = {
+  Stopped = 0,                -- Stopped (or performing activation / automatic release).
+  GoToPosition = 1            -- Go to Position Request.
+}
+
+local GripperStatus = {
+  Reset = 0,                  -- Gripper is in reset ( or automatic release ) state. See Fault Status if Gripper is activated.
+  Activating = 1,             -- Activation in progress.
+  Activated = 3               -- Activation is completed.
+}
+
+local ObjStatus = {
+  Moving            = 0,      -- Fingers are in motion towards requested position. No object detected.
+  DetectedOpening   = 1,      -- Fingers have stopped due to a contact while opening before requested position. Object detected opening.
+  DetectedClosing   = 2,      -- Fingers have stopped due to a contact while closing before requested position. Object detected closing.
+  NoObject          = 3       -- Fingers are at requested position. No object detected or object has been loss / dropped.
+}
+
+local FaultStatus = {
+  NoFault          = 0x00,    -- No fault (LED is blue)
+
+                              -- Priority faults (LED is blue)
+  ActionDelayed    = 0x052,   --   Action delayed, activation (reactivation) must be completed prior to renewed action.
+  Deactivated      = 0x07,    --   The activation bit must be set prior to action.
+
+                              -- Minor faults (LED continuous red)
+  HighTemp,        = 0x08,    --   Maximum operating temperature exceeded, wait for cool-down.
+
+                              -- Major faults (LED blinking red/blue) - Reset is required (rising edge on activation bit rACT needed).
+  LowVoltage       = 0x0A,    --   Under minimum operating voltage.
+  AutoReleaseBusy  = 0x0B,    --   Automatic release in progress.
+  CPUFault         = 0x0C,    --   Internal processor fault.
+  ActivationFault  = 0x0D,    --   Activation fault, verify that no interference or other error occurred.
+  Overcurrent      = 0x0E,    --   Overcurrent triggered.
+  AutoReleaseDone  = 0x0F     --   Automatic release completed.
+}
+
 function RobotiqCModel:__init(nodehandle)
   self.nodehandle = nodehandle
   self.msgbuf = ros.MessageBuffer()

@@ -22,7 +22,7 @@ function init()
     "setRotation",
     "getRotation",
   }
-  
+
   f = utils.create_method_table("tf_Transform_", Transform_method_names )
 end
 
@@ -40,6 +40,12 @@ end
 function Transform:clone()
   local c = torch.factory('tf.Transform')()
   rawset(c, 'o', f.clone(self.o))
+  return c
+end
+
+function Transform.fromStamped(st)
+  local c = torch.factory('tf.Transform')()
+  rawset(c, 'o', f.clone(st.o))
   return c
 end
 

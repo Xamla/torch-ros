@@ -34,7 +34,7 @@ function init()
     "slerp",
     "viewTensor"
   }
-  
+
   f = utils.create_method_table("tf_Quaternion_", Quaternion_method_names )
 end
 
@@ -48,7 +48,7 @@ function Quaternion:__init(_1, _2, _3, _4)
     end
     if torch.isTensor(_1) then
       if type(_2) == 'number' then
-        self:setRotation(_1, _2)
+        self:setRotation(_1, _2, _3)
       else
         self:fromTensor(_1)
       end
@@ -80,7 +80,7 @@ end
 
 function Quaternion:setRotation(axis, angle, deg)
   if deg then
-    angle = math.rad(deg)
+    angle = math.rad(angle)
   end
   if type(axis) == 'table' then
     axis = torch.DoubleTensor(axis)
@@ -178,6 +178,10 @@ function Quaternion:mul(other, result)
   return result
 end
 
+function Quaternion:__mul(other)
+  return self:mul(other)
+end
+
 function Quaternion:div(divisor, result)
   result = result or tf.Quaternion()
   if type(divisor) == 'number' then
@@ -191,7 +195,7 @@ end
 function Quaternion:dot(other)
   return f.dot(self.o, other:cdata())
 end
-    
+
 function Quaternion:slerp(other, t, result)
   result = result or tf.Quaternion()
   f.slerp(self.o, other:cdata(), t, result:cdata())
