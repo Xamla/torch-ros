@@ -1,5 +1,11 @@
 ros = require 'ros'
 
+--[[
+make sure robitq gripper node is running, e.g. for connection via modbus RTU run:
+
+rosrun robotiq_c_model_control CModelRtuNode.py /dev/ttyUSB1
+]]
+
 ros.init('robotiq_c_model_demo')
 nodehandle = ros.NodeHandle()
 

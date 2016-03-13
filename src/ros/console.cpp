@@ -55,6 +55,7 @@ ROSIMP(void, Console, print)(void *logger, int level, const char *text, const ch
     file,
     line,
     function_name,
+    "%s",
     text
   );
 }

@@ -63,7 +63,10 @@ end
 
 function Subscriber:read(timeout_milliseconds, result)
   local msg_bytes = self.buffer:read(timeout_milliseconds)
-  local msg = result or ros.Message(self.msg_spec, true)
-  msg:deserialize(msg_bytes)
+  local msg
+  if msg_bytes then
+    msg = result or ros.Message(self.msg_spec, true)
+    msg:deserialize(msg_bytes)
+  end
   return msg
 end

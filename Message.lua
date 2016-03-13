@@ -311,17 +311,7 @@ local readMethods = {
   end
 }
 
-function Message:deserialize(sr)
-  if torch.isTypeOf(sr, torch.ByteStorage) then
-    sr = ros.StorageReader(sr)
-  end
-
-  if not sr then
-    error('argument 1: storage reader object expected')
-  end
-
-  local totalLength = sr:readUInt32()
-
+local function deserialize_internal(self, sr)
   for _, f in ipairs(self.spec.fields) do
     if f.is_array then
       if f.tensor_type then
@@ -348,10 +338,27 @@ function Message:deserialize(sr)
       end
       self.values[f.name] = read(sr)
     else
+      local inner = self.values[f.name]
+      if inner == nil then
+        inner = ros.Message.new(f.spec, true)
+        self.values[f.name] = inner
+      end
       -- complex message
-      self.values[f.name]:deserialize(sr)
+      deserialize_internal(inner, sr)
     end
   end
+end
 
+function Message:deserialize(sr)
+  if torch.isTypeOf(sr, torch.ByteStorage) then
+    sr = ros.StorageReader(sr)
+  end
+
+  if not sr then
+    error('argument 1: storage reader object expected')
+  end
+
+  local totalLength = sr:readUInt32()
+  deserialize_internal(self, sr)
   return sr
 end
