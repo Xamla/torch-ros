@@ -6,8 +6,6 @@ local tf = ros.tf
 
 local Transform = torch.class('tf.Transform', tf)
 
-local f
-
 function init()
   local Transform_method_names = {
     "new",
@@ -23,10 +21,10 @@ function init()
     "getRotation",
   }
 
-  f = utils.create_method_table("tf_Transform_", Transform_method_names )
+  return utils.create_method_table("tf_Transform_", Transform_method_names )
 end
 
-init()
+local f = init()
 
 function Transform:__init()
   self.o = f.new()

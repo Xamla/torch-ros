@@ -6,8 +6,6 @@ std = ros.std
 
 local String = torch.class('std.String', std)
 
-local f
-
 function init()
   local String_method_names = {
     "new",
@@ -18,10 +16,10 @@ function init()
     "c_str"
   }
   
-  f = utils.create_method_table("std_string_", String_method_names)
+  return utils.create_method_table("std_string_", String_method_names)
 end
 
-init()
+local f = init()
 
 function String:__init(s)
   if type(s) == 'string' then

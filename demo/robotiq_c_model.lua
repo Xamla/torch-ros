@@ -52,7 +52,7 @@ local FaultStatus = {
   Deactivated      = 0x07,    --   The activation bit must be set prior to action.
 
                               -- Minor faults (LED continuous red)
-  HighTemp,        = 0x08,    --   Maximum operating temperature exceeded, wait for cool-down.
+  HighTemp         = 0x08,    --   Maximum operating temperature exceeded, wait for cool-down.
 
                               -- Major faults (LED blinking red/blue) - Reset is required (rising edge on activation bit rACT needed).
   LowVoltage       = 0x0A,    --   Under minimum operating voltage.
@@ -65,11 +65,20 @@ local FaultStatus = {
 
 function RobotiqCModel:__init(nodehandle)
   self.nodehandle = nodehandle
-  self.msgbuf = ros.MessageBuffer()
-  self.nodehandle:subscribe("/CModelRobotInput", CModel_robot_input_spec, 100, self.msgbuf )
+  self.input = self.nodehandle:subscribe("/CModelRobotInput", CModel_robot_input_spec, 100)
   self.last_state = ros.Message(CModel_robot_input_spec)
   self.publisher = nodehandle:advertise("/CModelRobotOutput", CModel_robot_output_spec, 100)
+  if not self.publisher:waitForSubscriber(1, 5) then
+    error('Timeout: No subscription for CModelRobotOutput.')
+  end
   self:reset()
+end
+
+function RobotiqCModel:shutdown()
+  if self.input then
+    self.input:shutdown()
+    self.input = nil
+  end
 end
 
 function RobotiqCModel:reset()
@@ -116,9 +125,8 @@ end
 
 function RobotiqCModel:spin()
   -- process available messages
-  while self.msgbuf:count() > 0 do
-    local msg_bytes = self.msgbuf:read()
-    self.last_state:deserialize(msg_bytes)
+  while self.input:hasMessage() do
+    self.input:read(100, self.last_state)
   end
 end
 
@@ -131,9 +139,7 @@ spinner:start()
 
 gripper = grippers.RobotiqCModel(nodehandle)
 
-ros.spinOnce()
 gripper:reset()
-sys.sleep(1)
 gripper:activate()
 gripper:setSpeed(5)
 gripper:setForce(0)
@@ -144,4 +150,4 @@ sys.sleep(2)
 gripper:close()
 ros.spinOnce()
 sys.sleep(2)
-
+gripper:shutdown()

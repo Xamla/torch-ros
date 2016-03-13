@@ -6,8 +6,6 @@ local tf = ros.tf
 
 local TransformBroadcaster = torch.class('tf.TransformBroadcaster', tf)
 
-local f
-
 function init()
   local TransformBroadcaster_method_names = {
     "new",
@@ -15,10 +13,10 @@ function init()
     "sendTransform"
   }
   
-  f = utils.create_method_table("tf_TransformBroadcaster_", TransformBroadcaster_method_names)
+  return utils.create_method_table("tf_TransformBroadcaster_", TransformBroadcaster_method_names)
 end
 
-init()
+local f = init()
 
 function TransformBroadcaster:__init()
   self.o = f.new()

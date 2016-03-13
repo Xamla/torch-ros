@@ -6,8 +6,6 @@ local std = ros.std
 
 local StringVector = torch.class('std.StringVector', std)
 
-local f
-
 function init()
   local StringVector_method_names = {
     "new",
@@ -24,10 +22,10 @@ function init()
     "empty"
   }
   
-  f = utils.create_method_table("std_StringVector_", StringVector_method_names)
+  return utils.create_method_table("std_StringVector_", StringVector_method_names)
 end
 
-init()
+local f = init()
 
 function StringVector:__init(...)
   rawset(self, 'o', f.new())

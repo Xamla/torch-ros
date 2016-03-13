@@ -6,8 +6,6 @@ local std = ros.std
 
 local MessageBuffer = torch.class('ros.MessageBuffer', ros)
 
-local f
-
 function init()
   local MessageBuffer_method_names = {
     "new",
@@ -17,10 +15,10 @@ function init()
     "read"
   }
   
-  f = utils.create_method_table("ros_MessageBuffer_", MessageBuffer_method_names)
+  return utils.create_method_table("ros_MessageBuffer_", MessageBuffer_method_names)
 end
 
-init()
+local f = init()
 
 function MessageBuffer:__init(max_backlog)
   self.o = f.new(max_backlog or -1)
@@ -30,7 +28,7 @@ function MessageBuffer:cdata()
   return self.o
 end
 
-function MessageBuffer:count()
+function MessageBuffer:getCount()
   return f.count(self.o)
 end
 

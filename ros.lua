@@ -3,8 +3,6 @@ local torch = require 'torch'
 local ros = require 'ros.env'
 local utils = require 'ros.utils'
 
-local f
-
 function init()
   local ros_method_names = {
     "init",
@@ -18,14 +16,16 @@ function init()
     "waitForShutdown"
   }
   
-  f = utils.create_method_table("ros___", ros_method_names)
+  local f = utils.create_method_table("ros___", ros_method_names)
   
   for n,v in pairs(f) do 
     ros[n] = v
   end
+
+  return f
 end
 
-init()
+local f = init()
 
 ros.init_options = {
   NoSigintHandler = 1,

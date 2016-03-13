@@ -5,8 +5,6 @@ local utils = require 'ros.utils'
 
 local Duration = torch.class('ros.Duration', ros)
 
-local f
-
 function init()
   local Duration_method_names = {
     "new",
@@ -30,10 +28,10 @@ function init()
     "sleep"
   }
   
-  f = utils.create_method_table("ros_Duration_", Duration_method_names)
+  return utils.create_method_table("ros_Duration_", Duration_method_names)
 end
 
-init()
+local f = init()
 
 function Duration:__init(_1, _2)
   self.o = f.new()

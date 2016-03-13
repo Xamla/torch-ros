@@ -5,8 +5,6 @@ local utils = require 'ros.utils'
 
 local AsyncSpinner = torch.class('ros.AsyncSpinner', ros)
 
-local f
-
 function init()
   local Duration_method_names = {
     "new",
@@ -16,10 +14,10 @@ function init()
     "stop"
   }
   
-  f = utils.create_method_table("ros_AsyncSpinner_", Duration_method_names)
+  return utils.create_method_table("ros_AsyncSpinner_", Duration_method_names)
 end
 
-init()
+local f = init()
 
 function AsyncSpinner:__init(thread_count)
   self.o = f.new(thread_count or 0)

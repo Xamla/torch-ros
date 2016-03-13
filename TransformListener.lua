@@ -7,8 +7,6 @@ local tf = ros.tf
 
 local TransformListener = torch.class('tf.TransformListener', tf)
 
-local f
-
 function init()
   local TransformListener_method_names = {
     "new",
@@ -30,10 +28,10 @@ function init()
     "getTFPrefix"
   }
   
-  f = utils.create_method_table("tf_TransformListener_", TransformListener_method_names)
+  return utils.create_method_table("tf_TransformListener_", TransformListener_method_names)
 end
 
-init()
+local f = init()
 
 function TransformListener:__init()
   self.o = f.new()

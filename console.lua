@@ -6,8 +6,6 @@ local std = ros.std
 
 local console = {}
 
-local f
-
 function init()
   local names = {
     'initialize',
@@ -21,7 +19,7 @@ function init()
   f = utils.create_method_table("ros_Console_", names)
 end
 
-init()
+local f = init()
 
 console.level = {
   Debug = 0,

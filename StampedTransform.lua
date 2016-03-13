@@ -6,8 +6,6 @@ local tf = ros.tf
 
 local StampedTransform, parent = torch.class('tf.StampedTransform', 'tf.Transform', tf)
 
-local f
-
 function init()
   local StampedTransform_method_names = {
     "new",
@@ -24,10 +22,10 @@ function init()
     "eq"
   }
 
-  f = utils.create_method_table("tf_StampedTransform_", StampedTransform_method_names)
+  return utils.create_method_table("tf_StampedTransform_", StampedTransform_method_names)
 end
 
-init()
+local f = init()
 
 function StampedTransform:__init(transform, stamp, frame_id, child_frame_id)
   transform = transform or tf.Transform()

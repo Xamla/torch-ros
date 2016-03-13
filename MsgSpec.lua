@@ -8,12 +8,19 @@ local MsgSpec = torch.class('ros.MsgSpec', ros)
 local msgspec_cache = {}
 
 local BUILTIN_TYPES = {
-  'bool', 'byte', 'char', 'int8', 'uint8', 'int16', 'uint16', 'int32', 'uint32', 
-  'int64', 'uint64',  'float32', 'float64', 'string'
+  'bool',
+  'char', 'byte',
+  'int8', 'uint8', 
+  'int16', 'uint16', 
+  'int32', 'uint32', 
+  'int64', 'uint64', 
+  'float32',
+  'float64', 
+  'string'
 }
 
 for _,v in ipairs(BUILTIN_TYPES) do
-   BUILTIN_TYPES[v] = v
+  BUILTIN_TYPES[v] = v
 end
 
 local EXTENDED_TYPES = {
@@ -74,6 +81,7 @@ local tensor_type_map = {
 --- (internal) load from iterator
 -- @param iterator iterator that returns one line of the specification at a time
 local function load_from_iterator(self, iterator)
+  local lines = {}
   self.fields = {}
   self.constants = {}
 
@@ -81,6 +89,7 @@ local function load_from_iterator(self, iterator)
   local fixed_size = true
 
   for line in iterator do
+    table.insert(lines, line)
     line = line:match('^([^#]*)') or ''     -- strip comment
     line = line:match('(.-)%s+$') or line   -- strip trailing whitespace
 
@@ -138,6 +147,7 @@ local function load_from_iterator(self, iterator)
    end
 
    self.fixed_size = fixed_size
+   self.definition = table.concat(lines, '\n')
 end
 
 --- (internal) Load message specification from file.
@@ -180,8 +190,8 @@ end
 -- Generates the MD5 sum for this message type.
 -- @return MD5 sum as text
 local function calc_md5(self)
-   self.md5sum = md5.sumhexa(generate_hashtext(self))
-   return self.md5sum
+  self.md5sum = md5.sumhexa(generate_hashtext(self))
+  return self.md5sum
 end
 
 --- Resolve the given type.
@@ -222,7 +232,7 @@ function MsgSpec:resolve_type(type)
 end
 
 function MsgSpec:md5()
- return self.md5sum or calc_md5(self)
+  return self.md5sum or calc_md5(self)
 end
 
 local function format_spec(spec, ln, indent)

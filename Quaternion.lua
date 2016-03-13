@@ -6,8 +6,6 @@ local tf = ros.tf
 
 local Quaternion = torch.class('tf.Quaternion', tf)
 
-local f
-
 function init()
   local Quaternion_method_names = {
     "new",
@@ -35,10 +33,10 @@ function init()
     "viewTensor"
   }
 
-  f = utils.create_method_table("tf_Quaternion_", Quaternion_method_names )
+  return utils.create_method_table("tf_Quaternion_", Quaternion_method_names )
 end
 
-init()
+local f = init()
 
 function Quaternion:__init(_1, _2, _3, _4)
   self.o = f.new()

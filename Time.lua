@@ -5,8 +5,6 @@ local utils = require 'ros.utils'
 
 local Time = torch.class('ros.Time', ros)
 
-local f
-
 function init()
   local Time_method_names = {
     "new",
@@ -38,10 +36,10 @@ function init()
     "isValid"
   }
   
-  f = utils.create_method_table("ros_Time_", Time_method_names)
+  return utils.create_method_table("ros_Time_", Time_method_names)
 end
 
-init()
+local f = init()
 
 function Time:__init(_1, _2)
   self.o = f.new()

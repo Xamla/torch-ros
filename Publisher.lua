@@ -18,10 +18,10 @@ function init()
     'publish'
   }
 
-  f = utils.create_method_table('ros_Publisher_', Publisher_method_names)
+  return utils.create_method_table('ros_Publisher_', Publisher_method_names)
 end
 
-init()
+local f = init()
 
 function Publisher:__init(ptr)
   if not ptr or not ffi.typeof(ptr) == Publisher_ptr_ct then
@@ -62,4 +62,26 @@ function Publisher:publish(msg)
   v = msg:serialize()
   v:shrinkToFit()
   f.publish(self.o, v.storage:cdata(), 0, v.length)
+end
+
+function Publisher:waitForSubscriber(min_count, timeout)
+  if not ros.Time.isValid() then
+    ros.Time.init()
+  end
+
+  min_count = min_count or 1
+  if timeout and not torch.isTypeOf(timeout, ros.Duration) then
+    timeout = ros.Duration(timeout)
+  end
+  
+  local start = ros.Time.getNow()
+  while true do
+    if timeout and (ros.Time.getNow() - start) > timeout then
+      return false
+    elseif self:getNumSubscribers() >= min_count then
+      return true
+    end
+    ros.spinOnce()
+    sys.sleep(0.001)
+  end
 end
