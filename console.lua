@@ -16,7 +16,7 @@ function init()
     'print'
   }
 
-  f = utils.create_method_table("ros_Console_", names)
+  return utils.create_method_table("ros_Console_", names)
 end
 
 local f = init()
