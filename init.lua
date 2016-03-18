@@ -4,6 +4,8 @@ local ros = require 'ros.env'
 require 'ros.String'
 require 'ros.StringVector'
 require 'ros.Variable'
+require 'ros.VariableVector'
+require 'ros.VariableMap'
 
 -- ros
 require 'ros.ros'

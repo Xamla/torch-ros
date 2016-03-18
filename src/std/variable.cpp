@@ -15,8 +15,8 @@ STDIMP(void, Variable, delete)(Variable *ptr) {
   delete ptr;
 }
 
-STDIMP(int, Variable, get_Type)(Variable *self) {
-  return self->get_Type();
+STDIMP(int, Variable, get_type)(Variable *self) {
+  return self->get_type();
 }
 
 STDIMP(void, Variable, clear)(Variable *self) {
@@ -47,7 +47,7 @@ declare_getter(float64, double)
 #undef declare_getter
 
 STDIMP(const char *, Variable, get_string)(Variable *self) {
-  self->get_string().c_str();
+  return self->get_string().c_str();
 }
 
 #define declare_setter(_name, _type) \

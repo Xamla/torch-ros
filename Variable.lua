@@ -11,7 +11,7 @@ function init()
     'new',
     'clone',
     'delete',
-    'get_Type',
+    'get_type',
     'clear',
     'assign',
 
@@ -68,27 +68,23 @@ Variable.TYPE_CODE = TYPE_CODE
 function Variable:__init(x)
   self.o = f.new()
 
-  local t = type(x)
-  if t == 'bool' then
-    self:set_bool(x)
-  elseif t == 'number' then
-    self:set_float64(x)
-  elseif t == 'string' then
-    self:set_string(x)
+  if x then
+    self:set(x)
   end
 end
 
 function Variable:clone()
-  local c = f.clone(self.o)
-  return
+  local c = torch.factory('std.Variable')()
+  rawset(c, 'o', f.clone(self.o))
+  return c
 end
 
 function Variable:cdata()
   return self.o
 end
 
-function Variable:get_Type()
-  return f.get_Type(self.o)
+function Variable:type()
+  return f.get_type(self.o)
 end
 
 function Variable:clear()
@@ -171,7 +167,24 @@ end
 local getter_table = create_getter_table()
 
 function Variable:get()
-  return getter_table[self:get_Type()](self)
+  return getter_table[self:type()](self)
+end
+
+function Variable:set(value)
+  if not value then
+    self:clear()
+  else
+    local t = type(value)
+    if t == 'boolean' then
+      self:set_bool(value)
+    elseif t == 'number' then
+      self:set_float64(value)
+    elseif t == 'string' then
+      self:set_string(value)
+    else
+      self:set_string(tostring(value))
+    end
+  end
 end
 
 function Variable:__tostring()

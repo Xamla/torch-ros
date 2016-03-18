@@ -67,6 +67,9 @@ end
 local std_cdef = [[
 typedef struct std_string {} std_string;
 typedef struct std_StringVector {} std_StringVector;
+typedef struct Variable {} Variable;
+typedef struct VariableVector {} VariableVector;
+typedef struct VariableMap {} VariableMap;
 
 std_string* std_string_new(const char *s, size_t len);
 void std_string_delete(std_string *self);
@@ -88,12 +91,10 @@ void std_StringVector_insert(std_StringVector *self, size_t pos, size_t n, const
 void std_StringVector_erase(std_StringVector *self, size_t begin, size_t end);
 bool std_StringVector_empty(std_StringVector *self);
 
-typedef struct Variable {} Variable;
-typedef struct VariableVector {} VariableVector;
 Variable *std_Variable_new();
 Variable *std_Variable_clone(Variable *self);
 void std_Variable_delete(Variable *ptr);
-int std_Variable_get_Type(Variable *self);
+int std_Variable_get_type(Variable *self);
 void std_Variable_clear(Variable *self);
 void std_Variable_assign(Variable *self, Variable *src);
 
@@ -124,17 +125,30 @@ void std_Variable_set_float64(Variable *self, double value);
 void std_Variable_set_string(Variable *self, const char * value);
 
 VariableVector *VariableVector_new();
-void VariableVector_clone(VariableVector *self);
-void VariableVector_delete(VariableVector *ptr);
-int VariableVector_size(VariableVector *self);
-void VariableVector_getAt(VariableVector *self, size_t pos, Variable *result);
-void VariableVector_setAt(VariableVector *self, size_t pos, Variable *value);
-void VariableVector_push_back(VariableVector *self, Variable *value);
-void VariableVector_pop_back(VariableVector *self);
-void VariableVector_clear(VariableVector *self);
-void VariableVector_insert(VariableVector *self, size_t pos, size_t n, Variable *value);
-void VariableVector_erase(VariableVector *self, size_t begin, size_t end);
-bool VariableVector_empty(VariableVector *self);
+VariableVector *std_VariableVector_new();
+VariableVector *std_VariableVector_clone(VariableVector *self);
+void std_VariableVector_delete(VariableVector *ptr);
+int std_VariableVector_size(VariableVector *self);
+void std_VariableVector_getAt(VariableVector *self, size_t pos, Variable *result);
+void std_VariableVector_setAt(VariableVector *self, size_t pos, Variable *value);
+void std_VariableVector_push_back(VariableVector *self, Variable *value);
+void std_VariableVector_pop_back(VariableVector *self);
+void std_VariableVector_clear(VariableVector *self);
+void std_VariableVector_insert(VariableVector *self, size_t pos, size_t n, Variable *value);
+void std_VariableVector_erase(VariableVector *self, size_t begin, size_t end);
+bool std_VariableVector_empty(VariableVector *self);
+
+VariableMap *std_VariableMap_new();
+VariableMap *std_VariableMap_clone(VariableMap *self);
+void std_VariableMap_delete(VariableMap *ptr);
+int std_VariableMap_size(VariableMap *self);
+void std_VariableMap_clear(VariableMap *self);
+bool std_VariableMap_getAt(VariableMap *self, const char *key, Variable *result);
+void std_VariableMap_setAt(VariableMap *self, const char *key, Variable *value);
+bool std_VariableMap_erase(VariableMap *self, const char *key);
+bool std_VariableMap_exists(VariableMap *self, const char *key);
+void std_VariableMap_keys(VariableMap *self, std_StringVector *result);
+void std_VariableMap_values(VariableMap *self, VariableVector *result);
 ]]
 
 ffi.cdef(std_cdef)

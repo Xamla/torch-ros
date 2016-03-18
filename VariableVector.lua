@@ -2,12 +2,12 @@ local ffi = require 'ffi'
 local torch = require 'torch'
 local ros = require 'ros.env'
 local utils = require 'ros.utils'
-local std = ros.std
+std = ros.std
 
-local StringVector = torch.class('std.StringVector', std)
+local VariableVector = torch.class('std.VariableVector', std)
 
 function init()
-  local StringVector_method_names = {
+  local VariableVector_method_names = {
     "new",
     "clone",
     "delete",
@@ -22,12 +22,12 @@ function init()
     "empty"
   }
 
-  return utils.create_method_table("std_StringVector_", StringVector_method_names)
+  return utils.create_method_table("std_VariableVector_", VariableVector_method_names)
 end
 
 local f = init()
 
-function StringVector:__init(...)
+function VariableVector:__init(...)
   rawset(self, 'o', f.new())
   if select("#", ...) > 0 then
     local x = ...
@@ -38,69 +38,79 @@ function StringVector:__init(...)
   end
 end
 
-function StringVector:cdata()
+function VariableVector:cdata()
   return self.o
 end
 
-function StringVector:clone()
-  local c = torch.factory('std.StringVector')()
+function VariableVector:clone()
+  local c = torch.factory('std.VariableVector')()
   rawset(c, 'o', f.clone(self.o))
   return c
 end
 
-function StringVector:size()
+function VariableVector:size()
   return f.size(self.o)
 end
 
-function StringVector:__len()
+function VariableVector:__len()
   return self:size()
 end
 
-function StringVector:__index(idx)
+function VariableVector:__index(idx)
   local v = rawget(self, idx)
   if not v then
-    v = StringVector[idx]
+    v = VariableVector[idx]
     if not v and type(idx) == 'number' then
       local o = rawget(self, 'o')
-      v = ffi.string(f.getAt(o, idx-1))
+      v = std.Variable()
+      f.getAt(o, idx-1, v:cdata())
     end
   end
   return v
 end
 
-function StringVector:__newindex(idx, v)
+function VariableVector:__newindex(idx, v)
   local o = rawget(self, 'o')
   if type(idx) == 'number' then
-    f.setAt(o, idx-1, tostring(v))
+    if not torch.isTypeOf(v, std.Variable) then
+      v = std.Variable(v)
+    end
+    f.setAt(o, idx-1, v)
   else
     rawset(self, idx, v)
   end
 end
 
-function StringVector:push_back(value)
-  f.push_back(self.o, tostring(value))
+function VariableVector:push_back(value)
+  if not torch.isTypeOf(value, std.Variable) then
+    value = std.Variable(value)
+  end
+  f.push_back(self.o, value:cdata())
 end
 
-function StringVector:pop_back()
+function VariableVector:pop_back()
   local last = self[#self]
   f.pop_back(self.o)
   return last
 end
 
-function StringVector:clear()
+function VariableVector:clear()
   f.clear(self.o)
 end
 
-function StringVector:insert(pos, value, n)
+function VariableVector:insert(pos, value, n)
+  if not torch.isTypeOf(value, std.Variable) then
+    value = std.Variable(value)
+  end
   if pos < 1 then
     pos = 1
   elseif pos > #self+1 then
     pos = #self + 1
   end
-  f.insert(self.o, pos-1, n or 1, value)
+  f.insert(self.o, pos-1, n or 1, value:cdata())
 end
 
-function StringVector:insertFromTable(pos, t)
+function VariableVector:insertFromTable(pos, t)
   if type(pos) == 'table' then
     t = pos
     pos = #self + 1
@@ -112,11 +122,11 @@ function StringVector:insertFromTable(pos, t)
   end
 end
 
-function StringVector:erase(begin_pos, end_pos)
+function VariableVector:erase(begin_pos, end_pos)
   f.erase(self.o, begin_pos-1, (end_pos or begin_pos + 1)-1)
 end
 
-function StringVector:__pairs()
+function VariableVector:__pairs()
   return function (t, k)
     local i = k or 1
     if i > #t then
@@ -128,11 +138,11 @@ function StringVector:__pairs()
   end, self, nil
 end
 
-function StringVector:__ipairs()
+function VariableVector:__ipairs()
   return self:__pairs()
 end
 
-function StringVector:totable()
+function VariableVector:totable()
   local t = {}
   for i,v in ipairs(self) do
     table.insert(t, v)
@@ -140,7 +150,10 @@ function StringVector:totable()
   return t
 end
 
-function StringVector:__tostring()
+function VariableVector:__tostring()
   local t = self:totable()
+  for i=1,#t do
+    t[i] = tostring(t[i])
+  end
   return table.concat(t, '\n')
 end

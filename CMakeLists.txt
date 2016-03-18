@@ -13,6 +13,7 @@ SET(src
   "${SOURCE_DIR}/std/string_vector.cpp"
   "${SOURCE_DIR}/std/variable.cpp"
   "${SOURCE_DIR}/std/variable_vector.cpp"
+  "${SOURCE_DIR}/std/variable_map.cpp"
 
   "${SOURCE_DIR}/ros/init.cpp"
   "${SOURCE_DIR}/ros/node_handle.cpp"

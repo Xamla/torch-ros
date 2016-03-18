@@ -73,7 +73,7 @@ public:
     this->clear();
   }
 
-  VariableType::Enum get_Type() const {
+  VariableType::Enum get_type() const {
     return type_code;
   }
 
