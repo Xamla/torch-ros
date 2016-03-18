@@ -39,11 +39,15 @@
       <File Name="src/tf/transform_broadcaster.cpp"/>
       <File Name="src/tf/torch-tf.h"/>
       <File Name="src/tf/stamped_transform.cpp"/>
-      <File Name="src/std/torch-std.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="std">
       <File Name="src/std/string.cpp"/>
       <File Name="src/std/string_vector.cpp"/>
+      <File Name="src/std/variable.h"/>
+      <File Name="src/std/variable.cpp"/>
+      <File Name="src/std/torch-std.h"/>
+      <File Name="src/std/exceptions.h"/>
+      <File Name="src/std/variable_vector.cpp"/>
     </VirtualDirectory>
     <File Name="src/utils.h"/>
   </VirtualDirectory>
@@ -79,6 +83,7 @@
       <File Name="ros.lua"/>
       <File Name="Publisher.lua"/>
       <File Name="console.lua"/>
+      <File Name="Variable.lua"/>
     </VirtualDirectory>
     <File Name=".gitignore"/>
     <VirtualDirectory Name="test">

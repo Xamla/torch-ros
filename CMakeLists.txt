@@ -11,6 +11,8 @@ SET(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 SET(src
   "${SOURCE_DIR}/std/string.cpp"
   "${SOURCE_DIR}/std/string_vector.cpp"
+  "${SOURCE_DIR}/std/variable.cpp"
+  "${SOURCE_DIR}/std/variable_vector.cpp"
 
   "${SOURCE_DIR}/ros/init.cpp"
   "${SOURCE_DIR}/ros/node_handle.cpp"

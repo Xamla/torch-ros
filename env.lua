@@ -87,6 +87,54 @@ void std_StringVector_clear(std_StringVector *self);
 void std_StringVector_insert(std_StringVector *self, size_t pos, size_t n, const char *value);
 void std_StringVector_erase(std_StringVector *self, size_t begin, size_t end);
 bool std_StringVector_empty(std_StringVector *self);
+
+typedef struct Variable {} Variable;
+typedef struct VariableVector {} VariableVector;
+Variable *std_Variable_new();
+Variable *std_Variable_clone(Variable *self);
+void std_Variable_delete(Variable *ptr);
+int std_Variable_get_Type(Variable *self);
+void std_Variable_clear(Variable *self);
+void std_Variable_assign(Variable *self, Variable *src);
+
+bool std_Variable_get_bool(Variable *self);
+int8_t std_Variable_get_int8(Variable *self);
+int16_t std_Variable_get_int16(Variable *self);
+int32_t std_Variable_get_int32(Variable *self);
+int64_t std_Variable_get_int64(Variable *self);
+uint8_t std_Variable_get_uint8(Variable *self);
+uint16_t std_Variable_get_uint16(Variable *self);
+uint32_t std_Variable_get_uint32(Variable *self);
+uint64_t std_Variable_get_uint64(Variable *self);
+float std_Variable_get_float32(Variable *self);
+double std_Variable_get_float64(Variable *self);
+const char *std_Variable_get_string(Variable *self);
+
+void std_Variable_set_bool(Variable *self, bool value);
+void std_Variable_set_int8(Variable *self, int8_t value);
+void std_Variable_set_int16(Variable *self, int16_t value);
+void std_Variable_set_int32(Variable *self, int32_t value);
+void std_Variable_set_int64(Variable *self, int64_t value);
+void std_Variable_set_uint8(Variable *self, uint8_t value);
+void std_Variable_set_uint16(Variable *self, uint16_t value);
+void std_Variable_set_uint32(Variable *self, uint32_t value);
+void std_Variable_set_uint64(Variable *self, uint64_t value);
+void std_Variable_set_float32(Variable *self, float value);
+void std_Variable_set_float64(Variable *self, double value);
+void std_Variable_set_string(Variable *self, const char * value);
+
+VariableVector *VariableVector_new();
+void VariableVector_clone(VariableVector *self);
+void VariableVector_delete(VariableVector *ptr);
+int VariableVector_size(VariableVector *self);
+void VariableVector_getAt(VariableVector *self, size_t pos, Variable *result);
+void VariableVector_setAt(VariableVector *self, size_t pos, Variable *value);
+void VariableVector_push_back(VariableVector *self, Variable *value);
+void VariableVector_pop_back(VariableVector *self);
+void VariableVector_clear(VariableVector *self);
+void VariableVector_insert(VariableVector *self, size_t pos, size_t n, Variable *value);
+void VariableVector_erase(VariableVector *self, size_t begin, size_t end);
+bool VariableVector_empty(VariableVector *self);
 ]]
 
 ffi.cdef(std_cdef)

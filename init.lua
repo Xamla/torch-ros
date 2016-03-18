@@ -3,6 +3,7 @@ local ros = require 'ros.env'
 -- std
 require 'ros.String'
 require 'ros.StringVector'
+require 'ros.Variable'
 
 -- ros
 require 'ros.ros'
