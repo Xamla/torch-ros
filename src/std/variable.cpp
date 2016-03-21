@@ -50,6 +50,14 @@ STDIMP(const char *, Variable, get_string)(Variable *self) {
   return self->get_string().c_str();
 }
 
+STDIMP(void, Variable, get_vector)(Variable *self, Variable::vector_t *result) {
+  *result = self->get_vector();
+}
+
+STDIMP(void, Variable, get_table)(Variable *self, Variable::table_t *result) {
+  *result = self->get_table();
+}
+
 #define declare_setter(_name, _type) \
 STDIMP(void, Variable, set_##_name)(Variable *self, const _type value) { \
   self->set_##_name(value); \
@@ -71,4 +79,12 @@ declare_setter(float64, double)
 
 STDIMP(void, Variable, set_string)(Variable *self, const char *value) {
   self->set_string(value);
+}
+
+STDIMP(void, Variable, set_vector)(Variable *self, Variable::vector_t *value) {
+  self->set_vector(*value);
+}
+
+STDIMP(void, Variable, set_table)(Variable *self, Variable::table_t *value) {
+  self->set_table(*value);
 }

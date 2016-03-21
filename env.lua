@@ -69,7 +69,7 @@ typedef struct std_string {} std_string;
 typedef struct std_StringVector {} std_StringVector;
 typedef struct Variable {} Variable;
 typedef struct VariableVector {} VariableVector;
-typedef struct VariableMap {} VariableMap;
+typedef struct VariableTable {} VariableTable;
 
 std_string* std_string_new(const char *s, size_t len);
 void std_string_delete(std_string *self);
@@ -110,6 +110,8 @@ uint64_t std_Variable_get_uint64(Variable *self);
 float std_Variable_get_float32(Variable *self);
 double std_Variable_get_float64(Variable *self);
 const char *std_Variable_get_string(Variable *self);
+void std_Variable_get_vector(Variable *self, VariableVector *result);
+void std_Variable_get_table(Variable *self, VariableTable *result);
 
 void std_Variable_set_bool(Variable *self, bool value);
 void std_Variable_set_int8(Variable *self, int8_t value);
@@ -123,6 +125,8 @@ void std_Variable_set_uint64(Variable *self, uint64_t value);
 void std_Variable_set_float32(Variable *self, float value);
 void std_Variable_set_float64(Variable *self, double value);
 void std_Variable_set_string(Variable *self, const char * value);
+void std_Variable_set_vector(Variable *self, VariableVector *value);
+void std_Variable_set_table(Variable *self, VariableTable *value);
 
 VariableVector *VariableVector_new();
 VariableVector *std_VariableVector_new();
@@ -138,17 +142,17 @@ void std_VariableVector_insert(VariableVector *self, size_t pos, size_t n, Varia
 void std_VariableVector_erase(VariableVector *self, size_t begin, size_t end);
 bool std_VariableVector_empty(VariableVector *self);
 
-VariableMap *std_VariableMap_new();
-VariableMap *std_VariableMap_clone(VariableMap *self);
-void std_VariableMap_delete(VariableMap *ptr);
-int std_VariableMap_size(VariableMap *self);
-void std_VariableMap_clear(VariableMap *self);
-bool std_VariableMap_getAt(VariableMap *self, const char *key, Variable *result);
-void std_VariableMap_setAt(VariableMap *self, const char *key, Variable *value);
-bool std_VariableMap_erase(VariableMap *self, const char *key);
-bool std_VariableMap_exists(VariableMap *self, const char *key);
-void std_VariableMap_keys(VariableMap *self, std_StringVector *result);
-void std_VariableMap_values(VariableMap *self, VariableVector *result);
+VariableTable *std_VariableTable_new();
+VariableTable *std_VariableTable_clone(VariableTable *self);
+void std_VariableTable_delete(VariableTable *ptr);
+int std_VariableTable_size(VariableTable *self);
+void std_VariableTable_clear(VariableTable *self);
+bool std_VariableTable_getField(VariableTable *self, const char *key, Variable *result);
+void std_VariableTable_setField(VariableTable *self, const char *key, Variable *value);
+bool std_VariableTable_erase(VariableTable *self, const char *key);
+bool std_VariableTable_exists(VariableTable *self, const char *key);
+void std_VariableTable_keys(VariableTable *self, std_StringVector *result);
+void std_VariableTable_values(VariableTable *self, VariableVector *result);
 ]]
 
 ffi.cdef(std_cdef)

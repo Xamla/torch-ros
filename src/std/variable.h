@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "exceptions.h"
 #include <vector>
+#include <map>
 
 namespace xamla {
 
@@ -22,7 +23,8 @@ struct VariableType {
     Float32 = 10,
     Float64 = 11,
     String = 12,
-    VariableArray = 13   // not implemented
+    Vector = 13,      // one-dimensional variable array
+    Table = 14        // unique string to variable mapping
   };
 };
 
@@ -36,8 +38,10 @@ public:
   Variable(const Variable &src) {
     if (src.type_code == VariableType::String) {
       this->set_string(*src.value.s);
-    } else if (src.type_code == VariableType::VariableArray) {
-      this->set_array(*src.value.a);
+    } else if (src.type_code == VariableType::Vector) {
+      this->set_vector(*src.value.v);
+    } else if (src.type_code == VariableType::Table) {
+      this->set_table(*src.value.t);
     } else {
       this->type_code = src.type_code;
       this->value = src.value;
@@ -80,8 +84,10 @@ public:
   void clear() {
     if (type_code == VariableType::String)
       delete this->value.s;
-    else if (type_code == VariableType::VariableArray)
-      delete this->value.a;
+    else if (type_code == VariableType::Vector)
+      delete this->value.v;
+    else if (type_code == VariableType::Table)
+      delete this->value.t;
     this->type_code = VariableType::Void;
     this->value.i64 = 0;
   }
@@ -116,17 +122,31 @@ public:
     this->value.s = new std::string(value);
     this->type_code = VariableType::String;
   }
-  const std::string& get_string() const {
+  const std::string &get_string() const {
     ensureType(VariableType::String);
     return *this->value.s;
   }
 
-  void set_array(const std::vector<Variable> &value) {
-    throw NotImplementedException();
+  typedef std::vector<Variable> vector_t;
+  void set_vector(const vector_t &value) {
+    clear();
+    this->value.v = new vector_t(value);
+    this->type_code = VariableType::Vector;
   }
-  std::vector<Variable>& get_array() const {
-    ensureType(VariableType::VariableArray);
-    throw NotImplementedException();
+  vector_t &get_vector() const {
+    ensureType(VariableType::Vector);
+    return *this->value.v;
+  }
+
+  typedef std::map<std::string, Variable> table_t;
+  void set_table(const table_t &value) {
+    clear();
+    this->value.t = new table_t(value);
+    this->type_code = VariableType::Table;
+  }
+  table_t &get_table() {
+    ensureType(VariableType::Table);
+    return *this->value.t;
   }
 
   Variable &operator=(const Variable &src) {
@@ -137,8 +157,10 @@ public:
 
     if (src.type_code == VariableType::String) {
       this->set_string(*src.value.s);
-    } else if (src.type_code == VariableType::VariableArray) {
-      this->set_array(*src.value.a);
+    } else if (src.type_code == VariableType::Vector) {
+      this->set_vector(*src.value.v);
+    } else if (src.type_code == VariableType::Table) {
+      this->set_table(*src.value.t);
     } else {
       this->type_code = src.type_code;
       this->value = src.value;
@@ -163,7 +185,8 @@ private:
     float f32;
     double f64;
     std::string *s;
-    std::vector<Variable>* a;
+    std::vector<Variable> *v;
+    std::map<std::string, Variable> *t;
   } value;
 
   void ensureType(VariableType::Enum expected) const {

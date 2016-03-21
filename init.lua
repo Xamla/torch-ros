@@ -5,7 +5,7 @@ require 'ros.String'
 require 'ros.StringVector'
 require 'ros.Variable'
 require 'ros.VariableVector'
-require 'ros.VariableMap'
+require 'ros.VariableTable'
 
 -- ros
 require 'ros.ros'

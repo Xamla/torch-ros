@@ -48,7 +48,7 @@
       <File Name="src/std/torch-std.h"/>
       <File Name="src/std/exceptions.h"/>
       <File Name="src/std/variable_vector.cpp"/>
-      <File Name="src/std/variable_map.cpp"/>
+      <File Name="src/std/variable_table.cpp"/>
     </VirtualDirectory>
     <File Name="src/utils.h"/>
   </VirtualDirectory>
@@ -86,7 +86,7 @@
       <File Name="console.lua"/>
       <File Name="Variable.lua"/>
       <File Name="VariableVector.lua"/>
-      <File Name="VariableMap.lua"/>
+      <File Name="VariableTable.lua"/>
     </VirtualDirectory>
     <File Name=".gitignore"/>
     <VirtualDirectory Name="test">

@@ -151,9 +151,10 @@ function VariableVector:totable()
 end
 
 function VariableVector:__tostring()
-  local t = self:totable()
-  for i=1,#t do
-    t[i] = tostring(t[i])
+  local t = {}
+  for i,v in ipairs(self) do
+    table.insert(t, tostring(v))
   end
+  table.insert(t, string.format('[%s of size %d]', torch.type(self), self:size()))
   return table.concat(t, '\n')
 end
