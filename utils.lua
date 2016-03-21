@@ -13,11 +13,11 @@ function utils.create_method_table(prefix, names)
       map[n] = v
     end
   end
-  
+
   -- check whether we have new and delete functions
-  -- automatically register objects created by new with the gc 
+  -- automatically register objects created by new with the gc
   local _new, _clone, _delete = map.new, map.clone, map.delete
-  
+
   if _new and _delete then
     map.new = function(...)
       local obj = _new(...)
@@ -25,7 +25,7 @@ function utils.create_method_table(prefix, names)
       return obj
     end
   end
-  
+
   if _clone and _delete then
     map.clone = function(...)
       local obj = _clone(...)
@@ -33,13 +33,20 @@ function utils.create_method_table(prefix, names)
       return obj
     end
   end
-  
+
   return map
 end
 
 -- safe accessor for cdata()
 function utils.cdata(x)
   return x and x:cdata() or moveit.NULL
+end
+
+function utils.reverse_mapping(t, r)
+  for k,v in pairs(t) do
+    r[v] = k
+  end
+  return r
 end
 
 return utils

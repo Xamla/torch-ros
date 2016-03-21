@@ -69,13 +69,15 @@ local TYPE_CODE = {
   table = 14
 }
 
+local type_names = utils.reverse_mapping(TYPE_CODE, {})
+
 Variable.TYPE_CODE = TYPE_CODE
 
-function Variable:__init(x)
+function Variable:__init(x, type_code)
   self.o = f.new()
 
   if x ~= nil then
-    self:set(x)
+    self:set(x, type_code)
   end
 end
 
@@ -94,7 +96,7 @@ function Variable:get_type()
 end
 
 function Variable:type()
-  return self:get_type()
+  return type_names[self:get_type()]
 end
 
 function Variable:clear()
@@ -215,7 +217,7 @@ end
 local getter_table = create_getter_table()
 
 function Variable:get()
-  return getter_table[self:type()](self)
+  return getter_table[self:get_type()](self)
 end
 
 local function create_setter_table()
@@ -276,5 +278,5 @@ function Variable:set(value, type_code)
 end
 
 function Variable:__tostring()
-  return tostring(self:get())
+  return tostring(self:get()) .. ' [' .. self:type() .. ']'
 end
