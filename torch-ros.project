@@ -31,6 +31,7 @@
       <File Name="src/ros/publisher.cpp"/>
       <File Name="src/ros/raw_message.h"/>
       <File Name="src/ros/console.cpp"/>
+      <File Name="src/ros/service_client.cpp"/>
     </VirtualDirectory>
     <VirtualDirectory Name="tf">
       <File Name="src/tf/transform.cpp"/>
@@ -49,6 +50,7 @@
       <File Name="src/std/exceptions.h"/>
       <File Name="src/std/variable_vector.cpp"/>
       <File Name="src/std/variable_table.cpp"/>
+      <File Name="src/std/string_map.cpp"/>
     </VirtualDirectory>
     <File Name="src/utils.h"/>
   </VirtualDirectory>
@@ -87,6 +89,7 @@
       <File Name="Variable.lua"/>
       <File Name="VariableVector.lua"/>
       <File Name="VariableTable.lua"/>
+      <File Name="StringMap.lua"/>
     </VirtualDirectory>
     <File Name=".gitignore"/>
     <VirtualDirectory Name="test">

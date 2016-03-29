@@ -1,4 +1,5 @@
 #include "torch-ros.h"
+#include "../std/torch-std.h"
 #include "message_buffer.h"
 #include "../utils.h"
 
@@ -53,6 +54,17 @@ ROSIMP(ros::Publisher *, NodeHandle, advertise)(
 ) {
   ros::AdvertiseOptions ao(topic, queue_size, md5sum, datatype, message_definition);
   return new ros::Publisher(self->advertise(ao));
+}
+
+ROSIMP(ros::ServiceClient *, NodeHandle, serviceClient)(
+  ros::NodeHandle *self,
+  const char *service,
+  const char *md5sum,
+  bool persistent,
+  StringMap* header
+) {
+  ros::ServiceClientOptions ops(service, md5sum, persistent, *header);
+  return new ros::ServiceClient(self->serviceClient(ops));
 }
 
 ROSIMP(bool, NodeHandle, hasParam)(ros::NodeHandle *self, const char *key) {

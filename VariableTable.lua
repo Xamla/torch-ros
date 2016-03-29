@@ -52,7 +52,7 @@ function VariableTable:__len()
 end
 
 function VariableTable:erase(key)
-  f.erase(self.o, key)
+  return f.erase(self.o, key)
 end
 
 function VariableTable:insertFromTable(t)

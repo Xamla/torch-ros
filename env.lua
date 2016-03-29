@@ -67,6 +67,7 @@ end
 local std_cdef = [[
 typedef struct std_string {} std_string;
 typedef struct std_StringVector {} std_StringVector;
+typedef struct std_StringMap {} std_StringMap;
 typedef struct Variable {} Variable;
 typedef struct VariableVector {} VariableVector;
 typedef struct VariableTable {} VariableTable;
@@ -90,6 +91,19 @@ void std_StringVector_clear(std_StringVector *self);
 void std_StringVector_insert(std_StringVector *self, size_t pos, size_t n, const char *value);
 void std_StringVector_erase(std_StringVector *self, size_t begin, size_t end);
 bool std_StringVector_empty(std_StringVector *self);
+
+std_StringMap *std_StringMap_new();
+std_StringMap *std_StringMap_clone(std_StringMap *self);
+void std_StringMap_delete(std_StringMap *ptr);
+int std_StringMap_size(std_StringMap *self);
+void std_StringMap_clear(std_StringMap *self);
+const char *std_StringMap_getAt(std_StringMap *self, const char *key);
+const char *std_StringMap_setAt(std_StringMap *self, const char *key, const char *value);
+bool std_StringMap_insert(std_StringMap *self, const char *key, const char *value);
+bool std_StringMap_erase(std_StringMap *self, const char *key);
+bool std_StringMap_exists(std_StringMap *self, const char *key);
+void std_StringMap_keys(std_StringMap *self, std_StringVector *result);
+void std_StringMap_values(std_StringMap *self, std_StringVector *result);
 
 Variable *std_Variable_new();
 Variable *std_Variable_clone(Variable *self);
@@ -255,6 +269,17 @@ void ros_MessageBuffer_delete(MessageBuffer *self);
 int ros_MessageBuffer_count(MessageBuffer *self);
 void ros_MessageBuffer_clear(MessageBuffer *self);
 bool ros_MessageBuffer_read(MessageBuffer *self, int timeout_milliseconds, THByteStorage *output);
+
+typedef struct ros_ServiceClient {} ros_ServiceClient;
+ros_ServiceClient *ros_ServiceClient_new(const char *service_name, bool persistent, std_StringMap *header_values, const char *service_md5sum);
+ros_ServiceClient *ros_ServiceClient, clone(ros_ServiceClient *self);
+void ros_ServiceClient_delete(ros_ServiceClient *ptr);
+bool ros_ServiceClient_call(ros_ServiceClient *self, THByteStorage *request_msg, THByteStorage *response_msg, const char *service_md5sum);
+bool ros_ServiceClient_isValid(ros_ServiceClient *self);
+bool ros_ServiceClient_isPersistent(ros_ServiceClient *self);
+void ros_ServiceClient_getService(ros_ServiceClient *self, std_string *output);
+bool ros_ServiceClient_waitForExistence(ros_ServiceClient *self, ros_Duration *timeout);
+bool ros_ServiceClient_exists(ros_ServiceClient *self);
 
 typedef struct ros_NodeHandle {} ros_NodeHandle;
 ros_NodeHandle *ros_NodeHandle_new(const char *ns);

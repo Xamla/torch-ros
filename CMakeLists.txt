@@ -11,6 +11,7 @@ SET(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 SET(src
   "${SOURCE_DIR}/std/string.cpp"
   "${SOURCE_DIR}/std/string_vector.cpp"
+  "${SOURCE_DIR}/std/string_map.cpp"
   "${SOURCE_DIR}/std/variable.cpp"
   "${SOURCE_DIR}/std/variable_vector.cpp"
   "${SOURCE_DIR}/std/variable_table.cpp"
@@ -20,6 +21,7 @@ SET(src
   "${SOURCE_DIR}/ros/message_buffer.cpp"
   "${SOURCE_DIR}/ros/subscriber.cpp"
   "${SOURCE_DIR}/ros/publisher.cpp"
+  "${SOURCE_DIR}/ros/service_client.cpp"
   "${SOURCE_DIR}/ros/async_spinner.cpp"
   "${SOURCE_DIR}/ros/time.cpp"
   "${SOURCE_DIR}/ros/duration.cpp"
