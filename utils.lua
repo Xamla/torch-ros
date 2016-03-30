@@ -39,7 +39,7 @@ end
 
 -- safe accessor for cdata()
 function utils.cdata(x)
-  return x and x:cdata() or moveit.NULL
+  return x and x:cdata() or ffi.NULL
 end
 
 function utils.reverse_mapping(t, r)

@@ -275,11 +275,12 @@ ros_ServiceClient *ros_ServiceClient_new(const char *service_name, bool persiste
 ros_ServiceClient *ros_ServiceClient, clone(ros_ServiceClient *self);
 void ros_ServiceClient_delete(ros_ServiceClient *ptr);
 bool ros_ServiceClient_call(ros_ServiceClient *self, THByteStorage *request_msg, THByteStorage *response_msg, const char *service_md5sum);
-bool ros_ServiceClient_isValid(ros_ServiceClient *self);
 bool ros_ServiceClient_isPersistent(ros_ServiceClient *self);
 void ros_ServiceClient_getService(ros_ServiceClient *self, std_string *output);
 bool ros_ServiceClient_waitForExistence(ros_ServiceClient *self, ros_Duration *timeout);
 bool ros_ServiceClient_exists(ros_ServiceClient *self);
+void ros_ServiceClient_shutdown(ros_ServiceClient *self);
+bool ros_ServiceClient_isValid(ros_ServiceClient *self);
 
 typedef struct ros_NodeHandle {} ros_NodeHandle;
 ros_NodeHandle *ros_NodeHandle_new(const char *ns);

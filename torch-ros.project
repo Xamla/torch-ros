@@ -90,6 +90,8 @@
       <File Name="VariableVector.lua"/>
       <File Name="VariableTable.lua"/>
       <File Name="StringMap.lua"/>
+      <File Name="ServiceClient.lua"/>
+      <File Name="SrvSpec.lua"/>
     </VirtualDirectory>
     <File Name=".gitignore"/>
     <VirtualDirectory Name="test">

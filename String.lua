@@ -2,7 +2,7 @@ local ffi = require 'ffi'
 local torch = require 'torch'
 local ros = require 'ros.env'
 local utils = require 'ros.utils'
-std = ros.std
+local std = ros.std
 
 local String = torch.class('std.String', std)
 

@@ -50,7 +50,7 @@ end
 -- the package.
 local function get_msgspec(msg_type, specstr)
   if not msgspec_cache[msg_type] then
-    msgspec_cache[msg_type] = ros.MsgSpec.new(msg_type, specstr)
+    msgspec_cache[msg_type] = ros.MsgSpec(msg_type, specstr)
   end
 
   return msgspec_cache[msg_type]
@@ -162,35 +162,14 @@ end
 --- (internal) Load specification from string.
 -- @param s string containing the message specification
 local function load_from_string(self, s)
-  return load_from_iterator(self, s:gmatch('(.-)\n'))
-end
-
---- (internal) create string representation appropriate to generate the hash
--- @return string representation
-local function generate_hashtext(self)
-  local lines = {}
-  for _, spec in ipairs(self.constants) do
-    if #lines > 0 then table.insert(lines, '\n') end
-    table.insert(lines, string.format('%s %s=%s', spec[1], spec[2], spec[3]))
-  end
-
-  for _, spec in ipairs(self.fields) do
-    if #lines > 0 then table.insert(lines, '\n') end
-    if is_builtin_type(spec[1]) then
-      table.insert(lines, string.format('%s %s', spec[1], spec[2]))
-    else
-      local type_md5 = get_msgspec(base_type(spec[1])):md5()
-      table.insert(lines, string.format('%s %s', type_md5, spec[2]))
-    end
-  end
-  return table.concat(lines)
+  return load_from_iterator(self, s:gmatch('(.-)$'))
 end
 
 --- (internal) Calculate MD5 sum.
 -- Generates the MD5 sum for this message type.
 -- @return MD5 sum as text
 local function calc_md5(self)
-  self.md5sum = md5.sumhexa(generate_hashtext(self))
+  self.md5sum = md5.sumhexa(self:generate_hashtext())
   return self.md5sum
 end
 
@@ -231,22 +210,43 @@ function MsgSpec:resolve_type(type)
   return resolve_type(type, self.package)
 end
 
+--- create string representation appropriate to generate the hash
+-- @return string representation
+function MsgSpec:generate_hashtext()
+  local lines = {}
+  for _, spec in ipairs(self.constants) do
+    if #lines > 0 then table.insert(lines, '\n') end
+    table.insert(lines, string.format('%s %s=%s', spec[1], spec[2], spec[3]))
+  end
+
+  for _, spec in ipairs(self.fields) do
+    if #lines > 0 then table.insert(lines, '\n') end
+    if is_builtin_type(spec[1]) then
+      table.insert(lines, string.format('%s %s', spec[1], spec[2]))
+    else
+      local type_md5 = get_msgspec(base_type(spec[1])):md5()
+      table.insert(lines, string.format('%s %s', type_md5, spec[2]))
+    end
+  end
+  return table.concat(lines)
+end
+
 function MsgSpec:md5()
   return self.md5sum or calc_md5(self)
 end
 
-local function format_spec(spec, ln, indent)
+function MsgSpec:format_spec(ln, indent)
   local indent = indent or ''
-  table.insert(ln, indent .. 'Message ' .. spec.type)
+  table.insert(ln, indent .. 'Message ' .. self.type)
   table.insert(ln, indent .. 'Fields:')
-  for _,s in ipairs(spec.fields) do
+  for _,s in ipairs(self.fields) do
     table.insert(ln, indent .. '  ' .. s[1] .. ' ' .. s[2])
     if not is_builtin_type(s[1]) then
       local msgspec = get_msgspec(base_type(s[1]))
-      format_spec(msgspec, ln, indent .. '    ')
+      msgspec:format_spec(ln, indent .. '    ')
     end
   end
-  table.insert(ln, indent .. 'MD5:    ' .. spec:md5())
+  table.insert(ln, indent .. 'MD5:    ' .. self:md5())
   return ln
 end
 
@@ -255,7 +255,7 @@ function MsgSpec:instantiate(no_prefill)
 end
 
 function MsgSpec:__tostring()
-  local lines = format_spec(self, {})
+  local lines = self:format_spec({})
   table.insert(lines, '')
   return table.concat(lines, '\n')
 end

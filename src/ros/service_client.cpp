@@ -53,3 +53,11 @@ ROSIMP(bool, ServiceClient, waitForExistence)(ros::ServiceClient *self, ros::Dur
 ROSIMP(bool, ServiceClient, exists)(ros::ServiceClient *self) {
   return self->exists();
 }
+
+ROSIMP(void, ServiceClient, shutdown)(ros::ServiceClient *self) {
+  self->shutdown();
+}
+
+ROSIMP(bool, ServiceClient, isValid)(ros::ServiceClient *self) {
+  return self->isValid();
+}

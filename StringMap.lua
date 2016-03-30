@@ -103,7 +103,7 @@ function StringMap:keys()
   local v = std.StringVector()
   f.keys(self.o, v:cdata())
   return v
-endvalues
+end
 
 function StringMap:values()
   local v = std.StringVector()

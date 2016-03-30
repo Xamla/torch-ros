@@ -59,7 +59,7 @@ end
 
 function Publisher:publish(msg)
   -- serialize message to byte storage
-  v = msg:serialize()
+  local v = msg:serialize()
   v:shrinkToFit()
   f.publish(self.o, v.storage:cdata(), 0, v.length)
 end
