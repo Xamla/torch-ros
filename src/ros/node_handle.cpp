@@ -61,9 +61,10 @@ ROSIMP(ros::ServiceClient *, NodeHandle, serviceClient)(
   const char *service,
   const char *md5sum,
   bool persistent,
-  StringMap* header
+  StringMap *header
 ) {
-  ros::ServiceClientOptions ops(service, md5sum, persistent, *header);
+  static const StringMap empty_header;
+  ros::ServiceClientOptions ops(service, md5sum, persistent, header != NULL ? *header : empty_header);
   return new ros::ServiceClient(self->serviceClient(ops));
 }
 

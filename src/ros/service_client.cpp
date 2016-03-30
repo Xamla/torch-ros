@@ -8,7 +8,8 @@ ROSIMP(ros::ServiceClient *, ServiceClient, new)(
   StringMap *header_values,
   const char *service_md5sum
 ) {
-  return new ros::ServiceClient(service_name, persistent, *header_values, service_md5sum);
+  static const StringMap empty_header;
+  return new ros::ServiceClient(service_name, persistent, header_values ? *header_values : empty_header, service_md5sum);
 }
 
 ROSIMP(ros::ServiceClient *, ServiceClient, clone)(ros::ServiceClient *self) {
@@ -29,10 +30,12 @@ ROSIMP(bool, ServiceClient, call)(ros::ServiceClient *self, THByteStorage *reque
   bool result = self->call(req, resp, service_md5sum);
 
   // copy response message back to response_msg byte storage
-  THByteStorage_resize(response_msg, resp.num_bytes);
-  if (resp.num_bytes > 0) {
+  if (result) {
+    THByteStorage_resize(response_msg, resp.num_bytes + sizeof(uint32_t));
     uint8_t *response_data = THByteStorage_data(response_msg);
-    memcpy(response_data, resp.message_start, resp.num_bytes);
+    ros::serialization::OStream stream(response_data, THByteStorage_size(response_msg));
+    stream.next((uint32_t)resp.num_bytes);
+    memcpy(stream.advance(resp.num_bytes), resp.message_start, resp.num_bytes);
   }
 
   return result;

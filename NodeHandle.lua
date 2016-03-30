@@ -17,6 +17,7 @@ function init()
     'resolveName',
     'subscribe',
     'advertise',
+    'serviceClient',
     'hasParam',
     'deleteParam',
     'getParamString',
@@ -91,6 +92,17 @@ function NodeHandle:advertise(topic, msg_spec, queue_size)
   end
   local p = f.advertise(self.o, topic, queue_size or 1000, msg_spec:md5(), msg_spec.type, msg_spec.definition)
   return ros.Publisher(p)
+end
+
+function NodeHandle:serviceClient(service_name, service_spec, persistent, header_values)
+  if type(service_spec) == 'string' then
+    service_spec = ros.SrvSpec(service_spec)
+  end
+  if not torch.isTypeOf(service_spec, ros.SrvSpec) then
+    error("NodeHandle:serviceClient(): invalid 'service_spec' argument.")
+  end
+  local client = f.serviceClient(self.o, service_name, service_spec:md5(), persistent or false, utils.cdata(header_values))
+  return ros.ServiceClient(client, nil, nil, service_spec)
 end
 
 function NodeHandle:hasParam(key)

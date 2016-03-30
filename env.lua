@@ -292,6 +292,7 @@ const char *ros_NodeHandle_getUnresolvedNamespace(ros_NodeHandle *self);
 void ros_NodeHandle_resolveName(ros_NodeHandle *self, const char *name, bool remap, std_string *result);
 ros_Subscriber *ros_NodeHandle_subscribe(ros_NodeHandle *self, MessageBuffer *message_buffer, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype);
 ros_Publisher *ros_NodeHandle_advertise(ros_NodeHandle *self, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype, const char *message_definition);
+ros_ServiceClient *ros_NodeHandle_serviceClient(ros_NodeHandle *self, const char *service, const char *md5sum, bool persistent, std_StringMap *header);
 bool ros_NodeHandle_hasParam(ros_NodeHandle *self, const char *key);
 bool ros_NodeHandle_deleteParam(ros_NodeHandle *self, const char *key);
 bool ros_NodeHandle_getParamString(ros_NodeHandle *self, const char *key, std_string *result);

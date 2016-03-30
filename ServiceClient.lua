@@ -5,6 +5,7 @@ local utils = require 'ros.utils'
 local std = ros.std
 
 local ServiceClient = torch.class('ros.ServiceClient', ros)
+local ServiceClient_ptr_ct = ffi.typeof('ros_ServiceClient *')
 
 function init()
   local ServiceClient_method_names = {
@@ -25,13 +26,21 @@ end
 
 local f = init()
 
-function ServiceClient:__init(service_name, persistent, header_values, service_spec)
-  service_spec = service_spec or service_name
-  if type(service_spec) == 'string' then
-    service_spec = ros.SrvSpec(service_spec)
+function ServiceClient:__init(service_name, service_spec, persistent, header_values)
+  if ffi.istype(ServiceClient_ptr_ct, service_name) then
+    self.o = service_name
+    self.spec = service_spec
+    ffi.gc(self.o, f.delete)
+  else
+    if type(service_spec) == 'string' then
+      service_spec = ros.SrvSpec(service_spec)
+    end
+    if not torch.isTypeOf(service_spec, ros.SrvSpec) then
+      error("ServiceClient:ctor(): invalid 'service_spec' argument.")
+    end
+    self.spec = service_spec
+    self.o = f.new(service_name, persistent or false, utils.cdata(header_values), self.spec:md5())
   end
-  self.spec = service_spec
-  self.o = f.new(service_name, persistent, utils.cdata(header_values), self.spec:md5())
 end
 
 function ServiceClient:clone()
@@ -53,7 +62,6 @@ function ServiceClient:call(request_msg)
 
   local response_bytes = torch.ByteStorage()
   local result = f.call(self.o, v.storage:cdata(), response_bytes:cdata(), self.spec:md5())
-
   if result == true then
     response_msg:deserialize(response_bytes)
   else
