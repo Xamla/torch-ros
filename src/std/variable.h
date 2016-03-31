@@ -5,6 +5,7 @@
 #include "exceptions.h"
 #include <vector>
 #include <map>
+#include <boost/shared_ptr.hpp>
 
 namespace xamla {
 
@@ -27,6 +28,13 @@ struct VariableType {
     Table = 14        // unique string to variable mapping
   };
 };
+
+class Variable;
+
+typedef std::map<std::string, Variable> VariableTable;
+typedef boost::shared_ptr<VariableTable> VariableTable_ptr;
+typedef std::vector<Variable> VariableVector;
+typedef boost::shared_ptr<VariableVector> VariableVector_ptr;
 
 class Variable {
 public:
@@ -70,7 +78,17 @@ public:
 
   Variable(const std::string &value)
     : type_code(VariableType::String) {
-    this->value.s =  new std::string(value);
+    this->value.s = new std::string(value);
+  }
+
+  Variable(const VariableVector_ptr &value)
+    : type_code(VariableType::Vector) {
+    this->value.v = new VariableVector_ptr(value);
+  }
+
+  Variable(const VariableTable_ptr &value)
+    : type_code(VariableType::Table) {
+    this->value.t = new VariableTable_ptr(value);
   }
 
   ~Variable() {
@@ -127,24 +145,22 @@ public:
     return *this->value.s;
   }
 
-  typedef std::vector<Variable> vector_t;
-  void set_vector(const vector_t &value) {
+  void set_vector(const VariableVector_ptr &value) {
     clear();
-    this->value.v = new vector_t(value);
+    this->value.v = new VariableVector_ptr(value);
     this->type_code = VariableType::Vector;
   }
-  vector_t &get_vector() const {
+  const VariableVector_ptr &get_vector() const {
     ensureType(VariableType::Vector);
     return *this->value.v;
   }
 
-  typedef std::map<std::string, Variable> table_t;
-  void set_table(const table_t &value) {
+  void set_table(const VariableTable_ptr &value) {
     clear();
-    this->value.t = new table_t(value);
+    this->value.t = new VariableTable_ptr(value);
     this->type_code = VariableType::Table;
   }
-  table_t &get_table() {
+  const VariableTable_ptr &get_table() const {
     ensureType(VariableType::Table);
     return *this->value.t;
   }
@@ -185,8 +201,8 @@ private:
     float f32;
     double f64;
     std::string *s;
-    std::vector<Variable> *v;
-    std::map<std::string, Variable> *t;
+    VariableVector_ptr *v;
+    VariableTable_ptr *t;
   } value;
 
   void ensureType(VariableType::Enum expected) const {

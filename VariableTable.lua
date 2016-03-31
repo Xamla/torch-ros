@@ -5,12 +5,13 @@ local utils = require 'ros.utils'
 std = ros.std
 
 local VariableTable = torch.class('std.VariableTable', std)
+local TYPE_CODE = std.Variable.TYPE_CODE
 
 function init()
   local VariableTable_method_names = {
     'new',
-    'clone',
     'delete',
+    'clone',
     'size',
     'clear',
     'getField',
@@ -70,6 +71,10 @@ function VariableTable:getField(key)
   if not f.getField(self.o, key, v:cdata()) then
     return nil
   end
+  local t = v:get_type()
+  if t == TYPE_CODE.vector or t == TYPE_CODE.table then
+    v = v:get()
+  end
   return v
 end
 
@@ -121,7 +126,13 @@ function VariableTable:totable()
   local k,v = self:keys(),self:values()
   local r = {}
   for i=1,#k do
-    r[k[i]] = v[i]:get()
+    local x = v[i]:get()
+    if torch.isTypeOf(x, std.VariableTable) then
+      x = x:totable()
+    elseif torch.isTypeOf(x, std.VariableVector) then
+      x = x:totable()
+    end
+    r[k[i]] = x
   end
   return r
 end

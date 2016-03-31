@@ -5,6 +5,7 @@ local utils = require 'ros.utils'
 local std = ros.std
 
 local console = {}
+ros.console = console
 
 function init()
   local names = {
@@ -55,8 +56,6 @@ end
 function console.print(logger, level, text, file, function_name, line)
   f.print(logger or ffi.NULL, level, text, file or '??', function_name or '??', line or 0)
 end
-
-ros.console = console
 
 local function create_trace(level)
   return function(...)

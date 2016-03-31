@@ -1,61 +1,67 @@
 #include "torch-std.h"
 #include "variable.h"
-#include <map>
 
-typedef std::map<std::string, xamla::Variable> VariableTable;
-typedef std::vector<xamla::Variable> VariableVector;
+using namespace xamla;
 
-STDIMP(VariableTable *, VariableTable, new)() {
-  return new VariableTable();
+#define VariableVector_Ptr xamla::VariableVector_ptr
+#define VariableTable_Ptr xamla::VariableTable_ptr
+
+STDIMP(VariableTable_Ptr *, VariableTable, new)() {
+  return new VariableTable_Ptr(new VariableTable());
 }
 
-STDIMP(VariableTable *, VariableTable, clone)(VariableTable *self) {
-  return new VariableTable(*self);
+STDIMP(void, VariableTable, delete)(VariableTable_Ptr *handle) {
+  delete handle;
 }
 
-STDIMP(void, VariableTable, delete)(VariableTable *ptr) {
-  delete ptr;
+STDIMP(VariableTable_Ptr *, VariableTable, clone)(VariableTable_Ptr *self) {
+  return new VariableTable_Ptr(new VariableTable(**self));
 }
 
-STDIMP(int, VariableTable, size)(VariableTable *self) {
-  return (int)self->size();
+STDIMP(int, VariableTable, size)(VariableTable_Ptr *self) {
+  return (int)(*self)->size();
 }
 
-STDIMP(void, VariableTable, clear)(VariableTable *self) {
-  self->clear();
+STDIMP(void, VariableTable, clear)(VariableTable_Ptr *self) {
+  (*self)->clear();
 }
 
-STDIMP(bool, VariableTable, getField)(VariableTable *self, const char *key, xamla::Variable *result) {
-  VariableTable::iterator i = self->find(key);
-  if (i == self->end())
+STDIMP(bool, VariableTable, getField)(VariableTable_Ptr *self, const char *key, Variable *result) {
+  VariableTable& t = **self;
+  VariableTable::iterator i = t.find(key);
+  if (i == t.end())
     return false;
 
   *result = i->second;
   return true;
 }
 
-STDIMP(void, VariableTable, setField)(VariableTable *self, const char *key, xamla::Variable *value) {
-  (*self)[key] = *value;
+STDIMP(void, VariableTable, setField)(VariableTable_Ptr *self, const char *key, Variable *value) {
+  VariableTable& t = **self;
+  t[key] = *value;
 }
 
-STDIMP(bool, VariableTable, erase)(VariableTable *self, const char *key) {
-  return self->erase(std::string(key)) == 1;
+STDIMP(bool, VariableTable, erase)(VariableTable_Ptr *self, const char *key) {
+  return (*self)->erase(std::string(key)) == 1;
 }
 
-STDIMP(bool, VariableTable, exists)(VariableTable *self, const char *key) {
-  return self->count(key) > 0;
+STDIMP(bool, VariableTable, exists)(VariableTable_Ptr *self, const char *key) {
+  return (*self)->count(key) > 0;
 }
 
-STDIMP(void, VariableTable, keys)(VariableTable *self, StringVector *result) {
+STDIMP(void, VariableTable, keys)(VariableTable_Ptr *self, StringVector *result) {
+  VariableTable& t = **self;
   result->clear();
-  for (VariableTable::const_iterator i = self->begin(); i != self->end(); ++i) {
+  for (VariableTable::const_iterator i = t.begin(); i != t.end(); ++i) {
     result->push_back(i->first);
   }
 }
 
-STDIMP(void, VariableTable, values)(VariableTable *self, VariableVector *result) {
-  result->clear();
-  for (VariableTable::const_iterator i = self->begin(); i != self->end(); ++i) {
-    result->push_back(i->second);
+STDIMP(void, VariableTable, values)(VariableTable_Ptr *self, VariableVector_Ptr *result) {
+  VariableTable& t = **self;
+  VariableVector& r = **result;
+  r.clear();
+  for (VariableTable::const_iterator i = t.begin(); i != t.end(); ++i) {
+    r.push_back(i->second);
   }
 }

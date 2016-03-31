@@ -32,6 +32,7 @@
       <File Name="src/ros/raw_message.h"/>
       <File Name="src/ros/console.cpp"/>
       <File Name="src/ros/service_client.cpp"/>
+      <File Name="src/ros/master.cpp"/>
     </VirtualDirectory>
     <VirtualDirectory Name="tf">
       <File Name="src/tf/transform.cpp"/>
@@ -92,6 +93,7 @@
       <File Name="StringMap.lua"/>
       <File Name="ServiceClient.lua"/>
       <File Name="SrvSpec.lua"/>
+      <File Name="master.lua"/>
     </VirtualDirectory>
     <File Name=".gitignore"/>
     <VirtualDirectory Name="test">

@@ -18,6 +18,7 @@ SET(src
 
   "${SOURCE_DIR}/ros/init.cpp"
   "${SOURCE_DIR}/ros/node_handle.cpp"
+  "${SOURCE_DIR}/ros/master.cpp"
   "${SOURCE_DIR}/ros/message_buffer.cpp"
   "${SOURCE_DIR}/ros/subscriber.cpp"
   "${SOURCE_DIR}/ros/publisher.cpp"

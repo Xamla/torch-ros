@@ -9,8 +9,8 @@ local VariableVector = torch.class('std.VariableVector', std)
 function init()
   local VariableVector_method_names = {
     "new",
-    "clone",
     "delete",
+    "clone",
     "size",
     "getAt",
     "setAt",
@@ -145,6 +145,12 @@ end
 function VariableVector:totable()
   local t = {}
   for i,v in ipairs(self) do
+    v = v:get()
+    if torch.isTypeOf(v, std.VariableTable) then
+      v = v:totable()
+    elseif torch.isTypeOf(v, std.VariableVector) then
+      v = v:totable()
+    end
     table.insert(t, v)
   end
   return t

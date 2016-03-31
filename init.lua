@@ -11,6 +11,7 @@ require 'ros.VariableTable'
 -- ros
 require 'ros.ros'
 require 'ros.console'
+require 'ros.master'
 require 'ros.StorageWriter'
 require 'ros.StorageReader'
 require 'ros.MsgSpec'

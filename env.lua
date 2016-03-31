@@ -140,12 +140,11 @@ void std_Variable_set_float32(Variable *self, float value);
 void std_Variable_set_float64(Variable *self, double value);
 void std_Variable_set_string(Variable *self, const char * value);
 void std_Variable_set_vector(Variable *self, VariableVector *value);
-void std_Variable_set_table(Variable *self, VariableTable *value);
+void std_Variable_set_table(Variable *self, VariableVector *value);
 
-VariableVector *VariableVector_new();
 VariableVector *std_VariableVector_new();
+void std_VariableVector_delete(VariableVector *self);
 VariableVector *std_VariableVector_clone(VariableVector *self);
-void std_VariableVector_delete(VariableVector *ptr);
 int std_VariableVector_size(VariableVector *self);
 void std_VariableVector_getAt(VariableVector *self, size_t pos, Variable *result);
 void std_VariableVector_setAt(VariableVector *self, size_t pos, Variable *value);
@@ -157,8 +156,8 @@ void std_VariableVector_erase(VariableVector *self, size_t begin, size_t end);
 bool std_VariableVector_empty(VariableVector *self);
 
 VariableTable *std_VariableTable_new();
+void std_VariableTable_delete(VariableTable *self);
 VariableTable *std_VariableTable_clone(VariableTable *self);
-void std_VariableTable_delete(VariableTable *ptr);
 int std_VariableTable_size(VariableTable *self);
 void std_VariableTable_clear(VariableTable *self);
 bool std_VariableTable_getField(VariableTable *self, const char *key, Variable *result);
@@ -315,6 +314,14 @@ void ros_NodeHandle_setParamBoolVector(ros_NodeHandle *self, const char *key, TH
 void ros_NodeHandle_setParamIntVector(ros_NodeHandle *self, const char *key, THIntTensor *value);
 void ros_NodeHandle_setParamDoubleVector(ros_NodeHandle *self, const char *key, THDoubleTensor *value);
 void ros_NodeHandle_setParamFloatVector(ros_NodeHandle *self, const char *key, THFloatTensor *value);
+
+const char* ros_Master_getHost();
+int ros_Master_getPort();
+const char* ros_Master_getURI();
+bool ros_Master_check();
+bool ros_Master_getTopics(VariableVector *output);
+bool ros_Master_getNodes(std_StringVector *output);
+void ros_Master_setRetryTimeout(int sec, int nsec);
 ]]
 
 ffi.cdef(ros_cdef)
