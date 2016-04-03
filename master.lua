@@ -9,6 +9,7 @@ ros.master = master
 
 function init()
   local names = {
+    'execute',
     'getHost',
     'getPort',
     'getURI',
@@ -22,6 +23,16 @@ function init()
 end
 
 local f = init()
+
+function master.execute(method, request, wait_for_master)
+
+  request = std.Variable(request)
+
+  local response = std.Variable()
+  local payload = std.Variable()
+  local result = f.execute(method, request:cdata(), response:cdata(), payload:cdata(), wait_for_master or false)
+  return result, response, payload
+end
 
 function master.getHost()
   return ffi.string(f.getHost())
@@ -40,7 +51,7 @@ function master.check()
 end
 
 function master.getTopics(output)
-  local v = output or std.VariableVector()
+  local v = output or std.VariableTable()
   f.getTopics(v:cdata())
   return v:totable()
 end

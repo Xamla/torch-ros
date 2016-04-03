@@ -7,6 +7,7 @@ FIND_PACKAGE(Boost 1.47.0 REQUIRED COMPONENTS system thread chrono)
 FIND_PACKAGE(catkin REQUIRED COMPONENTS roscpp std_msgs tf)
 
 SET(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmax-errors=3 -Wall" )
 
 SET(src
   "${SOURCE_DIR}/std/string.cpp"
@@ -19,6 +20,7 @@ SET(src
   "${SOURCE_DIR}/ros/init.cpp"
   "${SOURCE_DIR}/ros/node_handle.cpp"
   "${SOURCE_DIR}/ros/master.cpp"
+  "${SOURCE_DIR}/ros/this_node.cpp"
   "${SOURCE_DIR}/ros/message_buffer.cpp"
   "${SOURCE_DIR}/ros/subscriber.cpp"
   "${SOURCE_DIR}/ros/publisher.cpp"

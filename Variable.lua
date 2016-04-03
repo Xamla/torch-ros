@@ -188,6 +188,9 @@ function Variable:set_table(value)
     self:set_vector(value)
   elseif torch.isTypeOf(value, std.VariableTable) then
     f.set_table(self.o, value:cdata())
+  elseif value and #value > 0 then
+    value = std.VariableVector(value)
+    f.set_vector(self.o, value:cdata())
   else
     value = std.VariableTable(value)
     f.set_table(self.o, value:cdata())
