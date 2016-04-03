@@ -197,5 +197,6 @@
     <File Name="demo/logging.lua"/>
     <File Name="demo/robotiq_c_model.lua"/>
     <File Name="demo/robotiq_ft_sensor.lua"/>
+    <File Name="demo/getSystemState.lua"/>
   </VirtualDirectory>
 </CodeLite_Project>

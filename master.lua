@@ -25,13 +25,12 @@ end
 local f = init()
 
 function master.execute(method, request, wait_for_master)
-
-  request = std.Variable(request)
-
-  local response = std.Variable()
-  local payload = std.Variable()
+  if not torch.isTypeOf(request, std.Variable) then
+    request = std.Variable(request)
+  end
+  local response, payload = std.Variable(), std.Variable()
   local result = f.execute(method, request:cdata(), response:cdata(), payload:cdata(), wait_for_master or false)
-  return result, response, payload
+  return result, response:get(), payload:get()
 end
 
 function master.getHost()

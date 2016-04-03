@@ -17,11 +17,21 @@ void VariableToXmlRpcValue(const xamla::Variable &src, XmlRpc::XmlRpcValue &dst)
     case xamla::VariableType::Float32: dst = XmlRpc::XmlRpcValue(src.get_float32()); break;
     case xamla::VariableType::Float64: dst = XmlRpc::XmlRpcValue(src.get_float64()); break;
     case xamla::VariableType::String: dst = XmlRpc::XmlRpcValue(src.get_string()); break;
-
-    case xamla::VariableType::Vector:
-      break;
-    case xamla::VariableType::Table:
-      break;
+    case xamla::VariableType::Vector: {
+      const xamla::VariableVector &v = *src.get_vector();
+      dst.setSize(v.size());
+      for (size_t i=0; i < v.size(); ++i) {
+        VariableToXmlRpcValue(v[i], dst[i]);
+      }
+    } break;
+    case xamla::VariableType::Table: {
+      const xamla::VariableTable &t = *src.get_table();
+      for (xamla::VariableTable::const_iterator i=t.begin(); i != t.end(); ++i) {
+        const std::string& name = i->first;
+        const xamla::Variable& value = i->second;
+        VariableToXmlRpcValue(value, dst[name]);
+      }
+    } break;
   }
 }
 
@@ -32,8 +42,7 @@ void XmlRpcValueToVariable(XmlRpc::XmlRpcValue &src, xamla::Variable &dst) {
     case XmlRpc::XmlRpcValue::TypeInt: dst.set_int32(src); break;
     case XmlRpc::XmlRpcValue::TypeDouble: dst.set_float64(src); break;
     case XmlRpc::XmlRpcValue::TypeString: dst.set_string(src); break;
-    case XmlRpc::XmlRpcValue::TypeArray:
-    {
+    case XmlRpc::XmlRpcValue::TypeArray: {
       xamla::VariableVector_ptr v(new xamla::VariableVector());
       for (int i = 0; i < src.size(); ++i) {
         xamla::Variable x;
@@ -42,8 +51,7 @@ void XmlRpcValueToVariable(XmlRpc::XmlRpcValue &src, xamla::Variable &dst) {
       }
       dst.set_vector(v);
     } break;
-    case XmlRpc::XmlRpcValue::TypeStruct:
-    {
+    case XmlRpc::XmlRpcValue::TypeStruct: {
       xamla::VariableTable_ptr t(new xamla::VariableTable());
 
       for (XmlRpc::XmlRpcValue::iterator i = src.begin(); i != src.end(); ++i) {
@@ -73,6 +81,7 @@ ROSIMP(bool, Master, execute)(
 
   XmlRpc::XmlRpcValue response_, payload_;
   bool result = ros::master::execute(method, request_, response_, payload_, wait_for_master);
+
   XmlRpcValueToVariable(response_, *response);  // copy response
   XmlRpcValueToVariable(payload_, *payload);
   return result;
