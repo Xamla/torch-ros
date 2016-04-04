@@ -11,14 +11,12 @@ msgbuf = ros.MessageBuffer()
 
 string_spec = ros.MsgSpec('std_msgs/String')
 
-nodehandle:subscribe("chatter", string_spec, 100, msgbuf)
+subscriber = nodehandle:subscribe("chatter", 'std_msgs/String', 100)
 
 while ros.ok() do
   sys.sleep(0.1)
-  while msgbuf:count() > 0 do
-    local msg_bytes = msgbuf:read()
-    local msg = ros.Message(string_spec, true)
-    msg:deserialize(msg_bytes)
+  while subscriber:hasMessage() do
+    local msg = subscriber:read()
     print(msg)
   end
 end
