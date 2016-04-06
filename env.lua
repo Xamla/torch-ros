@@ -140,7 +140,7 @@ void std_Variable_set_float32(Variable *self, float value);
 void std_Variable_set_float64(Variable *self, double value);
 void std_Variable_set_string(Variable *self, const char * value);
 void std_Variable_set_vector(Variable *self, VariableVector *value);
-void std_Variable_set_table(Variable *self, VariableVector *value);
+void std_Variable_set_table(Variable *self, VariableTable *value);
 
 VariableVector *std_VariableVector_new();
 void std_VariableVector_delete(VariableVector *self);
@@ -315,13 +315,19 @@ void ros_NodeHandle_setParamIntVector(ros_NodeHandle *self, const char *key, THI
 void ros_NodeHandle_setParamDoubleVector(ros_NodeHandle *self, const char *key, THDoubleTensor *value);
 void ros_NodeHandle_setParamFloatVector(ros_NodeHandle *self, const char *key, THFloatTensor *value);
 
+bool ros_Master_execute(const char *method, Variable *request, Variable *response, Variable *payload, bool wait_for_master);
 const char* ros_Master_getHost();
 int ros_Master_getPort();
 const char* ros_Master_getURI();
 bool ros_Master_check();
-bool ros_Master_getTopics(VariableVector *output);
+bool ros_Master_getTopics(VariableTable *output);
 bool ros_Master_getNodes(std_StringVector *output);
 void ros_Master_setRetryTimeout(int sec, int nsec);
+
+const char *ros_ThisNode_getName();
+const char *ros_ThisNode_getNamespace();
+void ros_ThisNode_getAdvertisedTopics(std_StringVector *topics);
+void ros_ThisNode_getSubscribedTopics(std_StringVector *topics);
 ]]
 
 ffi.cdef(ros_cdef)

@@ -9,6 +9,7 @@ ros.master = master
 
 function init()
   local names = {
+    'execute',
     'getHost',
     'getPort',
     'getURI',
@@ -22,6 +23,15 @@ function init()
 end
 
 local f = init()
+
+function master.execute(method, request, wait_for_master)
+  if not torch.isTypeOf(request, std.Variable) then
+    request = std.Variable(request)
+  end
+  local response, payload = std.Variable(), std.Variable()
+  local result = f.execute(method, request:cdata(), response:cdata(), payload:cdata(), wait_for_master or false)
+  return result, response:get(), payload:get()
+end
 
 function master.getHost()
   return ffi.string(f.getHost())
@@ -40,7 +50,7 @@ function master.check()
 end
 
 function master.getTopics(output)
-  local v = output or std.VariableVector()
+  local v = output or std.VariableTable()
   f.getTopics(v:cdata())
   return v:totable()
 end

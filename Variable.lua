@@ -188,6 +188,9 @@ function Variable:set_table(value)
     self:set_vector(value)
   elseif torch.isTypeOf(value, std.VariableTable) then
     f.set_table(self.o, value:cdata())
+  elseif value and #value > 0 then
+    value = std.VariableVector(value)
+    f.set_vector(self.o, value:cdata())
   else
     value = std.VariableTable(value)
     f.set_table(self.o, value:cdata())
@@ -217,7 +220,14 @@ end
 local getter_table = create_getter_table()
 
 function Variable:get()
-  return getter_table[self:get_type()](self)
+  local t = self:get_type()
+  if t == TYPE_CODE.vector then
+    return self:get_vector():totable()
+  elseif t == TYPE_CODE.table then
+    return self:get_table():totable()
+  else
+    return getter_table[self:get_type()](self)
+  end
 end
 
 local function create_setter_table()
