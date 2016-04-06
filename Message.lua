@@ -5,7 +5,7 @@ local ros = require 'ros.env'
 local Message = torch.class('ros.Message', ros)
 
 -- (internal) table of default values for built-in types
-Message.default_values = {
+local DEFAULT_VALUES = {
   bool     = 0,
   int8     = 0,       uint8   = 0,
   int16    = 0,       uint16  = 0,
@@ -13,8 +13,8 @@ Message.default_values = {
   int64    = 0,       uint64  = 0,
   float32  = 0,       float64 = 0,
   char     = 0,       byte    = 0,
-  duration = {0, 0},  time    = {0, 0},
-  string   = "",      array   = {}
+  duration = ros.Duration(),  time = ros.Time(),
+  string   = ""
 }
 
 function Message:__init(spec, no_prefill)
@@ -24,8 +24,8 @@ function Message:__init(spec, no_prefill)
   assert(spec, "Message specification must not be nil.")
   rawset(self, 'spec', spec)
   rawset(self, 'values', {})
-  if not no_prefill then 
-    self:prefill() 
+  if not no_prefill then
+    self:prefill()
   end
 end
 
@@ -55,16 +55,49 @@ function Message:prefill()
           self.values[f.name] = {}                          -- empty array
         end
       elseif f.is_builtin then
-        self.values[f.name] = self.default_values[f.type]   -- set default builtin value
-      else 
+        local v = DEFAULT_VALUES[f.type]
+        if f.cloneable then
+          v = v:clone()                                     -- clone time or duration
+        end
+        self.values[f.name] = v                             -- set default builtin value
+      else
         self.values[f.name] = ros.Message.new(f.spec)       -- generate sub-message with default values
       end
     end
   end
 end
 
+--- Assign values from other message or table.
+function Message:assign(source)
+  if source == self then return end   -- ignore assignment to itself
+  if torch.isTypeOf(source, ros.Message) then
+    self:copy(source)
+  elseif type(source) == 'table' then
+    self:fillFromTable(source)
+  end
+end
+
+--- Fill message fields from a source table.
+function Message:fillFromTable(t)
+  local fields = self.spec.fields
+  for k,v in pairs(t) do
+    local f = fields[k]   -- check if field or index exists
+    if f ~= nil then
+      if f.is_builtin then
+        if f.type == 'duration' or f.type == 'time' then
+          self.values[f.name]:set(v)
+        else
+          self.values[f.name] = v
+        end
+      else
+        self.values[f.name]:assign(v)
+      end
+    end
+  end
+end
+
 function Message:clone()
-  local m = ros.Message:new(self.spec, true)
+  local m = ros.Message(self.spec, true)
   for _,f in ipairs(self.spec.fields) do
     local v = self.values[f.name]
     if f.is_array then
@@ -72,34 +105,27 @@ function Message:clone()
         v = v:clone()
       else
         local a = {}
-        if f.is_builtin then
-          if f.base_type == 'duration' or f.base_type == 'time' then
-            -- special handling of duration and time fields
-            for i,x in ipairs(v) do
-              a[i] = { x[1], x[2] }
-            end
-          else
-            -- copy array of immutable objects
-            for i,x in ipairs(v) do
-              a[i] = x
-            end
-          end
-        else
-          -- clone element-wise
+        if f.cloneable then
+           -- clone element-wise
           for i,x in ipairs(v) do
             a[i] = x:clone()
+          end
+        else
+          -- copy array of immutable objects
+          for i,x in ipairs(v) do
+            a[i] = x
           end
         end
         v = a
       end
     else  -- single element field
-      if not f.is_builtin then
+      if f.cloneable then
         v = v:clone()
       end
     end
     m.values[f.name] = v
   end
-  return m 
+  return m
 end
 
 function Message:copy(source)
@@ -113,39 +139,36 @@ function Message:copy(source)
           y:copy(v)
         else
           y = y or {}
-          if f.is_builtin then
-            if f.base_type == 'duration' or f.base_type == 'time' then
-              -- special handling of duration and time fields
-              for i,x in ipairs(v) do
-                y[i] = { x[1], x[2] }
-              end
-            else
-              -- copy array of immutable objects (builtin types not represented as table)
-              for i,x in ipairs(v) do
-                y[i] = x
-              end
-            end
-          else
+          if f.cloneable then
             -- complex fields: copy element-wise
             for i,x in ipairs(v) do
               if a[i] then
-                y[i]:copy(x)      -- use copy to not impact exsting references to target
+                if f.is_builtin then
+                  y[i]:set(x)       -- special handling for duration and time
+                else
+                  y[i]:copy(x)      -- use copy to not impact exsting references to target
+                end
               else
                 y[i] = x:clone()
               end
             end
+          else
+            -- copy array of immutable objects (simple builtin types)
+            for i,x in ipairs(v) do
+              y[i] = x
+            end
           end
-          
+
           -- remove additional array that are not present in v (the source array had less elements)
           while #y > #v do
             table.remove(y, #v)
           end
         end
       else    -- non array case: single element field
-        if f.is_builtin then
-          self.values[f.name] = source.values[f.name]
-        else
+        if f.cloneable then
           self.values[f.name] = source.values[f.name]:clone()
+        else
+          self.values[f.name] = source.values[f.name]
         end
       end
     end
@@ -159,7 +182,7 @@ local function format_message(msg, ln, indent)
   table.insert(ln, indent .. msg.spec.type .. ' {')
   for _, fspec in ipairs(msg.spec.fields) do
     local fname = fspec.name
-    local ftype = fspec.type    
+    local ftype = fspec.type
     local fvalue = msg.values[fname]
     local prefix = indent .. '  ' .. fname .. ' : '
     format_field(ln, indent, prefix, ftype, fspec, fvalue)
@@ -169,10 +192,8 @@ local function format_message(msg, ln, indent)
 end
 
 format_field = function(ln, indent, prefix, ftype, fspec, fvalue)
-  if ftype == 'time' or ftype == 'duration' then
-    table.insert(ln, prefix .. fvalue[1] .. '.' .. fvalue[2])
-  elseif fspec and fspec.is_array then
-    
+  if fspec and fspec.is_array then
+
     if fspec.tensor_type then
       if fvalue and fvalue:nElement() > 100 then
         local tensor_size = table.concat(fvalue:size():totable(), 'x')
@@ -185,7 +206,7 @@ format_field = function(ln, indent, prefix, ftype, fspec, fvalue)
       table.insert(ln, prefix .. "[]")
     else
       local t = { prefix, '[\n' }
-      
+
       if fspec.is_builtin then
         for i,x in ipairs(fvalue) do
           format_field(t, indent .. '  ', '', fspec.base_type, nil, x)
@@ -200,7 +221,7 @@ format_field = function(ln, indent, prefix, ftype, fspec, fvalue)
       table.insert(t, indent .. ']')
       table.insert(ln, table.concat(t))
     end
-    
+
   elseif ftype == 'string' then
     table.insert(ln, prefix .. '"' .. fvalue .. '"')
   elseif fspec and not fspec.is_builtin then
@@ -222,7 +243,7 @@ local writeMethods = {
   byte    = ros.StorageWriter.writeUInt8,
   char    = ros.StorageWriter.writeInt8,
   int8    = ros.StorageWriter.writeInt8,
-  uint8   = ros.StorageWriter.writeUInt8, 
+  uint8   = ros.StorageWriter.writeUInt8,
   int16   = ros.StorageWriter.writeInt16,
   uint16  = ros.StorageWriter.writeUInt16,
   int32   = ros.StorageWriter.writeInt32,
@@ -233,12 +254,12 @@ local writeMethods = {
   float64 = ros.StorageWriter.writeFloat64,
   string  = ros.StorageWriter.writeString,
   time    = function(sw, value)
-    sw:writeUInt32(value[1])
-    sw:writeUInt32(value[2])
+    sw:writeUInt32(value:get_sec())
+    sw:writeUInt32(value:get_nsec())
   end,
   duration = function(sw, value)
-    sw:writeInt32(value[1])
-    sw:writeInt32(value[2])
+    sw:writeInt32(value:get_sec())
+    sw:writeInt32(value:get_nsec())
   end
 }
 
@@ -293,7 +314,7 @@ local readMethods = {
   byte    = ros.StorageReader.readUInt8,
   char    = ros.StorageReader.readInt8,
   int8    = ros.StorageReader.readInt8,
-  uint8   = ros.StorageReader.readUInt8, 
+  uint8   = ros.StorageReader.readUInt8,
   int16   = ros.StorageReader.readInt16,
   uint16  = ros.StorageReader.readUInt16,
   int32   = ros.StorageReader.readInt32,
@@ -304,10 +325,10 @@ local readMethods = {
   float64 = ros.StorageReader.readFloat64,
   string  = ros.StorageReader.readString,
   time    = function(sr)
-    return { sr:readUInt32(), sr:readUInt32() }
+    return ros.Time(sr:readUInt32(), sr:readUInt32())
   end,
   duration = function(sr)
-    return { sr:readInt32(), sr:readInt32() }
+    return ros.Duration(sr:readInt32(), sr:readInt32())
   end
 }
 

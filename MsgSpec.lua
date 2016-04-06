@@ -10,12 +10,12 @@ local msgspec_cache = {}
 local BUILTIN_TYPES = {
   'bool',
   'char', 'byte',
-  'int8', 'uint8', 
-  'int16', 'uint16', 
-  'int32', 'uint32', 
-  'int64', 'uint64', 
+  'int8', 'uint8',
+  'int16', 'uint16',
+  'int32', 'uint32',
+  'int64', 'uint64',
   'float32',
-  'float64', 
+  'float64',
   'string'
 }
 
@@ -98,14 +98,14 @@ local function load_from_iterator(self, iterator)
       if ftype and fname then
         if ftype == 'Header' then ftype = DEFAULT_PACKAGE .. '/Header' end
         ftype = self:resolve_type(ftype)
-        
+
         local msgspec
         if not is_builtin_type(ftype) then
           msgspec = get_msgspec(base_type(ftype))   -- load sub-spec
           fixed_size = msgspec.fixed_size
         end
-        
-        local typeinfo = { 
+
+        local typeinfo = {
           -- allow array like access by index
           ftype, fname, msgspec,
 
@@ -118,6 +118,9 @@ local function load_from_iterator(self, iterator)
           is_builtin = is_builtin_type(ftype),
           value_index = field_index
         }
+
+        -- cloneable indicates that a :clone() method is present (for arrays it refers to cloneability of elements)
+        typeinfo.cloneable = not typeinfo.is_builtin or typeinfo.base_type == 'duration' or typeinfo.base_type == 'time'
 
         -- check tensor mapping
         if typeinfo.is_array then
@@ -189,7 +192,7 @@ end
 function MsgSpec:__init(type, specstr)
   assert(type, 'Message type is expected')
   self.type = type
-  
+
   local slashpos = type:find('/')
   if slashpos then
     self.package    = type:sub(1, slashpos - 1)

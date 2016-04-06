@@ -50,9 +50,23 @@ function ServiceClient:clone()
   return c
 end
 
+function ServiceClient:createRequest()
+  return ros.Message(self.spec.reqspec)
+end
+
 function ServiceClient:call(request_msg)
   if not self:isValid() then
     error('ros.ServiceClient instance is not valid.')
+  end
+
+  if not torch.isTypeOf(request_msg, ros.Message) then
+    -- support filling request message from simple value or table
+    if type(request_msg) ~= 'table' then
+      request_msg = { request_msg }
+    end
+    local req = self:createRequest()
+    req:fillFromTable(request_msg)
+    request_msg = req
   end
 
   response_msg = ros.Message(self.spec.respspec, true)

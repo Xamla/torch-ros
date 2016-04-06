@@ -35,7 +35,7 @@ function init()
     "isSystemTime",
     "isValid"
   }
-  
+
   return utils.create_method_table("ros_Time_", Time_method_names)
 end
 
@@ -80,6 +80,10 @@ function Time:set(_1, _2)
   end
 end
 
+function Time:get()
+  return self:get_sec(), self:get_nsec()
+end
+
 function Time:assign(other)
   f.assign(self.o, other:cdata())
 end
@@ -91,7 +95,7 @@ end
 function Time:set_sec(sec)
   f.set_sec(self.o, sec)
 end
-  
+
 function Time:get_nsec()
   return f.get_nsec(self.o)
 end

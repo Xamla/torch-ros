@@ -27,7 +27,7 @@ function init()
     "isZero",
     "sleep"
   }
-  
+
   return utils.create_method_table("ros_Duration_", Duration_method_names)
 end
 
@@ -58,6 +58,10 @@ function Duration:set(_1, _2)
   else
     f.set(self.o, _1, _2)
   end
+end
+
+function Duration:get()
+  return self:get_sec(), self:get_nsec()
 end
 
 function Duration:assign(other)

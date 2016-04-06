@@ -47,7 +47,7 @@ msg.data = lena:reshape(msg.height * msg.width * 3)
 print('press ctrl+c to exit')
 while ros.ok() do
   if publisher:getNumSubscribers() > 0 then
-    lena = 255 - lena -- invert image to get some blinking effect
+    lena = -lena -- invert image to get some blinking effect
     msg.data = lena:reshape(msg.height * msg.width * 3)
     publisher:publish(msg)
   end
