@@ -24,9 +24,9 @@ function base_test()
 end
 
 
-local header_spec = ros.MsgSpec('sensor_msgs/Image')
+local img_spec = ros.MsgSpec('sensor_msgs/Image')
 
-local msg = ros.Message(header_spec)
+local msg = ros.Message(img_spec)
 msg.header.seq = 918273
 msg.width = 123
 msg.height = 456
@@ -36,7 +36,7 @@ msg.data = torch.ByteTensor(10):fill(1)
 v = msg:serialize()
 v:shrinkToFit()
 
-local msg2 = ros.Message(header_spec)
+local msg2 = ros.Message(img_spec, true)
 msg2:deserialize(v.storage)
 
 print(msg2.spec)

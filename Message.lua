@@ -316,6 +316,9 @@ local function deserialize_internal(self, sr)
     if f.is_array then
       if f.tensor_type then
         -- tensor
+        if not self.values[f.name] then
+          self.values[f.name] = f.tensor_type()
+        end
         self.values[f.name]:set(sr:readTensor(f.tensor_type))
       else
         -- regular array
