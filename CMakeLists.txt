@@ -18,6 +18,7 @@ SET(src
   "${SOURCE_DIR}/std/variable_table.cpp"
 
   "${SOURCE_DIR}/ros/init.cpp"
+  "${SOURCE_DIR}/ros/callback_queue.cpp"
   "${SOURCE_DIR}/ros/node_handle.cpp"
   "${SOURCE_DIR}/ros/master.cpp"
   "${SOURCE_DIR}/ros/this_node.cpp"

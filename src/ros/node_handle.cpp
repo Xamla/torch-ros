@@ -68,6 +68,28 @@ ROSIMP(ros::ServiceClient *, NodeHandle, serviceClient)(
   return new ros::ServiceClient(self->serviceClient(ops));
 }
 
+ROSIMP(ros::ServiceServer*, NodeHandle, advertiseService)(
+  ros::NodeHandle *self,
+  const char *service,
+  const char *md5sum,
+  const char *datatype,
+  const char *req_datatype,
+  const char *res_datatype
+) {
+  ros::AdvertiseServiceOptions ops;
+
+  ops.service = service;
+  ops.md5sum = md5sum;
+  ops.datatype = datatype;            // package/ServiceName
+  ops.req_datatype = req_datatype;    // package/ServiceNameRequest
+  ops.res_datatype = res_datatype;    // package/ServiceNameResponse
+
+  //ops.helper = ;
+
+  const ros::ServiceServer &srv = self->advertiseService(ops);
+  return new ros::ServiceServer(srv);
+}
+
 ROSIMP(bool, NodeHandle, hasParam)(ros::NodeHandle *self, const char *key) {
   return self->hasParam(key);
 }

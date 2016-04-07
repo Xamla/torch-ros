@@ -246,6 +246,17 @@ void ros_Duration_fromSec(ros_Duration *self, double t);
 bool ros_Duration_isZero(ros_Duration *self);
 void ros_Duration_sleep(ros_Duration *self);
 
+typedef struct ros_CallbackQueue {} ros_CallbackQueue;
+ros_CallbackQueue * ros_CallbackQueue_new(bool enabled);
+void ros_CallbackQueue_delete(ros_CallbackQueue *self);
+int ros_CallbackQueue_callOne(ros_CallbackQueue *self, ros_Duration *timeout);
+void ros_CallbackQueue_callAvailable(ros_CallbackQueue *self, ros_Duration *timeout);
+bool ros_CallbackQueue_isEmpty(ros_CallbackQueue *self);
+void ros_CallbackQueue_clear(ros_CallbackQueue *self);
+void ros_CallbackQueue_enable(ros_CallbackQueue *self);
+void ros_CallbackQueue_disable(ros_CallbackQueue *self);
+bool ros_CallbackQueue_isEnabled(ros_CallbackQueue *self);
+
 typedef struct ros_Subscriber {} ros_Subscriber;
 ros_Subscriber *ros_Subscriber_clone(ros_Subscriber *self);
 void ros_Subscriber_delete(ros_Subscriber *self);
