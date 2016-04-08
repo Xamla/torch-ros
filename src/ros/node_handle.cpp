@@ -82,17 +82,19 @@ public:
   virtual bool call(ros::ServiceCallbackHelperCallParams &params) {
     THByteStorage *response = THByteStorage_new();
 
-    // copy requet data
-    THByteStorage *request = THByteStorage_newWithSize(params.request.num_bytes);
+    // copy request data
+    THByteStorage *request = THByteStorage_newWithSize(params.request.num_bytes + sizeof(uint32_t));
     uint8_t *request_data = THByteStorage_data(request);
-    memcpy(request_data, params.request.message_start, params.request.num_bytes);
+    ros::serialization::OStream stream(request_data, THByteStorage_size(request));
+    stream.next((uint32_t)params.request.num_bytes);
+    memcpy(stream.advance(params.request.num_bytes), params.request.message_start, params.request.num_bytes);
 
     bool result = this->callback(request, response, params.connection_header.get());
 
     // copy response
     long response_length = THByteStorage_size(response);
     if (response_length > 0) {
-      uint8_t  *response_data = THByteStorage_data(response);
+      uint8_t *response_data = THByteStorage_data(response);
       boost::shared_array<uint8_t> dst(new uint8_t[response_length]);
       memcpy(dst.get(), response_data, response_length);
       params.response = ros::SerializedMessage(dst, response_length);

@@ -74,7 +74,7 @@ end
 
 function NodeHandle:resolveName(name, remap)
   local result = std.String()
-  f.resolveName(self.o, name, remap or true)
+  f.resolveName(self.o, name, remap or true, result:cdata())
   return result
 end
 
@@ -113,22 +113,30 @@ function NodeHandle:advertiseService(service_name, service_spec, callback_queue,
 
   -- create message serialization/deserialization wrapper function
   local function handler(request_storage, response_storage, header_values)
+
+    -- create torch.ByteStorage() obj from THByteStorage* and addref
+    request_storage = torch.pushudata(request_storage, 'torch.ByteStorage')
+    request_storage:retain()
+
+    response_storage = torch.pushudata(response_storage, 'torch.ByteStorage')
+    response_storage:retain()
+
     -- create class around header values string map...
     local header = torch.factory('std.StringMap')()
     rawset(header, 'o', header_values)
 
     -- deserialize request
-    request_msg = ros.Message(service_spec.request_spec, true)
+    local request_msg = ros.Message(service_spec.request_spec, true)
     request_msg:deserialize(ros.StorageReader(request_storage))
+    local response_msg = ros.Message(service_spec.response_spec)
 
     -- call actual service handler function
-    local status, response_msg = service_handler_func(request_msg, header)
+    local status = service_handler_func(request_msg, response_msg, header)
 
     -- serialize response
-    local v = response_msg:serialize()
-    v:shrinkToFit()
-    response_storage:resize(v.storage:size())
-    response_storage:copy(v.storage)
+    local sw = ros.StorageWriter(response_storage)
+    local v = response_msg:serializeServiceResponse(sw, status)
+    sw:shrinkToFit()
 
     return status
   end

@@ -24,10 +24,10 @@ local f = init()
 
 console.level = {
   Debug = 0,
-  Info = 1,
-  Warn = 2,
+  Info  = 1,
+  Warn  = 2,
   Error = 3,
-  Fatal= 4,
+  Fatal = 4,
 }
 
 function console.initialize()

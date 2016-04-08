@@ -200,6 +200,6 @@
     <File Name="demo/robotiq_c_model.lua"/>
     <File Name="demo/robotiq_ft_sensor.lua"/>
     <File Name="demo/publish_lena_image.lua"/>
-    <File Name="demo/service_server.lua"/>
+    <File Name="demo/advertiseService.lua"/>
   </VirtualDirectory>
 </CodeLite_Project>

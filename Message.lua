@@ -263,7 +263,7 @@ local writeMethods = {
   end
 }
 
-local function serialize_inner(self, sw)
+local function serialize_inner(sw, self)
 
   for _, f in ipairs(self.spec.fields) do
     local v = self.values[f.name]
@@ -275,9 +275,14 @@ local function serialize_inner(self, sw)
         -- regular array
         local n = #v
         sw:writeUInt32(n)    -- element count
-        local write = writeMethods[f.base_type]
-        if not write then
-          error(string.format('Mising write function for type \'%s\'.', f.base_type))
+        local write
+        if f.is_builtin then
+          write = writeMethods[f.base_type]
+          if not write then
+            error(string.format('Mising write function for type \'%s\'.', f.base_type))
+          end
+        else
+          write = serialize_inner
         end
         for i=1,n do
           write(sw, v[i])
@@ -292,7 +297,7 @@ local function serialize_inner(self, sw)
       write(sw, v)
     else
       -- complex message
-      serialize_inner(v, sw)
+      serialize_inner(sw, v)
     end
   end
 end
@@ -302,9 +307,30 @@ function Message:serialize(sw)
   local offset = sw.offset
   sw:writeUInt32(0)   -- reserve space for message size
 
-  serialize_inner(self, sw)
+  serialize_inner(sw, self)
 
   sw:writeUInt32(sw.offset - offset - 4, offset)
+
+  return sw
+end
+
+function Message:serializeServiceResponse(sw, ok)
+  sw = sw or ros.StorageWriter()
+
+  local offset = sw.offset
+  sw:writeUInt8(0)    -- reserve space for ok-flag
+
+  if ok then
+    sw:writeUInt32(0)   -- reserve space for message size
+
+    serialize_inner(sw, self)
+
+    sw:writeUInt8(1, offset)     -- ok-flag
+    sw:writeUInt32(sw.offset - offset - 5, offset+1)
+  else
+    serialize_inner(sw, self)
+    sw:writeUInt8(0, offset)
+  end
 
   return sw
 end

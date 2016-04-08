@@ -48,5 +48,7 @@ function ServiceServer:shutdown()
 end
 
 function ServiceServer:getService()
-  return f.getService(self.o)
+  local result = std.String()
+  f.getService(self.o, result:cdata())
+  return result:get()
 end

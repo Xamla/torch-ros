@@ -17,10 +17,10 @@ public:
   virtual ros::VoidConstPtr deserialize(const ros::SubscriptionCallbackHelperDeserializeParams &params) {
 
     // create buffer and copy message bytes
-    boost::shared_ptr<RawMessage> buffer(new RawMessage(params.length + 4));
+    boost::shared_ptr<RawMessage> buffer(new RawMessage(params.length + sizeof(uint32_t)));
     ros::serialization::OStream stream(buffer->get_OStream());
     stream.next((uint32_t)params.length);
-    memcpy(buffer->get() + 4, params.buffer, params.length);
+    memcpy(buffer->get() + sizeof(uint32_t), params.buffer, params.length);
 
     // lock queue mutex and add new message buffer to queue
     {
