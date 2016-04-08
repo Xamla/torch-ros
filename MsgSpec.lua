@@ -165,7 +165,7 @@ end
 --- (internal) Load specification from string.
 -- @param s string containing the message specification
 local function load_from_string(self, s)
-  return load_from_iterator(self, s:gmatch('(.-)$'))
+  return load_from_iterator(self, s:gmatch('([^\r\n]+)\n?'))
 end
 
 --- (internal) Calculate MD5 sum.

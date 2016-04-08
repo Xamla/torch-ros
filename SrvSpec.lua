@@ -24,7 +24,7 @@ ros.get_srvspec = get_srvspec
 -- @param iterator iterator that returns one line of the specification at a time
 local function load_from_iterator(self, iterator)
   local request, response  = {}, {}
-  
+
   -- extract the request and response message descriptions
   local t = request
   for line in iterator do
@@ -48,7 +48,7 @@ end
 --- (internal) Load specification from string.
 -- @param s string containing the message specification
 local function load_from_string(self, s)
-  return load_from_iterator(self, s:gmatch('(.-)$'))
+  return load_from_iterator(self, s:gmatch('([^\r\n]+)\n?'))
 end
 
 -- (internal) Calculate MD5 sum.
