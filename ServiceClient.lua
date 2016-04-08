@@ -69,7 +69,7 @@ function ServiceClient:call(request_msg)
     request_msg = req
   end
 
-  response_msg = ros.Message(self.spec.response_spec, true)
+  local response_msg = ros.Message(self.spec.response_spec, true)
 
   local v = request_msg:serialize()
   v:shrinkToFit()
