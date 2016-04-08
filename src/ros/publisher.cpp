@@ -28,7 +28,7 @@ ROSIMP(bool, Publisher, isLatched)(ros::Publisher *self) {
 ROSIMP(void, Publisher, publish)(ros::Publisher *self, THByteStorage *serialized_msg, ptrdiff_t offset, size_t length) {
   RawMessage msg;
   long storage_size = THByteStorage_size(serialized_msg);
-  if (offset + length > storage_size)
+  if (offset + length > static_cast<size_t>(storage_size) || storage_size < 0)
     throw std::range_error("Specified array segment lies outside buffer.");
   msg.copyFrom(THByteStorage_data(serialized_msg) + offset, length);
   self->publish(msg);

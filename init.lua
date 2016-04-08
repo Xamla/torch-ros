@@ -26,6 +26,7 @@ require 'ros.MessageBuffer'
 require 'ros.Subscriber'
 require 'ros.Publisher'
 require 'ros.ServiceClient'
+require 'ros.ServiceServer'
 require 'ros.NodeHandle'
 
 -- tf

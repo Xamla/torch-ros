@@ -51,7 +51,7 @@ function ServiceClient:clone()
 end
 
 function ServiceClient:createRequest()
-  return ros.Message(self.spec.reqspec)
+  return ros.Message(self.spec.request_spec)
 end
 
 function ServiceClient:call(request_msg)
@@ -69,7 +69,7 @@ function ServiceClient:call(request_msg)
     request_msg = req
   end
 
-  response_msg = ros.Message(self.spec.respspec, true)
+  response_msg = ros.Message(self.spec.response_spec, true)
 
   local v = request_msg:serialize()
   v:shrinkToFit()

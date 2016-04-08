@@ -25,7 +25,7 @@ public:
     // lock queue mutex and add new message buffer to queue
     {
       boost::unique_lock<boost::mutex> lock(queue_lock);
-      if (max_backlog >= 0 && message_queue.size() > max_backlog)
+      if (max_backlog >= 0 && message_queue.size() > static_cast<size_t>(max_backlog))
         message_queue.pop_front();
       message_queue.push_back(buffer);
     }

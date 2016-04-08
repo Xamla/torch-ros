@@ -35,8 +35,8 @@ local function load_from_iterator(self, iterator)
     end
   end
 
-  self.reqspec  = ros.MsgSpec(self.type .. '_Request', table.concat(request, '\n'))
-  self.respspec = ros.MsgSpec(self.type .. '_Response', table.concat(response, '\n'))
+  self.request_spec  = ros.MsgSpec(self.type .. '_Request', table.concat(request, '\n'))
+  self.response_spec = ros.MsgSpec(self.type .. '_Response', table.concat(response, '\n'))
 end
 
 local function load_srvspec(self)
@@ -55,7 +55,7 @@ end
 -- Generates the MD5 sum for this message type.
 -- @return MD5 sum as text
 local function calc_md5(self)
-  local s = self.reqspec:generate_hashtext() .. self.respspec:generate_hashtext()
+  local s = self.request_spec:generate_hashtext() .. self.response_spec:generate_hashtext()
   self.md5sum = md5.sumhexa(s)
   return self.md5sum
 end
@@ -92,9 +92,9 @@ end
 function SrvSpec:format_spec(ln)
   table.insert(ln, 'Service ' .. self.type)
   table.insert(ln, 'MD5: ' .. self:md5())
-  self.reqspec:format_spec(ln)
+  self.request_spec:format_spec(ln)
   table.insert(ln, '---')
-  self.respspec:format_spec(ln)
+  self.response_spec:format_spec(ln)
   return ln
 end
 

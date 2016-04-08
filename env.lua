@@ -292,7 +292,13 @@ bool ros_ServiceClient_exists(ros_ServiceClient *self);
 void ros_ServiceClient_shutdown(ros_ServiceClient *self);
 bool ros_ServiceClient_isValid(ros_ServiceClient *self);
 
+typedef struct ros_ServiceServer {} ros_ServiceServer;
+void ros_ServiceServer_delete(ros_ServiceServer *ptr);
+void ros_ServiceServer_shutdown(ros_ServiceServer *self);
+void ros_ServiceServer_getService(ros_ServiceServer *self, std_string *result);
+
 typedef struct ros_NodeHandle {} ros_NodeHandle;
+typedef bool (*ServiceRequestCallback)(THByteStorage *, THByteStorage *, std_StringMap *);
 ros_NodeHandle *ros_NodeHandle_new(const char *ns);
 void ros_NodeHandle_delete(ros_NodeHandle *self);
 void ros_NodeHandle_shutdown(ros_NodeHandle *self);
@@ -303,6 +309,7 @@ void ros_NodeHandle_resolveName(ros_NodeHandle *self, const char *name, bool rem
 ros_Subscriber *ros_NodeHandle_subscribe(ros_NodeHandle *self, MessageBuffer *message_buffer, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype);
 ros_Publisher *ros_NodeHandle_advertise(ros_NodeHandle *self, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype, const char *message_definition);
 ros_ServiceClient *ros_NodeHandle_serviceClient(ros_NodeHandle *self, const char *service, const char *md5sum, bool persistent, std_StringMap *header);
+ros_ServiceServer* ros_NodeHandle_advertiseService(ros_NodeHandle *self, const char *service, const char *md5sum, const char *datatype, const char *req_datatype, const char *res_datatype, ros_CallbackQueue *callback_queue, ServiceRequestCallback callback);
 bool ros_NodeHandle_hasParam(ros_NodeHandle *self, const char *key);
 bool ros_NodeHandle_deleteParam(ros_NodeHandle *self, const char *key);
 bool ros_NodeHandle_getParamString(ros_NodeHandle *self, const char *key, std_string *result);

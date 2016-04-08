@@ -26,6 +26,7 @@ SET(src
   "${SOURCE_DIR}/ros/subscriber.cpp"
   "${SOURCE_DIR}/ros/publisher.cpp"
   "${SOURCE_DIR}/ros/service_client.cpp"
+  "${SOURCE_DIR}/ros/service_server.cpp"
   "${SOURCE_DIR}/ros/async_spinner.cpp"
   "${SOURCE_DIR}/ros/time.cpp"
   "${SOURCE_DIR}/ros/duration.cpp"

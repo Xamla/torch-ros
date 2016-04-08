@@ -4,7 +4,8 @@
 class RawMessage {
 public:
   RawMessage()
-    : num_bytes(0) {
+    : buffer()
+    , num_bytes(0) {
   }
 
   RawMessage(size_t length)
@@ -39,8 +40,8 @@ public:
   }
 
 private:
-  size_t num_bytes;
   boost::shared_array<uint8_t> buffer;
+  size_t num_bytes;
 };
 
 namespace ros {

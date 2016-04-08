@@ -1,4 +1,5 @@
 #include "torch-ros.h"
+#include <ros/callback_queue.h>
 #include "../std/torch-std.h"
 #include "message_buffer.h"
 #include "../utils.h"
@@ -68,13 +69,57 @@ ROSIMP(ros::ServiceClient *, NodeHandle, serviceClient)(
   return new ros::ServiceClient(self->serviceClient(ops));
 }
 
+typedef bool (*ServiceRequestCallback)(THByteStorage *, THByteStorage *, std::map<std::string, std::string> *);
+
+class ServiceRequestCallbackHandler
+ : public ros::ServiceCallbackHelper
+{
+public:
+  ServiceRequestCallbackHandler(ServiceRequestCallback callback)
+    : callback(callback) {
+  }
+
+  virtual bool call(ros::ServiceCallbackHelperCallParams &params) {
+    THByteStorage *response = THByteStorage_new();
+
+    // copy requet data
+    THByteStorage *request = THByteStorage_newWithSize(params.request.num_bytes);
+    uint8_t *request_data = THByteStorage_data(request);
+    memcpy(request_data, params.request.message_start, params.request.num_bytes);
+
+    bool result = this->callback(request, response, params.connection_header.get());
+
+    // copy response
+    long response_length = THByteStorage_size(response);
+    if (response_length > 0) {
+      uint8_t  *response_data = THByteStorage_data(response);
+      boost::shared_array<uint8_t> dst(new uint8_t[response_length]);
+      memcpy(dst.get(), response_data, response_length);
+      params.response = ros::SerializedMessage(dst, response_length);
+    } else {
+      params.response = ros::SerializedMessage();
+    }
+
+    THByteStorage_free(response);
+    THByteStorage_free(request);
+
+    return result;
+  }
+
+private:
+  ServiceRequestCallback callback;
+};
+
+
 ROSIMP(ros::ServiceServer*, NodeHandle, advertiseService)(
   ros::NodeHandle *self,
   const char *service,
   const char *md5sum,
   const char *datatype,
   const char *req_datatype,
-  const char *res_datatype
+  const char *res_datatype,
+  ros::CallbackQueue *callback_queue,
+  ServiceRequestCallback callback
 ) {
   ros::AdvertiseServiceOptions ops;
 
@@ -84,7 +129,8 @@ ROSIMP(ros::ServiceServer*, NodeHandle, advertiseService)(
   ops.req_datatype = req_datatype;    // package/ServiceNameRequest
   ops.res_datatype = res_datatype;    // package/ServiceNameResponse
 
-  //ops.helper = ;
+  ops.helper.reset(new ServiceRequestCallbackHandler(callback));
+  ops.callback_queue = callback_queue;
 
   const ros::ServiceServer &srv = self->advertiseService(ops);
   return new ros::ServiceServer(srv);

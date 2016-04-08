@@ -18,6 +18,7 @@ function init()
     'subscribe',
     'advertise',
     'serviceClient',
+    'advertiseService',
     'hasParam',
     'deleteParam',
     'getParamString',
@@ -103,6 +104,47 @@ function NodeHandle:serviceClient(service_name, service_spec, persistent, header
   end
   local client = f.serviceClient(self.o, service_name, service_spec:md5(), persistent or false, utils.cdata(header_values))
   return ros.ServiceClient(client, service_spec)
+end
+
+function NodeHandle:advertiseService(service_name, service_spec, callback_queue, service_handler_func)
+  if not torch.isTypeOf(callback_queue, ros.CallbackQueue) then
+    error('Explicitly specified callback queue required (Lua is single-threaded).')
+  end
+
+  -- create message serialization/deserialization wrapper function
+  local function handler(request_storage, response_storage, header_values)
+    -- create class around header values string map...
+    local header = torch.factory('std.StringMap')()
+    rawset(header, 'o', header_values)
+
+    -- deserialize request
+    request_msg = ros.Message(service_spec.request_spec, true)
+    request_msg:deserialize(ros.StorageReader(request_storage))
+
+    -- call actual service handler function
+    local status, response_msg = service_handler_func(request_msg, header)
+
+    -- serialize response
+    local v = response_msg:serialize()
+    v:shrinkToFit()
+    response_storage:resize(v.storage:size())
+    response_storage:copy(v.storage)
+
+    return status
+  end
+
+  local cb = ffi.cast("ServiceRequestCallback", handler)
+  local srv_ptr = f.advertiseService(
+    self.o,
+    service_name,
+    service_spec:md5(),
+    service_spec.type,
+    service_spec.request_spec.type,
+    service_spec.response_spec.type,
+    callback_queue:cdata(),
+    cb
+  )
+  return ros.ServiceServer(srv_ptr, cb, service_handler_func)
 end
 
 function NodeHandle:hasParam(key)
