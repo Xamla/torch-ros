@@ -98,6 +98,9 @@
       <File Name="master.lua"/>
       <File Name="CallbackQueue.lua"/>
       <File Name="ServiceServer.lua"/>
+      <VirtualDirectory Name="actionlib">
+        <File Name="torch-ros/lua/actionlib/ActionServer.lua"/>
+      </VirtualDirectory>
     </VirtualDirectory>
     <File Name=".gitignore"/>
     <VirtualDirectory Name="test">
