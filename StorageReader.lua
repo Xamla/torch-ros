@@ -69,13 +69,16 @@ end
 
 function StorageReader:readTensor(tensor_ctor, offset)
   local offset_ = offset or self.offset
-  local n = self:readUInt32(offset)
+  local n = self:readUInt32(offset_)
   local t = tensor_ctor()
   local sizeInBytes = n * t:elementSize()
   offset_ = offset_ + SIZE_OF_UINT32
   ensurePosReadable(self, offset_ + sizeInBytes - 1)
   t:resize(n)
   ffi.copy(t:data(), self.data + offset_, sizeInBytes)
+  if not offset then
+    self.offset = offset_ + sizeInBytes
+  end
   return t
 end
 

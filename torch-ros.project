@@ -85,7 +85,6 @@
       <File Name="StorageReader.lua"/>
       <File Name="Subscriber.lua"/>
       <File Name="MessageBuffer.lua"/>
-      <File Name="NodeHandle.lua"/>
       <File Name="ros.lua"/>
       <File Name="Publisher.lua"/>
       <File Name="console.lua"/>
@@ -204,5 +203,8 @@
     <File Name="demo/robotiq_ft_sensor.lua"/>
     <File Name="demo/publish_lena_image.lua"/>
     <File Name="demo/advertiseService.lua"/>
+    <File Name="demo/service_server.lua"/>
+    <File Name="NodeHandle.lua"/>
+    <File Name="demo/joystick.lua"/>
   </VirtualDirectory>
 </CodeLite_Project>
