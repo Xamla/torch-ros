@@ -24,7 +24,7 @@ STDIMP(const char *, StringMap, getAt)(StringMap *self, const char *key) {
   return (*self)[key].c_str();
 }
 
-STDIMP(const char *, StringMap, setAt)(StringMap *self, const char *key, const char *value) {
+STDIMP(void, StringMap, setAt)(StringMap *self, const char *key, const char *value) {
   (*self)[key] = value;
 }
 

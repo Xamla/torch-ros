@@ -98,7 +98,7 @@ void std_StringMap_delete(std_StringMap *ptr);
 int std_StringMap_size(std_StringMap *self);
 void std_StringMap_clear(std_StringMap *self);
 const char *std_StringMap_getAt(std_StringMap *self, const char *key);
-const char *std_StringMap_setAt(std_StringMap *self, const char *key, const char *value);
+void std_StringMap_setAt(std_StringMap *self, const char *key, const char *value);
 bool std_StringMap_insert(std_StringMap *self, const char *key, const char *value);
 bool std_StringMap_erase(std_StringMap *self, const char *key);
 bool std_StringMap_exists(std_StringMap *self, const char *key);

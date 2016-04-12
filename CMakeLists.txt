@@ -1,15 +1,15 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.8.11)
+cmake_minimum_required(VERSION 2.8.11)
 
-PROJECT(torch-ros)
+project(torch-ros)
 
-FIND_PACKAGE(Torch REQUIRED)
-FIND_PACKAGE(Boost 1.47.0 REQUIRED COMPONENTS system thread chrono)
-FIND_PACKAGE(catkin REQUIRED COMPONENTS roscpp std_msgs tf)
+find_package(Torch REQUIRED)
+find_package(Boost 1.47.0 REQUIRED COMPONENTS system thread chrono)
+find_package(catkin REQUIRED COMPONENTS roscpp std_msgs tf)
 
-SET(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmax-errors=3 -Wall" )
+set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmax-errors=3 -Wall" )
 
-SET(src
+set(src
   "${SOURCE_DIR}/std/string.cpp"
   "${SOURCE_DIR}/std/string_vector.cpp"
   "${SOURCE_DIR}/std/string_map.cpp"
@@ -45,18 +45,14 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-LINK_DIRECTORIES(
+link_directories(
   ${Torch_INSTALL_LIB}
   ${Boost_LIBRARY_DIRS}
 )
 
-FILE(GLOB luasrc *.lua)
-
-ADD_LIBRARY(torch-ros MODULE ${src})
+add_library(torch-ros MODULE ${src})
 
 target_link_libraries(torch-ros TH ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
 
-INSTALL(TARGETS torch-ros LIBRARY DESTINATION ${Torch_INSTALL_LUA_CPATH_SUBDIR})
-#INSTALL(DIRECTORY "doc" DESTINATION "${Torch_INSTALL_LUA_PATH_SUBDIR}/ros")
-INSTALL(FILES "README.md" DESTINATION "${Torch_INSTALL_LUA_PATH_SUBDIR}/ros")
-INSTALL(FILES ${luasrc} DESTINATION "${Torch_INSTALL_LUA_PATH_SUBDIR}/ros")
+install(TARGETS torch-ros LIBRARY DESTINATION ${Torch_INSTALL_LUA_CPATH_SUBDIR})
+install(DIRECTORY "lua/" DESTINATION "${Torch_INSTALL_LUA_PATH_SUBDIR}/ros" FILES_MATCHING PATTERN "*.lua")

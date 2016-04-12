@@ -1,12 +1,12 @@
 local ros = require 'ros.env'
 
 -- std
-require 'ros.String'
-require 'ros.StringVector'
-require 'ros.StringMap'
-require 'ros.Variable'
-require 'ros.VariableVector'
-require 'ros.VariableTable'
+require 'ros.std.String'
+require 'ros.std.StringVector'
+require 'ros.std.StringMap'
+require 'ros.std.Variable'
+require 'ros.std.VariableVector'
+require 'ros.std.VariableTable'
 
 -- ros
 require 'ros.ros'
@@ -30,10 +30,10 @@ require 'ros.ServiceServer'
 require 'ros.NodeHandle'
 
 -- tf
-require 'ros.Quaternion'
-require 'ros.Transform'
-require 'ros.StampedTransform'
-require 'ros.TransformBroadcaster'
-require 'ros.TransformListener'
+require 'ros.tf.Quaternion'
+require 'ros.tf.Transform'
+require 'ros.tf.StampedTransform'
+require 'ros.tf.TransformBroadcaster'
+require 'ros.tf.TransformListener'
 
 return ros
