@@ -1,6 +1,8 @@
 local ros = require 'ros.env'
 local std = ros.std
 
+local actionlib = ros.actionlib
+
 --[[
 http://wiki.ros.org/actionlib
 http://wiki.ros.org/actionlib/DetailedDescription
@@ -8,14 +10,21 @@ https://github.com/ros/actionlib/tree/indigo-devel/include/actionlib
 https://github.com/timn/ros-actionlib_lua/blob/master/src/actionlib/action_client.lua
 ]]
 
-if ros.actionlib == nil then ros.actionlib = {} end
-
-local actionlib = ros.actionlib
 
 local ActionServer = torch.class('ros.actionlib.ActionServer', actionlib)
 
 local GoalID_spec = ros.get_msgspec('actionlib_msgs/GoalID ')
 local GoalStatusArray_spec = ros.get_msgspec('actionlib_msgs/GoalStatusArray')
+
+
+function goalCallback(goal)
+
+end
+
+function cancelCallback(goal_id)
+
+end
+
 
 local function initialize(self)
   --self.result_pub = self.node:advertise<ActionResult>("result", , 50)

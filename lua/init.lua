@@ -36,4 +36,7 @@ require 'ros.tf.StampedTransform'
 require 'ros.tf.TransformBroadcaster'
 require 'ros.tf.TransformListener'
 
+-- actionlib
+require 'ros.actionlib.ActionSpec'
+
 return ros

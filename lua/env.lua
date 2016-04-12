@@ -4,6 +4,7 @@ local ffi = require 'ffi'
 local ros = {}
 ros.std = {}
 ros.tf = {}
+ros.actionlib = {}
 
 local ROS_VER
 local rospack_path_cache = {}
