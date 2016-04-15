@@ -23,11 +23,12 @@ end
 
 local f = init()
 
-function Publisher:__init(ptr)
+function Publisher:__init(ptr, msg_spec)
   if not ptr or not ffi.typeof(ptr) == Publisher_ptr_ct then
     error('argument 1: ros::Publisher * expected.')
   end
   self.o = ptr
+  self.msg_spec = msg_spec
   ffi.gc(ptr, f.delete)
 end
 
@@ -38,6 +39,7 @@ end
 function Publisher:clone()
   local c = torch.factory('ros.Publisher')()
   rawset(c, 'o', f.clone(self.o))
+  rawset(c, 'msg_spec', self.msg_spec)
   return c
 end
 
@@ -73,7 +75,7 @@ function Publisher:waitForSubscriber(min_count, timeout)
   if timeout and not torch.isTypeOf(timeout, ros.Duration) then
     timeout = ros.Duration(timeout)
   end
-  
+
   local start = ros.Time.getNow()
   while true do
     if timeout and (ros.Time.getNow() - start) > timeout then
@@ -84,4 +86,8 @@ function Publisher:waitForSubscriber(min_count, timeout)
     ros.spinOnce()
     sys.sleep(0.001)
   end
+end
+
+function Publisher:createMessage()
+  return ros.Message(self.msg_spec)
 end

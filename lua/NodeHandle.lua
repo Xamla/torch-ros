@@ -92,7 +92,7 @@ function NodeHandle:advertise(topic, msg_spec, queue_size)
     msg_spec = ros.MsgSpec(msg_spec)
   end
   local p = f.advertise(self.o, topic, queue_size or 1000, msg_spec:md5(), msg_spec.type, msg_spec.definition)
-  return ros.Publisher(p)
+  return ros.Publisher(p, msg_spec)
 end
 
 function NodeHandle:serviceClient(service_name, service_spec, persistent, header_values)
