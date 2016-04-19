@@ -33,15 +33,29 @@ function StorageReader:__init(storage, offset, length)
 end
 
 local function createReadMethod(type)
-  local ptr_type = ffi.typeof(type .. '*')
   local element_size = ffi.sizeof(type)
-  return function(self, offset)
-    local offset_ = offset or self.offset
-    ensurePosReadable(self, offset_ + element_size - 1)
-    if not offset then
-      self.offset = self.offset + element_size
+  if ffi.arch == 'arm' then
+    -- use ffi.copy() instead of plain cast on ARM to avoid bus errors
+    local buffer = ffi.typeof(type .. '[1]')()
+    return function(self, offset)
+      local offset_ = offset or self.offset
+      ensurePosReadable(self, offset_ + element_size - 1)
+      if not offset then
+        self.offset = self.offset + element_size
+      end
+      ffi.copy(buffer, self.data + offset_, element_size)
+      return buffer[0]
     end
-    return ffi.cast(ptr_type, self.data + offset_)[0]
+  else
+    local ptr_type = ffi.typeof(type .. '*')
+    return function(self, offset)
+      local offset_ = offset or self.offset
+      ensurePosReadable(self, offset_ + element_size - 1)
+      if not offset then
+        self.offset = self.offset + element_size
+      end
+      return ffi.cast(ptr_type, self.data + offset_)[0]
+    end
   end
 end
 
