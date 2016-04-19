@@ -9,7 +9,7 @@ local function ensurePosWriteable(self, pos, growth_factor)
   growth_factor = growth_factor or 2
   if self.capacity < pos then
     self:setCapacity(math.max(self.capacity * growth_factor, pos))
-  end  
+  end
   self.length = math.max(self.length, pos)
 end
 
@@ -59,14 +59,29 @@ function StorageWriter:setLength(length, shrinkToFit)
 end
 
 local function createWriteMethod(type)
-  local ptr_type = ffi.typeof(type .. '*')
   local element_size = ffi.sizeof(type)
-  return function(self, value, offset)
-    local offset_ = offset or self.offset
-    ensurePosWriteable(self, offset_ + element_size)
-    ffi.cast(ptr_type, self.data + offset_)[0] = value
-    if not offset then
-      self.offset = self.offset + element_size
+  if ffi.arch == 'arm' then
+    -- use ffi.copy() instead of plain cast on ARM to avoid bus errors
+    local buffer = ffi.typeof(type .. '[1]')()
+    return function(self, value, offset)
+      local offset_ = offset or self.offset
+      ensurePosWriteable(self, offset_ + element_size)
+      buffer[0] = value
+      ffi.copy(self.data + offset_, buffer, element_size)
+      if not offset then
+        self.offset = self.offset + element_size
+      end
+    end
+  else
+    local ptr_type = ffi.typeof(type .. '*')
+    local element_size = ffi.sizeof(type)
+    return function(self, value, offset)
+      local offset_ = offset or self.offset
+      ensurePosWriteable(self, offset_ + element_size)
+      ffi.cast(ptr_type, self.data + offset_)[0] = value
+      if not offset then
+        self.offset = self.offset + element_size
+      end
     end
   end
 end
