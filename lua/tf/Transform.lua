@@ -49,6 +49,7 @@ end
 
 function Transform:setIdentity()
   f.setIdentity(self.o)
+  return self
 end
 
 function Transform:getBasis(basis)
@@ -59,6 +60,7 @@ end
 
 function Transform:setBasis(basis)
   self:getBasis()[{}] = basis
+  return self
 end
 
 function Transform:mul(t, output)
@@ -84,6 +86,7 @@ function Transform:setOrigin(origin)
     origin = torch.DoubleTensor(origin)
   end
   self:getOrigin()[{}] = origin
+  return self
 end
 
 function Transform:inverse(output)
@@ -103,6 +106,7 @@ end
 function Transform:fromTensor(t)
   self:getBasis()[{}] = t[{{1,3},{1,3}}]
   self:getOrigin()[{}] = t[{{1,3},{4}}]
+  return self
 end
 
 function Transform:getRotation(output)
@@ -113,6 +117,7 @@ end
 
 function Transform:setRotation(quaternion)
   f.setRotation(self.o, quaternion:cdata())
+  return self
 end
 
 function Transform:__tostring()

@@ -191,6 +191,7 @@ void ros_Console_initialize();
 void ros_Console_shutdown();
 void ros_Console_set_logger_level(const char *name, int level);
 bool ros_Console_get_loggers(std_StringVector *names, THShortTensor *levels);
+bool ros_Console_check_loglevel(int level);
 void *ros_Console_get_logger(const char *name);
 void ros_Console_print(void *logger, int level, const char *text, const char *file, const char *function_name, int line);
 

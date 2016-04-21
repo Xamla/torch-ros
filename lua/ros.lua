@@ -15,10 +15,10 @@ function init()
     "ok",
     "waitForShutdown"
   }
-  
+
   local f = utils.create_method_table("ros___", ros_method_names)
-  
-  for n,v in pairs(f) do 
+
+  for n,v in pairs(f) do
     ros[n] = v
   end
 

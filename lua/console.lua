@@ -13,6 +13,7 @@ function init()
     'shutdown',
     'set_logger_level',
     'get_loggers',
+    'check_loglevel',
     'get_logger',
     'print'
   }
@@ -53,30 +54,38 @@ function console.get_logger(name)
   return f.get_logger(name)
 end
 
+function console.check_loglevel(level)
+  return f.check_loglevel(level)
+end
+
 function console.print(logger, level, text, file, function_name, line)
   f.print(logger or ffi.NULL, level, text, file or '??', function_name or '??', line or 0)
 end
 
 local function create_trace(level)
   return function(...)
-    local msg = string.format(...)
-    local caller = debug.getinfo(2, 'nSl')
-    console.print(nil, level, msg, caller.short_src, caller.name, caller.currentline or caller.linedefined)
+    if console.check_loglevel(level) then
+      local msg = string.format(...)
+      local caller = debug.getinfo(2, 'nSl')
+      console.print(nil, level, msg, caller.short_src, caller.name, caller.currentline or caller.linedefined)
+    end
   end
 end
 
 local function create_trace_named(level)
   return function(name, ...)
-    local logger = console.get_logger(name)
-    local msg = string.format(...)
-    local caller = debug.getinfo(2, 'nSl')
-    console.print(logger, level, msg, caller.short_src, caller.name, caller.currentline or caller.linedefined)
+    if console.check_loglevel(level) then
+      local logger = console.get_logger(name)
+      local msg = string.format(...)
+      local caller = debug.getinfo(2, 'nSl')
+      console.print(logger, level, msg, caller.short_src, caller.name, caller.currentline or caller.linedefined)
+    end
   end
 end
 
 local function create_trace_conditional(level)
   return function(cond, ...)
-    if cond then
+    if cond and console.check_loglevel(level) then
       local msg = string.format(...)
       local caller = debug.getinfo(2, 'nSl')
       console.print(nil, level, msg, caller.short_src, caller.name, caller.currentline or caller.linedefined)
@@ -86,7 +95,7 @@ end
 
 local function create_trace_conditional_named(level)
   return function(cond, name, ...)
-    if cond then
+    if cond and console.check_loglevel(level) then
       local logger = console.get_logger(name)
       local msg = string.format(...)
       local caller = debug.getinfo(2, 'nSl')
@@ -113,3 +122,5 @@ create_logger('', create_trace)
 create_logger('_NAMED', create_trace_named)
 create_logger('_COND', create_trace_conditional)
 create_logger('_COND_NAMED', create_trace_conditional_named)
+
+console.initialize()

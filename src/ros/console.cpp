@@ -1,8 +1,14 @@
 #include "torch-ros.h"
 #include <ros/console.h>
+#include "log4cxx/logger.h"
+
+ros::console::LogLocation global_locs[ros::console::levels::Count];
 
 ROSIMP(void, Console, initialize)() {
   ros::console::initialize();
+  for (int l = ros::console::levels::Debug; l < ros::console::levels::Count; ++l) {
+    ros::console::initializeLogLocation(&global_locs[l], ROSCONSOLE_DEFAULT_NAME, static_cast<ros::console::levels::Level>(l));
+  }
 }
 
 ROSIMP(void, Console, shutdown)() {
@@ -36,14 +42,16 @@ ROSIMP(bool, Console, get_loggers)(std::vector<std::string> *names, THShortTenso
   return true;
 }
 
+ROSIMP(bool, Console, check_loglevel)(int level) {
+  return level >= 0 && level < ros::console::levels::Count && global_locs[level].logger_enabled_;
+}
+
 ROSIMP(void*, Console, get_logger)(const char *name) {
-  ros::console::LogLocation dummy = { false, false, ros::console::levels::Count, 0 };
-  ros::console::initializeLogLocation(&dummy, name, ros::console::levels::Info);
-  return dummy.logger_;
+  return &(*log4cxx::Logger::getLogger(name));
 }
 
 ROSIMP(void, Console, print)(void *logger, int level, const char *text, const char *file, const char *function_name, int line) {
-  static void *default_logger = ros_Console_get_logger(ROSCONSOLE_DEFAULT_NAME);
+  static void *default_logger = global_locs[ros::console::levels::Info].logger_;
 
   if (!logger)
     logger = default_logger;

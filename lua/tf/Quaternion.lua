@@ -88,6 +88,7 @@ function Quaternion:setRotation(axis, angle, deg)
   else
     error('Tensor axis expected')
   end
+  return self
 end
 
 function Quaternion:setEuler(yaw, pitch, roll, deg)
@@ -95,6 +96,7 @@ function Quaternion:setEuler(yaw, pitch, roll, deg)
     roll, pitch, yaw = math.rad(roll), math.rad(pitch), math.rad(yaw)
   end
   f.setEuler(self.o, yaw, pitch, roll)
+  return self
 end
 
 function Quaternion:getRPY(solution_number)
@@ -108,6 +110,7 @@ function Quaternion:setRPY(roll, pitch, yaw, deg)
     roll, pitch, yaw = math.rad(roll), math.rad(pitch), math.rad(yaw)
   end
   f.setRPY(self.o, roll, pitch, yaw)
+  return self
 end
 
 function Quaternion:getAngle()
@@ -136,6 +139,7 @@ end
 
 function Quaternion:normalize()
   f.normalize(self.o)
+  return self
 end
 
 function Quaternion:normalized()

@@ -205,3 +205,5 @@ end
 function Time.isValid()
   return f.isValid()
 end
+
+Time.init()

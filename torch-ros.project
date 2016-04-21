@@ -40,7 +40,6 @@
     <VirtualDirectory Name="ros">
       <File Name="src/ros/subscriber.cpp"/>
       <File Name="src/ros/time.cpp"/>
-      <File Name="src/ros/console.cpp"/>
       <File Name="src/ros/message_buffer.cpp"/>
       <File Name="src/ros/message_buffer.h"/>
       <File Name="src/ros/service_server.cpp"/>
@@ -55,6 +54,7 @@
       <File Name="src/ros/init.cpp"/>
       <File Name="src/ros/master.cpp"/>
       <File Name="src/ros/duration.cpp"/>
+      <File Name="src/ros/console.cpp"/>
     </VirtualDirectory>
     <File Name="src/utils.h"/>
   </VirtualDirectory>
