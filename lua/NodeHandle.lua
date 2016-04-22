@@ -131,7 +131,7 @@ function NodeHandle:advertiseService(service_name, service_spec, callback_queue,
     local response_msg = ros.Message(service_spec.response_spec)
 
     -- call actual service handler function
-    local ok, status = pcall(service_handler_func(request_msg, response_msg, header))
+    local ok, status = pcall(service_handler_func, request_msg, response_msg, header)
     if not ok then
       ros.ERROR(status)
       status = false
