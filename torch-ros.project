@@ -212,5 +212,7 @@
     <File Name="demo/robotiq_c_model.lua"/>
     <File Name="demo/logging.lua"/>
     <File Name="demo/listener.lua"/>
+    <File Name="demo/orbit.lua"/>
+    <File Name="demo/broadcast_transform.lua"/>
   </VirtualDirectory>
 </CodeLite_Project>
