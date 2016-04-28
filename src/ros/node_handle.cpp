@@ -1,4 +1,5 @@
 #include "torch-ros.h"
+#include <boost/algorithm/string.hpp>
 #include <ros/callback_queue.h>
 #include "../std/torch-std.h"
 #include "message_buffer.h"
@@ -38,9 +39,30 @@ ROSIMP(ros::Subscriber *, NodeHandle, subscribe)(
   const char *topic,
   unsigned int queue_size,
   const char *md5sum,
-  const char *datatype
+  const char *datatype,
+  StringVector *transports,
+  StringMap *transport_options
 ) {
   ros::SubscribeOptions so(topic, queue_size, md5sum, datatype);
+  if (transports != NULL) {
+    for (StringVector::const_iterator i = transports->begin(); i != transports->end(); ++i) {
+      const std::string& transport = *i;
+      if (boost::iequals(transport, "udp") || boost::iequals(transport, "unreliable"))
+        so.transport_hints.udp();
+      else if (boost::iequals(transport, "tcp") || boost::iequals(transport, "reliable"))
+        so.transport_hints.tcp();
+    }
+  }
+  if (transport_options != NULL) {
+    for (StringMap::const_iterator i = transport_options->begin(); i != transport_options->end(); ++i) {
+      const std::string& key = i->first;
+      const std::string& value = i->second;
+      if (boost::iequals(key, "tcp_nodelay") || boost::iequals(key, "tcpnodelay"))
+        so.transport_hints.tcpNoDelay(boost::iequals(value, "true"));
+      else if (boost::iequals(key, "maxDatagramSize"))
+        so.transport_hints.maxDatagramSize(boost::lexical_cast<int>(value));
+    }
+  }
   so.helper = *message_buffer;
   return new ros::Subscriber(self->subscribe(so));
 }

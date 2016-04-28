@@ -308,7 +308,7 @@ bool ros_NodeHandle_ok(ros_NodeHandle *self);
 const char *ros_NodeHandle_getNamespace(ros_NodeHandle *self);
 const char *ros_NodeHandle_getUnresolvedNamespace(ros_NodeHandle *self);
 void ros_NodeHandle_resolveName(ros_NodeHandle *self, const char *name, bool remap, std_string *result);
-ros_Subscriber *ros_NodeHandle_subscribe(ros_NodeHandle *self, MessageBuffer *message_buffer, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype);
+ros_Subscriber *ros_NodeHandle_subscribe(ros_NodeHandle *self, MessageBuffer *message_buffer, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype, std_StringVector *transports, std_StringMap *transport_options);
 ros_Publisher *ros_NodeHandle_advertise(ros_NodeHandle *self, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype, const char *message_definition);
 ros_ServiceClient *ros_NodeHandle_serviceClient(ros_NodeHandle *self, const char *service, const char *md5sum, bool persistent, std_StringMap *header);
 ros_ServiceServer* ros_NodeHandle_advertiseService(ros_NodeHandle *self, const char *service, const char *md5sum, const char *datatype, const char *req_datatype, const char *res_datatype, ros_CallbackQueue *callback_queue, ServiceRequestCallback callback);

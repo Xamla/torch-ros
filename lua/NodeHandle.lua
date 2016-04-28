@@ -78,12 +78,33 @@ function NodeHandle:resolveName(name, remap)
   return result
 end
 
-function NodeHandle:subscribe(topic, msg_spec, queue_size)
+function NodeHandle:subscribe(topic, msg_spec, queue_size, transports, transport_options)
   if type(msg_spec) == 'string' then
     msg_spec = ros.MsgSpec(msg_spec)
   end
   buffer = buffer or ros.MessageBuffer()
-  local s = f.subscribe(self.o, buffer:cdata(), topic, queue_size or 1000, msg_spec:md5(), msg_spec.type)
+
+  if transports ~= nil and not torch.isTypeOf(transports, std.StringVector) then
+    if type(transports) == 'table' or type(transports) == 'string' then
+      transports = std.StringVector(transports)
+    else
+      error("Invalid argument 'transports'")
+    end
+  end
+
+  if transport_options ~= nil and not torch.isTypeOf(transport_options, std.StringMap) then
+    if type(transport_options) == 'string' then
+      local name = transport_options
+      transport_options = std.StringMap(transport_options)
+      transport_options[name] = 'true'
+    elseif type(transport_options) == 'table' then
+      transport_options = std.StringMap(transport_options)
+    else
+      error("Invalid argument 'transport_options'")
+    end
+  end
+
+  local s = f.subscribe(self.o, buffer:cdata(), topic, queue_size or 1000, msg_spec:md5(), msg_spec.type, utils.cdata(transports), utils.cdata(transport_options))
   return ros.Subscriber(s, buffer, msg_spec)
 end
 
