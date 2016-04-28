@@ -7,7 +7,7 @@ spinner:start()
 
 nodehandle = ros.NodeHandle()
 
-subscriber = nodehandle:subscribe("dummy_chat", 'std_msgs/String', 100)
+subscriber = nodehandle:subscribe("dummy_chat", 'std_msgs/String', 100, { 'udp', 'tcp' }, { tcp_nodelay = true })
 
 while ros.ok() do
   ros.spinOnce()
@@ -17,3 +17,6 @@ while ros.ok() do
     print(msg)
   end
 end
+
+subscriber:shutdown()
+ros.shutdown()

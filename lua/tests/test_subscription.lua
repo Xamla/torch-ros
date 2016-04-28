@@ -7,10 +7,6 @@ spinner:start()
 
 nodehandle = ros.NodeHandle()
 
-msgbuf = ros.MessageBuffer()
-
-string_spec = ros.MsgSpec('std_msgs/String')
-
 subscriber = nodehandle:subscribe("chatter", 'std_msgs/String', 100)
 
 while ros.ok() do
@@ -20,3 +16,6 @@ while ros.ok() do
     print(msg)
   end
 end
+
+subscriber:shutdown()
+ros.shutdown()

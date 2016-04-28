@@ -4,7 +4,7 @@
 #define MessageBuffer_ptr boost::shared_ptr<MessageBuffer>
 
 ROSIMP(MessageBuffer_ptr*, MessageBuffer, new)(int max_backlog) {
-  return new MessageBuffer_ptr(new MessageBuffer());
+  return new MessageBuffer_ptr(new MessageBuffer(max_backlog));
 }
 
 ROSIMP(void, MessageBuffer, delete)(MessageBuffer_ptr *self) {

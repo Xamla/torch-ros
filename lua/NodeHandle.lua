@@ -82,7 +82,6 @@ function NodeHandle:subscribe(topic, msg_spec, queue_size, transports, transport
   if type(msg_spec) == 'string' then
     msg_spec = ros.MsgSpec(msg_spec)
   end
-  buffer = buffer or ros.MessageBuffer()
 
   if transports ~= nil and not torch.isTypeOf(transports, std.StringVector) then
     if type(transports) == 'table' or type(transports) == 'string' then
@@ -104,7 +103,17 @@ function NodeHandle:subscribe(topic, msg_spec, queue_size, transports, transport
     end
   end
 
-  local s = f.subscribe(self.o, buffer:cdata(), topic, queue_size or 1000, msg_spec:md5(), msg_spec.type, utils.cdata(transports), utils.cdata(transport_options))
+  local buffer = ros.MessageBuffer(queue_size)
+  local s = f.subscribe(
+    self.o,
+    buffer:cdata(),
+    topic,
+    queue_size or 1000,
+    msg_spec:md5(),
+    msg_spec.type,
+    utils.cdata(transports),
+    utils.cdata(transport_options)
+  )
   return ros.Subscriber(s, buffer, msg_spec)
 end
 
