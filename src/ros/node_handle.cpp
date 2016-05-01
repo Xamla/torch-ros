@@ -67,15 +67,35 @@ ROSIMP(ros::Subscriber *, NodeHandle, subscribe)(
   return new ros::Subscriber(self->subscribe(so));
 }
 
+typedef void (*_ServiceStatusCallback)(const char *subscriber_name, const char *subscriber_topic);
+
+static void ServiceStatusCallbackAdapter(_ServiceStatusCallback cb, const ros::SingleSubscriberPublisher &ssp) {
+  cb(ssp.getSubscriberName().c_str(), ssp.getTopic().c_str());
+}
+
 ROSIMP(ros::Publisher *, NodeHandle, advertise)(
   ros::NodeHandle *self,
   const char *topic,
   unsigned int queue_size,
   const char *md5sum,
   const char *datatype,
-  const char *message_definition
+  const char *message_definition,
+  bool has_header,
+  bool latch,
+  _ServiceStatusCallback connect_cb,
+  _ServiceStatusCallback disconnect_cb,
+  ros::CallbackQueue *callback_queue
 ) {
   ros::AdvertiseOptions ao(topic, queue_size, md5sum, datatype, message_definition);
+  ao.callback_queue = callback_queue;
+  ao.has_header = has_header;
+  ao.latch = latch;
+  if (connect_cb) {
+    ao.connect_cb = boost::bind(ServiceStatusCallbackAdapter, connect_cb, _1);
+  }
+  if (disconnect_cb) {
+    ao.disconnect_cb = boost::bind(ServiceStatusCallbackAdapter, disconnect_cb, _1);
+  }
   return new ros::Publisher(self->advertise(ao));
 }
 
@@ -142,8 +162,8 @@ ROSIMP(ros::ServiceServer*, NodeHandle, advertiseService)(
   const char *datatype,
   const char *req_datatype,
   const char *res_datatype,
-  ros::CallbackQueue *callback_queue,
-  ServiceRequestCallback callback
+  ServiceRequestCallback callback,
+  ros::CallbackQueue *callback_queue
 ) {
   ros::AdvertiseServiceOptions ops;
 

@@ -23,13 +23,29 @@ end
 
 local f = init()
 
-function Publisher:__init(ptr, msg_spec)
+function Publisher:__init(ptr, msg_spec, connect_cb, disconnect_cb)
   if not ptr or not ffi.typeof(ptr) == Publisher_ptr_ct then
     error('argument 1: ros::Publisher * expected.')
   end
   self.o = ptr
   self.msg_spec = msg_spec
-  ffi.gc(ptr, f.delete)
+  self.connect_cb = connect_cb
+  self.disconnect_cb = disconnect_cb
+
+  ffi.gc(ptr,
+    function(p)
+      f.delete(p)
+      if self.connect_cb ~= nil then
+        self.connect_cb:free()      -- free connect callback
+        self.connect_cb = nil
+      end
+      if self.disconnect_cb ~= nil then
+        self.disconnect_cb:free()   -- free disconnet callback
+        self.disconnect_cb = nil
+      end
+    end
+  )
+
 end
 
 function Publisher:cdata()

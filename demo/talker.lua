@@ -9,7 +9,15 @@ nodehandle = ros.NodeHandle()
 
 string_spec = ros.MsgSpec('std_msgs/String')
 
-publisher = nodehandle:advertise("dummy_chat", string_spec, 100)
+function connect_cb(name, topic)
+  print("subscriber connected: " .. name .. " (topic: '" .. topic .. "')")
+end
+
+function disconnect_cb(name, topic)
+  print("subscriber diconnected: " .. name .. " (topic: '" .. topic .. "')")
+end
+
+publisher = nodehandle:advertise("dummy_chat", string_spec, 100, false, connect_cb, disconnect_cb)
 ros.spinOnce()
 
 m = ros.Message(string_spec)

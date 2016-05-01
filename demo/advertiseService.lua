@@ -33,7 +33,7 @@ function myServiceHandler(request, response, header)
   return true
 end
 
-server = nh:advertiseService('/demo_service', srv_spec, service_queue, myServiceHandler)
+server = nh:advertiseService('/demo_service', srv_spec, myServiceHandler, service_queue)
 print('name: ' .. server:getService())
 print('service server running, call "rosservice call /demo_service" to send a request to the service.')
 

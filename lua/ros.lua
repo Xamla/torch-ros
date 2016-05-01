@@ -41,4 +41,12 @@ function ros.init(name, options)
   f.init(name, options or 0)
 end
 
+function ros.spinOnce(no_default_callbacks)
+  f.spinOnce()
+  local queue = ros.DEFAULT_CALLBACK_QUEUE
+  if not no_default_callbacks and queue ~= nil and not queue:isEmpty() then
+    queue:callAvailable()
+  end
+end
+
 return ros

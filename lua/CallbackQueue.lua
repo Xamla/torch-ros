@@ -68,3 +68,5 @@ end
 function CallbackQueue:__tostring()
   return string.format("CallbackQueue {empty: %s, enabled: %s}", self:isEmpty(), self:isEnabled())
 end
+
+ros.DEFAULT_CALLBACK_QUEUE = ros.CallbackQueue()

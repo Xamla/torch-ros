@@ -147,10 +147,11 @@ local function load_from_iterator(self, iterator)
       end
     end
 
-   end
+  end
 
-   self.fixed_size = fixed_size
-   self.definition = table.concat(lines, '\n')
+  self.has_header = self.fields[1].type == 'std_msgs/Header'
+  self.fixed_size = fixed_size
+  self.definition = table.concat(lines, '\n')
 end
 
 --- (internal) Load message specification from file.

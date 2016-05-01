@@ -117,12 +117,30 @@ function NodeHandle:subscribe(topic, msg_spec, queue_size, transports, transport
   return ros.Subscriber(s, buffer, msg_spec)
 end
 
-function NodeHandle:advertise(topic, msg_spec, queue_size)
+function NodeHandle:advertise(topic, msg_spec, queue_size, latch, connect_cb, disconnect_cb, callback_queue)
   if type(msg_spec) == 'string' then
     msg_spec = ros.MsgSpec(msg_spec)
   end
-  local p = f.advertise(self.o, topic, queue_size or 1000, msg_spec:md5(), msg_spec.type, msg_spec.definition)
-  return ros.Publisher(p, msg_spec)
+
+  if connect_cb ~= nil or disconnect_cb ~= nil then
+    callback_queue = callback_queue or ros.DEFAULT_CALLBACK_QUEUE
+    if not torch.isTypeOf(callback_queue, ros.CallbackQueue) then
+      error('Invalid type of explicitly specified callback queue.')
+    end
+  else
+    callback_queue = ffi.NULL
+  end
+
+  local connect_, disconnect_ = ffi.NULL, ffi.NULL
+  if connect_cb ~= nil then
+    connect_ = ffi.cast('_ServiceStatusCallback', function(name, topic) connect_cb(ffi.string(name), ffi.string(topic)) end)
+  end
+  if disconnect_cb ~= nil then
+    disconnect_ = ffi.cast('_ServiceStatusCallback', function(name, topic) disconnect_cb(ffi.string(name), ffi.string(topic)) end)
+  end
+
+  local p = f.advertise(self.o, topic, queue_size or 1000, msg_spec:md5(), msg_spec.type, msg_spec.definition, msg_spec.has_header, latch or false, connect_, disconnect_, utils.cdata(callback_quueue))
+  return ros.Publisher(p, msg_spec, connect_, disconnect_)
 end
 
 function NodeHandle:serviceClient(service_name, service_spec, persistent, header_values)
@@ -136,9 +154,10 @@ function NodeHandle:serviceClient(service_name, service_spec, persistent, header
   return ros.ServiceClient(client, service_spec)
 end
 
-function NodeHandle:advertiseService(service_name, service_spec, callback_queue, service_handler_func)
+function NodeHandle:advertiseService(service_name, service_spec, service_handler_func, callback_queue)
+  callback_queue = callback_queue or ros.DEFAULT_CALLBACK_QUEUE
   if not torch.isTypeOf(callback_queue, ros.CallbackQueue) then
-    error('Explicitly specified callback queue required (Lua is single-threaded).')
+    error('Invalid type of explicitly specified callback queue.')
   end
 
   -- create message serialization/deserialization wrapper function
@@ -183,8 +202,8 @@ function NodeHandle:advertiseService(service_name, service_spec, callback_queue,
     service_spec.type,
     service_spec.request_spec.type,
     service_spec.response_spec.type,
-    callback_queue:cdata(),
-    cb
+    cb,
+    callback_queue:cdata()
   )
   return ros.ServiceServer(srv_ptr, cb, service_handler_func)
 end
