@@ -3,6 +3,47 @@ local std = ros.std
 
 local actionlib = ros.actionlib
 
+local CommState = {
+  WAITING_FOR_GOAL_ACK    = 1,
+  PENDING                 = 2,
+  ACTIVE                  = 3,
+  WAITING_FOR_RESULT      = 4,
+  WAITING_FOR_CANCEL_ACK  = 5,
+  RECALLING               = 6,
+  PREEMPTING              = 7,
+  DONE                    = 8,
+  'WAITING_FOR_GOAL_ACK', 'PENDING', 'ACTIVE', 'WAITING_FOR_RESULT', 'WAITING_FOR_CANCEL_ACK', 'RECALLING', 'PREEMPTING', 'DONE'
+}
+
+local SimpleGoalState = {
+  PENDING                 = 1,
+  ACTIVE                  = 2,
+  DONE                    = 3,
+  'PENDING', 'ACTIVE', 'DONE'
+}
+
+local SimpleClientGoalState = {
+  PENDING                 = 1,
+  ACTIVE                  = 2,
+  RECALLED                = 3,
+  REJECTED                = 4,
+  PREEMPTED               = 5,
+  ABORTED                 = 6,
+  SUCCEEDED               = 7,
+  LOST                    = 8,
+  'PENDING', 'ACTIVE', 'RECALLED', 'REJECTED', 'PREEMPTED', 'ABORTED', 'SUCCEEDED', 'LOST'
+}
+
+local TerminalState = {
+  RECALLED                = 1,
+  REJECTED                = 2,
+  PREEMPTED               = 3,
+  ABORTED                 = 4,
+  SUCCEEDED               = 5,
+  LOST                    = 6,
+  'RECALLED', 'REJECTED', 'PREEMPTED', 'ABORTED', 'SUCCEEDED', 'LOST'
+}
+
 local ActionClient = torch.class('ros.actionlib.ActionServer', actionlib)
 
 local function initClient(self, queue)
