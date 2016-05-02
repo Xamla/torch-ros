@@ -11,8 +11,9 @@ local function ensurePosReadable(self, pos)
   end
 end
 
-function StorageReader:__init(storage, offset, length)
-  if not ffi.abi('le') then
+function StorageReader:__init(storage, offset, length, byteOrder)
+  byteOrder = byteOrder or ffi.abi('le') and 'le' or 'be'
+  if byteOrder ~= 'le' then
     error('Big-endian systems not yet supported.')
   end
 
