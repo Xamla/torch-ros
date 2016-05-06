@@ -370,13 +370,22 @@ local function deserialize_internal(self, sr)
       else
         -- regular array
         local n = sr:readUInt32()    -- element count
-        local read = readMethods[f.base_type]
-        if not read then
-          error(string.format('Mising read function for type \'%s\'.', f.base_type))
+        local read
+        if f.is_builtin then
+          read = readMethods[f.base_type]
+          if not read then
+            error(string.format('Mising read function for type \'%s\'.', f.base_type))
+          end
+        else
+          read = function(sr)
+            local inner = ros.Message.new(f.spec, true)
+            deserialize_internal(inner, sr)
+            return inner
+          end
         end
         local t = {}
         for i=1,n do
-          t[#t] = read(sr)
+          table.insert(t, read(sr))
         end
         self.values[f.name] = t
       end
