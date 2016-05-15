@@ -48,8 +48,11 @@ end
 
 local f = init()
 
-function NodeHandle:__init(ns)
-  self.o = f.new(ns or '')
+function NodeHandle:__init(ns, parent, remappings)
+  if remappings ~= nil and type(remappings) == 'table' then
+    remappins = std.StringMap(remappings)
+  end
+  self.o = f.new(ns or '', utils.cdata(parent), utils.cdata(remappings))
 end
 
 function NodeHandle:cdata()
@@ -80,7 +83,7 @@ end
 
 function NodeHandle:subscribe(topic, msg_spec, queue_size, transports, transport_options)
   if type(msg_spec) == 'string' then
-    msg_spec = ros.MsgSpec(msg_spec)
+    msg_spec = ros.get_msgspec(msg_spec)
   end
 
   if transports ~= nil and not torch.isTypeOf(transports, std.StringVector) then
@@ -119,7 +122,7 @@ end
 
 function NodeHandle:advertise(topic, msg_spec, queue_size, latch, connect_cb, disconnect_cb, callback_queue)
   if type(msg_spec) == 'string' then
-    msg_spec = ros.MsgSpec(msg_spec)
+    msg_spec = ros.get_msgspec(msg_spec)
   end
 
   if connect_cb ~= nil or disconnect_cb ~= nil then

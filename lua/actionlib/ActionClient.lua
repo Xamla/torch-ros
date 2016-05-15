@@ -68,10 +68,39 @@ local function initClient(self, queue)
   ]]
 end
 
-function ActionClient:__init(node_handle, name, callback_queue)
+local function goalConnectCallback(self, name, topic)
+end
+
+local function goalDisconnectCallback(self, name, topic)
+end
+
+local function cancelConnectCallback(self, name, topic)
+end
+
+local function cancelDisconnectCallback(self, name, topic)
+end
+
+function ActionClient:__init(action_spec, node_handle, name, callback_queue)
+  self.action_spec = action_spec
   self.nh = node_handle
   self.name = name
-  initClient(self, callback_queue)
+  self.connection_monitor = {}
+
+  self.status_sub   = self.nh:subscribe("status", "actionlib_msgs/GoalStatusArray", 50)
+  self.feedback_sub = self.nh:subscribe("feedback", action_spec.action_feedback_spec, 50)
+  self.result_sub   = self.nh:subscribe("result", action_spec.action_result_spec, 50)
+
+  self.goal_pub = self.nh.advertise("goal", action_spec.action_goal_spec, 10, false,
+    function(name, topic) goalConnectCallback(self, name, topic) end,
+    function(name, topic) goalDisconnectCallback(self, name, topic) end,
+    callback_queue
+  )
+
+  self.cancel_pub = self.nh.advertise("cancel", "actionlib_msgs/GoalID", 10, false,
+    function(name, topic) cancelConnectCallback(self, name, topic) end,
+    function(name, topic) cancelDisconnectCallback(self, name, topic) end,
+    callback_queue
+  )
 end
 
 function ActionClient:sendGoal(goal, transition_cb, feedback_cb)
@@ -81,24 +110,20 @@ function ActionClient:sendGoal(goal, transition_cb, feedback_cb)
   return gh
 end
 
-function ActionClient:cancelAllGoals()
---[[
-    actionlib_msgs::GoalID cancel_msg;
-    // CancelAll policy encoded by stamp=0, id=0
-    cancel_msg.stamp = ros::Time(0,0);
-    cancel_msg.id = "";
-    cancel_pub_.publish(cancel_msg);
-    ]]
+function ActionClient:cancelGoalsAtAndBeforeTime(time)
+  local cancel_msg = ros.Message('actionlib_msgs/GoalID')
+  cancel_msg.stamp = time
+  self.cancel_pub:publish(cancel_msg)
 end
 
---[[
- void cancelGoalsAtAndBeforeTime(const ros::Time& time)
-  {
-    actionlib_msgs::GoalID cancel_msg;
-    cancel_msg.stamp = time;
-    cancel_msg.id = "";
-    cancel_pub_.publish(cancel_msg);
-  }
+function ActionClient:cancelAllGoals()
+  self:cancelGoalsAtAndBeforeTime(ros.Time())     -- CancelAll is encoded by stamp=0
+end
 
-bool waitForActionServerToStart(const ros::Duration& timeout = ros::Duration(0,0) )
-]]
+function ActionClient:waitForActionServerToStart(timeout)
+  timeout = timeout or ros.Duration(0, 0)
+
+end
+
+function ActionClient:isServerConnected()
+end

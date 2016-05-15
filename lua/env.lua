@@ -302,7 +302,7 @@ void ros_ServiceServer_getService(ros_ServiceServer *self, std_string *result);
 typedef struct ros_NodeHandle {} ros_NodeHandle;
 typedef void (*_ServiceStatusCallback)(const char *subscriber_name, const char *subscriber_topic);
 typedef bool (*ServiceRequestCallback)(THByteStorage *, THByteStorage *, std_StringMap *);
-ros_NodeHandle *ros_NodeHandle_new(const char *ns);
+ros_NodeHandle *ros_NodeHandle_new(const char *ns, ros_NodeHandle *parent, std_StringMap *remappings);
 void ros_NodeHandle_delete(ros_NodeHandle *self);
 void ros_NodeHandle_shutdown(ros_NodeHandle *self);
 bool ros_NodeHandle_ok(ros_NodeHandle *self);

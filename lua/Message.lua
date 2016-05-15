@@ -19,7 +19,7 @@ local DEFAULT_VALUES = {
 
 function Message:__init(spec, no_prefill)
   if not torch.isTypeOf(spec, ros.MsgSpec) and type(spec) == 'string' then
-    spec = ros.MsgSpec(spec)
+    spec = ros.get_msgspec(spec)
   end
   assert(spec, "Message specification must not be nil.")
   rawset(self, 'spec', spec)

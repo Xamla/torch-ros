@@ -5,8 +5,18 @@
 #include "message_buffer.h"
 #include "../utils.h"
 
-ROSIMP(ros::NodeHandle *, NodeHandle, new)(const char *ns) {
-  return new ros::NodeHandle(ns);
+ROSIMP(ros::NodeHandle *, NodeHandle, new)(const char *ns, ros::NodeHandle *parent, StringMap *remappings) {
+  if (parent != NULL) {
+    if (remappings != NULL)
+      return new ros::NodeHandle(*parent, ns, *remappings);
+    else
+      return new ros::NodeHandle(*parent, ns);
+  } else {
+    if (remappings != NULL)
+      return new ros::NodeHandle(ns, *remappings);
+    else
+      return new ros::NodeHandle(ns);
+  }
 }
 
 ROSIMP(void, NodeHandle, delete)(ros::NodeHandle *self) {
