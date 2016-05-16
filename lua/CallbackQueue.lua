@@ -11,6 +11,7 @@ function init()
     'delete',
     'callOne',
     'callAvailable',
+    'waitCallAvailable',
     'isEmpty',
     'clear',
     'enable',
@@ -43,6 +44,13 @@ function CallbackQueue:callAvailable(timeout)
     timeout = ros.Duration(timeout)
   end
   f.callAvailable(self.o, utils.cdata(timeout))
+end
+
+function CallbackQueue:waitCallAvailable(timeout)
+  if timeout and not torch.isTypeOf(ros.Duration, timeout) then
+    timeout = ros.Duration(timeout)
+  end
+  return f.waitCallAvailable(self.o, utils.cdata(timeout))
 end
 
 function CallbackQueue:isEmpty()

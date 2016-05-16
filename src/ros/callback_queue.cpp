@@ -1,38 +1,65 @@
 #include "torch-ros.h"
 #include <ros/callback_queue.h>
 
-ROSIMP(ros::CallbackQueue *, CallbackQueue, new)(bool enabled) {
-  return new ros::CallbackQueue(enabled);
+namespace xamla {
+
+class WaitableCallbackQueue : public ros::CallbackQueue {
+public:
+  WaitableCallbackQueue(bool enabled = true)
+   : ros::CallbackQueue(enabled) {}
+
+  // only called from the single lua thread (TLS and pending calls not taken into account)
+  bool waitCallAvailable(ros::WallDuration timeout) {
+    boost::mutex::scoped_lock lock(mutex_);
+    if (!enabled_)
+      return false;
+
+    if (callbacks_.empty() && !timeout.isZero())
+      condition_.timed_wait(lock, boost::posix_time::microseconds(timeout.toSec() * 1000000.0f));
+
+    return !callbacks_.empty() && enabled_;
+  }
+};
+
+} // namespace xamla
+
+
+ROSIMP(xamla::WaitableCallbackQueue *, CallbackQueue, new)(bool enabled) {
+  return new xamla::WaitableCallbackQueue(enabled);
 }
 
-ROSIMP(void, CallbackQueue, delete)(ros::CallbackQueue *self) {
+ROSIMP(void, CallbackQueue, delete)(xamla::WaitableCallbackQueue *self) {
   delete self;
 }
 
-ROSIMP(int, CallbackQueue, callOne)(ros::CallbackQueue *self, ros::Duration *timeout) {
+ROSIMP(int, CallbackQueue, callOne)(xamla::WaitableCallbackQueue *self, ros::Duration *timeout) {
   return static_cast<int>(self->callOne(timeout == NULL ? ros::WallDuration() : ros::WallDuration(timeout->sec, timeout->nsec)));
 }
 
-ROSIMP(void, CallbackQueue, callAvailable)(ros::CallbackQueue *self, ros::Duration *timeout) {
+ROSIMP(void, CallbackQueue, callAvailable)(xamla::WaitableCallbackQueue *self, ros::Duration *timeout) {
   self->callAvailable(timeout == NULL ? ros::WallDuration() : ros::WallDuration(timeout->sec, timeout->nsec));
 }
 
-ROSIMP(bool, CallbackQueue, isEmpty)(ros::CallbackQueue *self) {
+ROSIMP(bool, CallbackQueue, waitCallAvailable)(xamla::WaitableCallbackQueue *self, ros::Duration *timeout) {
+  return self->waitCallAvailable(timeout == NULL ? ros::WallDuration() : ros::WallDuration(timeout->sec, timeout->nsec));
+}
+
+ROSIMP(bool, CallbackQueue, isEmpty)(xamla::WaitableCallbackQueue *self) {
   return self->isEmpty();
 }
 
-ROSIMP(void, CallbackQueue, clear)(ros::CallbackQueue *self) {
+ROSIMP(void, CallbackQueue, clear)(xamla::WaitableCallbackQueue *self) {
   self->clear();
 }
 
-ROSIMP(void, CallbackQueue, enable)(ros::CallbackQueue *self) {
+ROSIMP(void, CallbackQueue, enable)(xamla::WaitableCallbackQueue *self) {
   self->enable();
 }
 
-ROSIMP(void, CallbackQueue, disable)(ros::CallbackQueue *self) {
+ROSIMP(void, CallbackQueue, disable)(xamla::WaitableCallbackQueue *self) {
   self->disable();
 }
 
-ROSIMP(bool, CallbackQueue, isEnabled)(ros::CallbackQueue *self) {
+ROSIMP(bool, CallbackQueue, isEnabled)(xamla::WaitableCallbackQueue *self) {
   return self->isEnabled();
 }

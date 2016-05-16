@@ -253,6 +253,7 @@ ros_CallbackQueue * ros_CallbackQueue_new(bool enabled);
 void ros_CallbackQueue_delete(ros_CallbackQueue *self);
 int ros_CallbackQueue_callOne(ros_CallbackQueue *self, ros_Duration *timeout);
 void ros_CallbackQueue_callAvailable(ros_CallbackQueue *self, ros_Duration *timeout);
+bool ros_CallbackQueue_waitCallAvailable(ros_CallbackQueue *self, ros_Duration *timeout);
 bool ros_CallbackQueue_isEmpty(ros_CallbackQueue *self);
 void ros_CallbackQueue_clear(ros_CallbackQueue *self);
 void ros_CallbackQueue_enable(ros_CallbackQueue *self);
@@ -280,7 +281,7 @@ MessageBuffer *ros_MessageBuffer_new(int max_backlog);
 void ros_MessageBuffer_delete(MessageBuffer *self);
 int ros_MessageBuffer_count(MessageBuffer *self);
 void ros_MessageBuffer_clear(MessageBuffer *self);
-bool ros_MessageBuffer_read(MessageBuffer *self, int timeout_milliseconds, THByteStorage *output);
+bool ros_MessageBuffer_read(MessageBuffer *self, int timeout_milliseconds, THByteStorage *msg_output, std_StringMap *header_output);
 
 typedef struct ros_ServiceClient {} ros_ServiceClient;
 ros_ServiceClient *ros_ServiceClient_new(const char *service_name, bool persistent, std_StringMap *header_values, const char *service_md5sum);

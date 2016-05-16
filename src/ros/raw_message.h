@@ -39,7 +39,16 @@ public:
     return buffer;
   }
 
+  void set_header(const ros::M_string& header) {
+    this->header = header;
+  }
+
+  const ros::M_string& get_header() const {
+    return header;
+  }
+
 private:
+  ros::M_string header;
   boost::shared_array<uint8_t> buffer;
   size_t num_bytes;
 };

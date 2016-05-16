@@ -36,10 +36,11 @@ function MessageBuffer:clear()
   f.clear(self.o)
 end
 
-function MessageBuffer:read(timeout_milliseconds, result)
-  result = result or torch.ByteStorage()
-  if not f.read(self.o, timeout_milliseconds or 100, result:cdata()) then
-    return nil
+function MessageBuffer:read(timeout_milliseconds, result_msg, result_header)
+  result_msg = result_msg or torch.ByteStorage()
+  result_header = result_header or std.StringMap()
+  if not f.read(self.o, timeout_milliseconds or 100, result_msg:cdata(), result_header:cdata()) then
+    return nil, nil
   end
-  return result
+  return result_msg, result_header
 end

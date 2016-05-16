@@ -29,6 +29,7 @@ function Subscriber:__init(ptr, buffer, msg_spec)
   self.buffer = buffer
   self.msg_spec = msg_spec
   ffi.gc(ptr, f.delete)
+  self.callbacks = {}
 end
 
 function Subscriber:cdata()
@@ -42,6 +43,11 @@ function Subscriber:clone()
 end
 
 function Subscriber:shutdown()
+  if self.spin_callback_function ~= nil then
+    ros.unregisterSpinCallback(self.spin_callback_function)
+    self.spin_callback_function = nil
+  end
+
   f.shutdown(self.o)
 end
 
@@ -62,11 +68,40 @@ function Subscriber:getMessageCount()
 end
 
 function Subscriber:read(timeout_milliseconds, result)
-  local msg_bytes = self.buffer:read(timeout_milliseconds)
+  local msg_bytes, msg_header = self.buffer:read(timeout_milliseconds)
   local msg
   if msg_bytes then
     msg = result or ros.Message(self.msg_spec, true)
     msg:deserialize(msg_bytes)
   end
-  return msg
+  return msg, msg_header
+end
+
+function Subscriber:triggerCallbacks()
+  local cbs
+  while self:hasMessage() do
+    local msg, header = self:read(0)
+    if msg ~= nil then
+      cbs = cbs or utils.getTableKeys(self.callbacks)   -- lazy isolation copy of callbacks
+      for _,f in ipairs(cbs) do
+        f(msg, header, self)
+      end
+    end
+  end
+end
+
+function Subscriber:registerCallback(message_cb)
+  self.callbacks[message_cb] = true -- table used as set
+  if self.spin_callback_function == nil then
+    self.spin_callback_function = function() self:triggerCallbacks() end
+    self.spin_callback_id = ros.registerSpinCallback(self.spin_callback_function)
+  end
+end
+
+function Subscriber:unregisterCallback(message_cb)
+  self.callbacks[message_cb] = nil
+  if self.spin_callback_function ~= nil and next(self.callbacks) == nil then
+    ros.unregisterSpinCallback(self.spin_callback_function)
+    self.spin_callback_function = nil
+  end
 end

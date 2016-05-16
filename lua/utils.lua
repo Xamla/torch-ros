@@ -49,4 +49,16 @@ function utils.reverse_mapping(t, r)
   return r
 end
 
+function utils.cloneList(l)
+  local c = {}
+  for i=1,#l do table.insert(c, l[i]) end
+  return c
+end
+
+function utils.getTableKeys(t)
+  local l = {}
+  for k,v in pairs(t) do table.insert(l, k) end
+  return l
+end
+
 return utils

@@ -7,15 +7,21 @@ spinner:start()
 
 nodehandle = ros.NodeHandle()
 
-subscriber = nodehandle:subscribe("dummy_chat", 'std_msgs/String', 100, { 'udp', 'tcp' }, { tcp_nodelay = true })
+-- subscribe to dummy_chat topic with 100 messages back-log
+-- transport_options (arguments 4 & 5) are optional - used here only for demonstration purposes
+subscriber = nodehandle:subscribe("dummy_chat", 'std_msgs/String', 100, { 'udp', 'tcp' }, { tcp_nodelay = true }
+
+-- register a callback function that will be triggered from ros.spinOnce() when a message is available.
+subscriber:registerCallback(function(msg, header)
+  print('Header:')
+  print(header)
+  print('Message:')
+  print(msg)
+end)
 
 while ros.ok() do
   ros.spinOnce()
   sys.sleep(0.1)
-  while subscriber:hasMessage() do
-    local msg = subscriber:read()
-    print(msg)
-  end
 end
 
 subscriber:shutdown()

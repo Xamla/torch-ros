@@ -22,6 +22,10 @@ public:
     stream.next((uint32_t)params.length);
     memcpy(buffer->get() + sizeof(uint32_t), params.buffer, params.length);
 
+    if (params.connection_header != NULL) {
+      buffer->set_header(*params.connection_header);
+    }
+
     // lock queue mutex and add new message buffer to queue
     {
       boost::unique_lock<boost::mutex> lock(queue_lock);
