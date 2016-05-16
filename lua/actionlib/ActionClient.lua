@@ -109,13 +109,6 @@ local function cancelDisconnectCallback(self, name, topic)
   end
 end
 
-local function formatSubscriberDebugString(name, list)
-  local subscribers = utils.getTableKeys(list)
-  local s = name .. string.format(" (%d total)", #subscribers)
-  if #subscribers > 0 then s = s .. "\n   - " end
-  return s .. table.concat(subscribers, "\n   - ")
-end
-
 local function transitionToState(self, goal, next_state)
   ros.DEBUG_NAMED("ActionClient", "Transitioning CommState from %s to %s", CommState[goal.state], CommState[next_state])
   goal.state = next_state
@@ -434,6 +427,13 @@ function ActionClient:waitForActionServerToStart(timeout)
 
     ros.spinOnce()  -- process incoming messages
   end
+end
+
+local function formatSubscriberDebugString(name, list)
+  local subscribers = utils.getTableKeys(list)
+  local s = name .. string.format(" (%d total)", #subscribers)
+  if #subscribers > 0 then s = s .. "\n   - " end
+  return s .. table.concat(subscribers, "\n   - ")
 end
 
 function ActionClient:isServerConnected()
