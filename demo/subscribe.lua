@@ -1,6 +1,6 @@
 ros = require 'ros'
 
-ros.init('listener')
+ros.init('subscribe_demo')
 
 spinner = ros.AsyncSpinner()
 spinner:start()

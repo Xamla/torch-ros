@@ -17,21 +17,21 @@ local CommState = {
 }
 
 -- http://docs.ros.org/api/actionlib_msgs/html/msg/GoalStatus.html
-local ActionLibGoalStatus = {
-  PENDING         = 0   -- The goal has yet to be processed by the action server
-  ACTIVE          = 1   -- The goal is currently being processed by the action server
-  PREEMPTED       = 2   -- The goal received a cancel request after it started executing
+local GoalStatus = {
+  PENDING         = 0,  -- The goal has yet to be processed by the action server
+  ACTIVE          = 1,  -- The goal is currently being processed by the action server
+  PREEMPTED       = 2,  -- The goal received a cancel request after it started executing
                         --   and has since completed its execution (Terminal State)
-  SUCCEEDED       = 3   -- The goal was achieved successfully by the action server (Terminal State)
-  ABORTED         = 4   -- The goal was aborted during execution by the action server due
+  SUCCEEDED       = 3,  -- The goal was achieved successfully by the action server (Terminal State)
+  ABORTED         = 4,  -- The goal was aborted during execution by the action server due
                         --    to some failure (Terminal State)
-  REJECTED        = 5   -- The goal was rejected by the action server without being processed,
+  REJECTED        = 5,  -- The goal was rejected by the action server without being processed,
                         --    because the goal was unattainable or invalid (Terminal State)
-  PREEMPTING      = 6   -- The goal received a cancel request after it started executing
+  PREEMPTING      = 6,  -- The goal received a cancel request after it started executing
                         --    and has not yet completed execution
-  RECALLING       = 7   -- The goal received a cancel request before it started executing,
+  RECALLING       = 7,  -- The goal received a cancel request before it started executing,
                         --    but the action server has not yet confirmed that the goal is canceled
-  RECALLED        = 8   -- The goal received a cancel request before it started executing
+  RECALLED        = 8,  -- The goal received a cancel request before it started executing
                         --    and was successfully cancelled (Terminal State)
   LOST            = 9   -- An action client can determine that a goal is LOST. This should not be
                         --    sent over the wire by an action server
@@ -44,30 +44,8 @@ local SimpleGoalState = {
   'PENDING', 'ACTIVE', 'DONE'
 }
 
-local SimpleClientGoalState = {
-  PENDING                 = 1,
-  ACTIVE                  = 2,
-  RECALLED                = 3,
-  REJECTED                = 4,
-  PREEMPTED               = 5,
-  ABORTED                 = 6,
-  SUCCEEDED               = 7,
-  LOST                    = 8,
-  'PENDING', 'ACTIVE', 'RECALLED', 'REJECTED', 'PREEMPTED', 'ABORTED', 'SUCCEEDED', 'LOST'
-}
-
-local TerminalState = {
-  RECALLED                = 1,
-  REJECTED                = 2,
-  PREEMPTED               = 3,
-  ABORTED                 = 4,
-  SUCCEEDED               = 5,
-  LOST                    = 6,
-  'RECALLED', 'REJECTED', 'PREEMPTED', 'ABORTED', 'SUCCEEDED', 'LOST'
-}
-
 local next_goal_id = 1    -- shared among all action clients
-local ActionClient = torch.class('ros.actionlib.ActionServer', actionlib)
+local ActionClient = torch.class('ros.actionlib.ActionClient', actionlib)
 
 local function goalConnectCallback(self, name, topic)
   self.goalSubscribers[name] = (self.goalSubscribers[name] or 0) + 1
@@ -77,7 +55,7 @@ end
 local function goalDisconnectCallback(self, name, topic)
   local count = self.goalSubscribers[name]
   if count == nil then
-    -- should never happen, copied warning from official actionlib impl
+    -- should never happen, warning copied from official actionlib impl
     ros.WARN_NAMED("ActionClient", "goalDisconnectCallback: Trying to remove [%s] from goalSubscribers, but it is not in the goalSubscribers list.", name)
   else
     ros.DEBUG_NAMED("ActionClient", "goalDisconnectCallback: Removing [%s] from goalSubscribers, (remaining with same name: %d)", name, count - 1)
@@ -97,7 +75,7 @@ end
 local function cancelDisconnectCallback(self, name, topic)
   local count = self.cancelSubscribers[name]
   if count == nil then
-    -- should never happen, copied warning from official actionlib impl
+    -- should never happen, warning copied from official actionlib impl
     ros.WARN_NAMED("ActionClient", "cancelDisconnectCallback: Trying to remove [%s] from cancelSubscribers, but it is not in the cancelSubscribers list.", name)
   else
     ros.DEBUG_NAMED("ActionClient", "cancelDisconnectCallback: Removing [%s] from cancelSubscribers (remaining with same name: %d)", name, count - 1)
@@ -120,47 +98,49 @@ end
 local function processLost(self, goal)
   ros.WARN_NAMED("ActionClient", "Transitioning goal to LOST")
   if goal.latest_goal_status ~= nil then
-    goal.latest_goal_status.status = ActionLibGoalStatus.LOST -- LOST
+    goal.latest_goal_status.status = GoalStatus.LOST -- LOST
     goal.latest_goal_status.text = "LOST"
   end
   transitionToState(self, goal, CommState.DONE)
 end
 
 local function updateStatus(self, goal, goal_status)
-  -- check if pending action that it is correctly reflected by the status message
+  -- check if pending action is correctly reflected by the status message
   if goal_status ~= nil then
     goal.latest_goal_status = goal_status
-  elseif goal.state ~= CommState.WAITING_FOR_GOAL_ACK and goal.state ~= CommState.WAITING_FOR_RESULT and goal.state != CommState.DONE then
-    processLost(self, goal)
+  else
+    if goal.state ~= CommState.WAITING_FOR_GOAL_ACK and goal.state ~= CommState.WAITING_FOR_RESULT and goal.state ~= CommState.DONE then
+      processLost(self, goal)
+    end
     return
   end
 
   if goal.state == CommState.WAITING_FOR_GOAL_ACK then
 
-    if goal_status.status == ActionLibGoalStatus.PENDING then
+    if goal_status.status == GoalStatus.PENDING then
       transitionToState(self, goal, CommState.PENDING)
-    elseif goal_status.status == ActionLibGoalStatus.ACTIVE then
+    elseif goal_status.status == GoalStatus.ACTIVE then
       transitionToState(self, goal, CommState.ACTIVE)
-    elseif goal_status.status == ActionLibGoalStatus.PREEMPTED then
+    elseif goal_status.status == GoalStatus.PREEMPTED then
       transitionToState(self, goal, CommState.ACTIVE)
       transitionToState(self, goal, CommState.PREEMPTING)
       transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
-    elseif goal_status.status == ActionLibGoalStatus.SUCCEEDED then
+    elseif goal_status.status == GoalStatus.SUCCEEDED then
       transitionToState(self, goal, CommState.ACTIVE)
       transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
-    elseif goal_status.status == ActionLibGoalStatus.ABORTED then
+    elseif goal_status.status == GoalStatus.ABORTED then
       transitionToState(self, goal, CommState.ACTIVE)
       transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
-    elseif goal_status.status == ActionLibGoalStatus.REJECTED then
+    elseif goal_status.status == GoalStatus.REJECTED then
       transitionToState(self, goal, CommState.PENDING)
       transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
-    elseif goal_status.status == ActionLibGoalStatus.RECALLED then
+    elseif goal_status.status == GoalStatus.RECALLED then
       transitionToState(self, goal, CommState.PENDING)
       transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
-    elseif goal_status.status == ActionLibGoalStatus.PREEMPTING then
+    elseif goal_status.status == GoalStatus.PREEMPTING then
       transitionToState(self, goal, CommState.ACTIVE)
       transitionToState(self, goal, CommState.PREEMPTING)
-    elseif goal_status.status == ActionLibGoalStatus.RECALLING then
+    elseif goal_status.status == GoalStatus.RECALLING then
       transitionToState(self, goal, CommState.PENDING)
       transitionToState(self, goal, CommState.RECALLING)
     else
@@ -169,63 +149,140 @@ local function updateStatus(self, goal, goal_status)
 
   elseif goal.state == CommState.PENDING then
 
-    if goal_status.status == ActionLibGoalStatus.PENDING then
+    if goal_status.status == GoalStatus.PENDING then
       ; -- nop
-    else if goal_status.status == ActionLibGoalStatus.ACTIVE then
+    elseif goal_status.status == GoalStatus.ACTIVE then
       transitionToState(self, goal, CommState.ACTIVE)
-    elseif goal_status.status == ActionLibGoalStatus.PREEMPTED then
+    elseif goal_status.status == GoalStatus.PREEMPTED then
       transitionToState(self, goal, CommState.ACTIVE)
       transitionToState(self, goal, CommState.PREEMPTING)
       transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
-    elseif goal_status.status == ActionLibGoalStatus.SUCCEEDED then
+    elseif goal_status.status == GoalStatus.SUCCEEDED then
       transitionToState(self, goal, CommState.ACTIVE)
       transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
-    elseif goal_status.status == ActionLibGoalStatus.ABORTED then
+    elseif goal_status.status == GoalStatus.ABORTED then
       transitionToState(self, goal, CommState.ACTIVE)
       transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
-    elseif goal_status.status == ActionLibGoalStatus.REJECTED then
+    elseif goal_status.status == GoalStatus.REJECTED then
       transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
-    elseif goal_status.status == ActionLibGoalStatus.RECALLED then
+    elseif goal_status.status == GoalStatus.RECALLED then
       transitionToState(self, goal, CommState.RECALLING)
       transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
-    elseif goal_status.status == ActionLibGoalStatus.PREEMPTING then
+    elseif goal_status.status == GoalStatus.PREEMPTING then
       transitionToState(self, goal, CommState.ACTIVE)
       transitionToState(self, goal, CommState.PREEMPTING)
-    elseif goal_status.status == ActionLibGoalStatus.RECALLING then
+    elseif goal_status.status == GoalStatus.RECALLING then
       transitionToState(self, goal, CommState.RECALLING)
     else
       ros.ERROR_NAMED("ActionClient", "BUG: Got an unknown status from the ActionServer. status = %u", goal_status.status)
     end
 
   elseif goal.state == CommState.ACTIVE then
-    -- TODO
+
+    if goal_status.status == GoalStatus.PENDING then
+      ros.ERROR_NAMED("ActionClient", "Invalid transition from ACTIVE to PENDING")
+    elseif goal_status.status == GoalStatus.ACTIVE then
+      ; -- nop
+    elseif goal_status.status == GoalStatus.REJECTED then
+      ros.ERROR_NAMED("ActionClient", "Invalid transition from ACTIVE to REJECTED")
+    elseif goal_status.status == GoalStatus.RECALLING then
+      ros.ERROR_NAMED("ActionClient", "Invalid transition from ACTIVE to RECALLING")
+    elseif goal_status.status == GoalStatus.RECALLED then
+      ros.ERROR_NAMED("ActionClient", "Invalid transition from ACTIVE to RECALLED")
+    elseif goal_status.status == GoalStatus.PREEMPTED then
+      transitionToState(self, goal, CommState.PREEMPTING)
+      transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
+    elseif goal_status.status == GoalStatus.SUCCEEDED or
+        goal_status.status == GoalStatus.ABORTED then
+      transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
+    elseif goal_status.status == GoalStatus.PREEMPTING then
+      transitionToState(self, goal, CommState.PREEMPTING)
+    else
+      ros.ERROR_NAMED("ActionClient", "BUG: Got an unknown status from the ActionServer. status = %u", goal_status.status)
+    end
 
   elseif goal.state == CommState.WAITING_FOR_RESULT then
-    -- TODO
+
+    if goal_status.status == GoalStatus.PENDING then
+      ros.ERROR_NAMED("ActionClient", "Invalid Transition from WAITING_FOR_RESUT to PENDING")
+    elseif goal_status.status == GoalStatus.PREEMPTING then
+      ros.ERROR_NAMED("ActionClient", "Invalid transition from WAITING_FOR_RESUT to PREEMPTING")
+    elseif goal_status.status == GoalStatus.RECALLING then
+      ros.ERROR_NAMED("ActionClient", "Invalid transition from WAITING_FOR_RESUT to RECALLING")
+    elseif goal_status.status == GoalStatus.ACTIVE or
+        goal_status.status == GoalStatus.PREEMPTED or
+        goal_status.status == GoalStatus.SUCCEEDED or
+        goal_status.status == GoalStatus.ABORTED or
+        goal_status.status == GoalStatus.REJECTED or
+        goal_status.status == GoalStatus.RECALLED then
+      ; -- nop
+    else
+      ros.ERROR_NAMED("ActionClient", "BUG: Got an unknown status from the ActionServer. status = %u", goal_status.status)
+    end
 
   elseif goal.state == CommState.WAITING_FOR_CANCEL_ACK then
-    -- TODO
+
+    if goal_status.status == GoalStatus.PENDING or
+        goal_status.status == GoalStatus.ACTIVE then
+      ; -- nop
+    elseif goal_status.status == GoalStatus.SUCCEEDED or
+        goal_status.status == GoalStatus.ABORTED or
+        goal_status.status == GoalStatus.PREEMPTED then
+      transitionToState(self, goal, CommState.PREEMPTING)
+      transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
+    elseif goal_status.status == GoalStatus.RECALLED then
+      transitionToState(self, goal, CommState.RECALLING)
+      transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
+    elseif goal_status.status == GoalStatus.REJECTED then
+      transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
+    elseif goal_status.status == GoalStatus.PREEMPTING then
+      transitionToState(self, goal, CommState.PREEMPTING)
+    elseif goal_status.status == GoalStatus.RECALLING then
+      transitionToState(self, goal, CommState.RECALLING)
+    else
+      ros.ERROR_NAMED("ActionClient", "BUG: Got an unknown state from the ActionServer. status = %u", goal_status.status)
+    end
 
   elseif goal.state == CommState.RECALLING then
-    -- TODO
+
+    if goal_status.status == GoalStatus.PENDING then
+      ros.ERROR_NAMED("ActionClient", "Invalid Transition from RECALLING to PENDING")
+    elseif goal_status.status == GoalStatus.ACTIVE then
+      ros.ERROR_NAMED("ActionClient", "Invalid Transition from RECALLING to ACTIVE")
+    elseif goal_status.status == GoalStatus.SUCCEEDED or
+        goal_status.status == GoalStatus.ABORTED or
+        goal_status.status == GoalStatus.PREEMPTED then
+      transitionToState(self, goal, CommState.PREEMPTING)
+      transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
+    elseif goal_status.status == GoalStatus.RECALLED then
+      transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
+    elseif goal_status.status == GoalStatus.REJECTED then
+      transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
+    elseif goal_status.status == GoalStatus.PREEMPTING then
+      transitionToState(self, goal, CommState.PREEMPTING)
+    elseif goal_status.status == GoalStatus.RECALLING then
+      ; -- nop
+    else
+      ros.ERROR_NAMED("ActionClient", "BUG: Got an unknown state from the ActionServer. status = %u", goal_status.status)
+    end
 
   elseif goal.state == CommState.PREEMPTING then
 
-    if goal_status.status == ActionLibGoalStatus.PENDING then
+    if goal_status.status == GoalStatus.PENDING then
       ros.ERROR_NAMED("ActionClient", "Invalid Transition from PREEMPTING to PENDING")
-    elseif goal_status.status == ActionLibGoalStatus.ACTIVE then
+    elseif goal_status.status == GoalStatus.ACTIVE then
       ros.ERROR_NAMED("ActionClient", "Invalid Transition from PREEMPTING to ACTIVE")
-     elseif goal_status.status == ActionLibGoalStatus.REJECTED then
+     elseif goal_status.status == GoalStatus.REJECTED then
       ros.ERROR_NAMED("ActionClient", "Invalid Transition from PREEMPTING to REJECTED")
-    elseif goal_status.status == ActionLibGoalStatus.RECALLING then
+    elseif goal_status.status == GoalStatus.RECALLING then
       ros.ERROR_NAMED("ActionClient", "Invalid Transition from PREEMPTING to RECALLING")
-    elseif goal_status.status == ActionLibGoalStatus.RECALLED then
+    elseif goal_status.status == GoalStatus.RECALLED then
       ros.ERROR_NAMED("ActionClient", "Invalid Transition from PREEMPTING to RECALLED")
-    elseif goal_status.status == ActionLibGoalStatus.PREEMPTED or
-      goal_status.status == ActionLibGoalStatus.SUCCEEDED or
-      goal_status.status == ActionLibGoalStatus.ABORTED then
+    elseif goal_status.status == GoalStatus.PREEMPTED or
+        goal_status.status == GoalStatus.SUCCEEDED or
+        goal_status.status == GoalStatus.ABORTED then
       transitionToState(self, goal, CommState.WAITING_FOR_RESULT)
-    elseif goal_status.status == ActionLibGoalStatus.PREEMPTING
+    elseif goal_status.status == GoalStatus.PREEMPTING then
       ; -- nop
     else
       ros.ERROR_NAMED("ActionClient", "BUG: Got an unknown state from the ActionServer. status = %u", goal_status.status)
@@ -233,19 +290,19 @@ local function updateStatus(self, goal, goal_status)
 
   elseif goal.state == CommState.DONE then
 
-    if goal_status.status == ActionLibGoalStatus.PENDING then
+    if goal_status.status == GoalStatus.PENDING then
       ros.ERROR_NAMED("ActionClient", "Invalid Transition from DONE to PENDING")
-    elseif goal_status.status == ActionLibGoalStatus.ACTIVE then
+    elseif goal_status.status == GoalStatus.ACTIVE then
       ros.ERROR_NAMED("ActionClient", "Invalid Transition from DONE to ACTIVE")
-    elseif goal_status.status == ActionLibGoalStatus.RECALLING then
+    elseif goal_status.status == GoalStatus.RECALLING then
       ros.ERROR_NAMED("ActionClient", "Invalid Transition from DONE to RECALLING")
-    elseif goal_status.status == ActionLibGoalStatus.PREEMPTING then
+    elseif goal_status.status == GoalStatus.PREEMPTING then
       ros.ERROR_NAMED("ActionClient", "Invalid Transition from DONE to PREEMPTING")
-    elseif goal_status.status == ActionLibGoalStatus.PREEMPTED or
-      goal_status.status == ActionLibGoalStatus.SUCCEEDED or
-      goal_status.status == ActionLibGoalStatus.ABORTED or
-      goal_status.status == ActionLibGoalStatus.RECALLED or
-      goal_status.status == ActionLibGoalStatus.REJECTED) then
+    elseif goal_status.status == GoalStatus.PREEMPTED or
+        goal_status.status == GoalStatus.SUCCEEDED or
+        goal_status.status == GoalStatus.ABORTED or
+        goal_status.status == GoalStatus.RECALLED or
+        goal_status.status == GoalStatus.REJECTED then
       ; -- nop
     else
       ros.ERROR_NAMED("ActionClient", "BUG: Got an unknown status from the ActionServer. status = %u", goal_status.status)
@@ -258,8 +315,8 @@ local function updateStatus(self, goal, goal_status)
 end
 
 local function findGoalInStatusList(status_list, goal_id)
-  for i, status in ipairs(status_list)
-    if status.goal_id == goal_id then
+  for i, status in ipairs(status_list) do
+    if status.goal_id.id == goal_id then
       return status
     end
   end
@@ -286,7 +343,7 @@ local function onStatusMessage(self, status_msg, header)
   -- process status message
   local status_list = status_msg.status_list
 
-  for i, goal in self.goals do
+  for id, goal in pairs(self.goals) do
     local goal_status = findGoalInStatusList(status_list, goal.id)
     updateStatus(self, goal, goal_status)
   end
@@ -344,13 +401,13 @@ function ActionClient:__init(action_spec, name, parent_node_handle, callback_que
   self.feedback_sub:registerCallback(function(msg) onFeedbackMessage(self, msg) end)
   self.result_sub:registerCallback(function(msg) onResultMessage(self, msg) end)
 
-  self.goal_pub = self.nh.advertise("goal", action_spec.action_goal_spec, 10, false,
+  self.goal_pub = self.nh:advertise("goal", action_spec.action_goal_spec, 10, false,
     function(name, topic) goalConnectCallback(self, name, topic) end,
     function(name, topic) goalDisconnectCallback(self, name, topic) end,
     callback_queue
   )
 
-  self.cancel_pub = self.nh.advertise("cancel", "actionlib_msgs/GoalID", 10, false,
+  self.cancel_pub = self.nh:advertise("cancel", "actionlib_msgs/GoalID", 10, false,
     function(name, topic) cancelConnectCallback(self, name, topic) end,
     function(name, topic) cancelDisconnectCallback(self, name, topic) end,
     callback_queue
@@ -413,12 +470,13 @@ function ActionClient:waitForActionServerToStart(timeout)
     timeout = nil
   end
   local tic = ros.Time.now()
-  while true do
+  while ros.ok() do
+
     if self:isServerConnected() then
       return true
     end
 
-    if timeout ~= nil
+    if timeout ~= nil then
       local toc = ros.Time.now()
       if toc - tic > timeout then
         return false  -- timeout
@@ -426,7 +484,10 @@ function ActionClient:waitForActionServerToStart(timeout)
     end
 
     ros.spinOnce()  -- process incoming messages
+    sys.sleep(0.001)
   end
+
+  return false
 end
 
 local function formatSubscriberDebugString(name, list)
@@ -454,12 +515,12 @@ function ActionClient:isServerConnected()
     return false;
   end
 
-  if feedback_sub:getNumPublishers() == 0 then
+  if self.feedback_sub:getNumPublishers() == 0 then
     ros.DEBUG_NAMED("ActionClient", "isServerConnected: Client has not yet connected to feedback topic of server [%s]", self.status_caller_id)
     return false
   end
 
-  if result_sub:getNumPublishers() == 0 then
+  if self.result_sub:getNumPublishers() == 0 then
     ros.DEBUG_NAMED("ActionClient", "isServerConnected: Client has not yet connected to result topic of server [%s]", self.status_caller_id)
     return false
   end

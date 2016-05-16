@@ -206,15 +206,16 @@
   </VirtualDirectory>
   <VirtualDirectory Name="demo">
     <File Name="demo/advertiseService.lua"/>
-    <File Name="demo/talker.lua"/>
     <File Name="demo/joystick.lua"/>
     <File Name="demo/publish_lena_image.lua"/>
     <File Name="demo/robotiq_ft_sensor.lua"/>
     <File Name="demo/getSystemState.lua"/>
     <File Name="demo/robotiq_c_model.lua"/>
     <File Name="demo/logging.lua"/>
-    <File Name="demo/listener.lua"/>
     <File Name="demo/orbit.lua"/>
     <File Name="demo/broadcast_transform.lua"/>
+    <File Name="demo/subscribe.lua"/>
+    <File Name="demo/publish.lua"/>
+    <File Name="demo/call_movegroup_action.lua"/>
   </VirtualDirectory>
 </CodeLite_Project>

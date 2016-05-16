@@ -124,11 +124,15 @@ function Duration:__add(d)
 end
 
 function Duration:__eq(other)
-  return f.eq(self.o, other:cdata())
+  return self ~= nil and other ~=nil and f.eq(self.o, other:cdata())
 end
 
 function Duration:__lt(other)
-  return f.lt(self.o, other:cdata())
+  return self ~= nil and other ~= nil and f.lt(self.o, other:cdata())
+end
+
+function Duration:__le(other)
+  return self ~= nil and other ~= nil and (f.lt(self.o, other:cdata()) or f.eq(self.o, other:cdata()))
 end
 
 function Duration:toSec()

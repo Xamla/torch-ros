@@ -142,7 +142,7 @@ function NodeHandle:advertise(topic, msg_spec, queue_size, latch, connect_cb, di
     disconnect_ = ffi.cast('_ServiceStatusCallback', function(name, topic) disconnect_cb(ffi.string(name), ffi.string(topic)) end)
   end
 
-  local p = f.advertise(self.o, topic, queue_size or 1000, msg_spec:md5(), msg_spec.type, msg_spec.definition, msg_spec.has_header, latch or false, connect_, disconnect_, utils.cdata(callback_quueue))
+  local p = f.advertise(self.o, topic, queue_size or 1000, msg_spec:md5(), msg_spec.type, msg_spec.definition, msg_spec.has_header, latch or false, connect_, disconnect_, utils.cdata(callback_queue))
   return ros.Publisher(p, msg_spec, connect_, disconnect_)
 end
 

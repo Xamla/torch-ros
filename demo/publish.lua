@@ -1,6 +1,6 @@
 ros = require 'ros'
 
-ros.init('talker')
+ros.init('publish_demo')
 
 spinner = ros.AsyncSpinner()
 spinner:start()
