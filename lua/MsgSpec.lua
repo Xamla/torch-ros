@@ -118,7 +118,6 @@ local function load_from_iterator(self, iterator)
           is_builtin = is_builtin_type(ftype),
           value_index = field_index
         }
-
         -- cloneable indicates that a :clone() method is present (for arrays it refers to cloneability of elements)
         typeinfo.cloneable = not typeinfo.is_builtin or typeinfo.base_type == 'duration' or typeinfo.base_type == 'time'
 
@@ -148,8 +147,12 @@ local function load_from_iterator(self, iterator)
     end
 
   end
-
-  self.has_header = self.fields[1].type == 'std_msgs/Header'
+  
+  if self.fields == {} then
+    self.has_header = self.fields[1].type == 'std_msgs/Header'
+  else
+    self.has_header = false
+  end
   self.fixed_size = fixed_size
   self.definition = table.concat(lines, '\n')
 end
