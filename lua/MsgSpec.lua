@@ -148,11 +148,7 @@ local function load_from_iterator(self, iterator)
 
   end
   
-  if self.fields == {} then
-    self.has_header = self.fields[1].type == 'std_msgs/Header'
-  else
-    self.has_header = false
-  end
+  self.has_header = #self.fields > 0 and self.fields[1].type == 'std_msgs/Header'
   self.fixed_size = fixed_size
   self.definition = table.concat(lines, '\n')
 end
