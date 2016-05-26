@@ -1,6 +1,6 @@
 local ros = require 'ros.env'
-local std = ros.std
 require 'ros.actionlib.ActionClient'
+local std = ros.std
 local actionlib = ros.actionlib
 
 local SimpleActionClient = torch.class('ros.actionlib.SimpleActionClient', actionlib)
@@ -28,8 +28,8 @@ local SimpleClientGoalState = {
 }
 actionlib.SimpleClientGoalState = SimpleClientGoalState
 
-function SimpleActionClient:__init(action_spec, name, parent_node_handle)
-  self.callback_queue = ros.DEFAULT_CALLBACK_QUEUE
+function SimpleActionClient:__init(action_spec, name, parent_node_handle, callback_queue)
+  self.callback_queue = callback_queue or ros.DEFAULT_CALLBACK_QUEUE
   self.cur_simple_state = SimpleGoalState.PENDING
   self.nh = ros.NodeHandle()
   self.ac = ros.actionlib.ActionClient(action_spec, name, parent_node_handle, self.callback_queue)
@@ -43,8 +43,99 @@ function SimpleActionClient:isServerConnected()
   return self.ac:isServerConnected()
 end
 
-function handleTransition(self, goal)
-  -- TODO
+local function setSimpleState(self, next_state)
+  ros.DEBUG_NAMED(
+    "SimpleActionClient", "Transitioning SimpleState from [%s] to [%s]",
+    SimpleGoalState[self.cur_simple_state],
+    SimpleGoalState[next_state]
+  )
+  self.cur_simple_state = next_state
+end
+
+local function handleTransition(self, gh)
+  local comm_state = gh.state
+
+  if comm_state == CommState.WAITING_FOR_GOAL_ACK then
+    ros.ERROR_NAMED("SimpleActionClient", "BUG: Shouldn't ever get a transition callback for WAITING_FOR_GOAL_ACK")
+  elseif comm_state == CommState.PENDING then
+    ros.ERROR_COND(
+      self.cur_simple_state ~= SimpleGoalState.PENDING,
+      "BUG: Got a transition to CommState [%s] when our in SimpleGoalState [%s]",
+      CommState[comm_state],
+      SimpleGoalState[self.cur_simple_state]
+    )
+  elseif comm_state == CommState.ACTIVE then
+
+    -- check current simple goal state
+    if self.cur_simple_state == SimpleGoalState.PENDING then
+      setSimpleState(self, SimpleGoalState.ACTIVE)
+      if self.active_cb then
+        self.active_cb()
+      end
+    elseif self.cur_simple_state == SimpleGoalState.ACTIVE then
+      ; -- NOP
+    elseif self.cur_simple_state == SimpleGoalState.DONE then
+      ros.ERROR_NAMED(
+        "SimpleActionClient",
+        "BUG: Got a transition to CommState [%s] when in SimpleGoalState [%s]",
+        CommState[comm_state],
+        SimpleGoalState[self.cur_simple_state]
+      )
+    else
+      ros.FATAL("Unknown SimpleGoalState %u", self.cur_simple_state)
+    end
+
+  elseif comm_state == CommState.WAITING_FOR_RESULT then
+    ; -- NOP
+  elseif comm_state == CommState.WAITING_FOR_CANCEL_ACK then
+    ; -- NOP
+  elseif comm_state == CommState.RECALLING then
+    ros.ERROR_COND(
+      self.cur_simple_state ~= SimpleGoalState.PENDING,
+      "BUG: Got a transition to CommState [%s] when our in SimpleGoalState [%s]",
+      CommState[comm_state],
+      SimpleGoalState[self.cur_simple_state)
+    )
+  elseif comm_state == CommState.PREEMPTING then
+
+    -- check current simple goal state
+    if self.cur_simple_state == SimpleGoalState.PENDING then
+      setSimpleState(self, SimpleGoalState.ACTIVE)
+      if self.active_cb ~= nil then
+        self.active_cb()
+      end
+    elseif self.cur_sipmle_state == SimpleGoalState.ACTIVE then
+      ; -- NOP
+    elseif self.cur_simple_state == SimpleGoalState.DONE then
+      ros.ERROR_NAMED(
+        "SimpleActionClient",
+        "BUG: Got a transition to CommState [%s] when in SimpleGoalState [%s]",
+        CommState[comm_state],
+        SimpleGoalState[self.cur_simple_state]
+      )
+    else
+      ros.FATAL("Unknown SimpleGoalState %u", self.cur_simple_state)
+    end
+
+ elseif comm_state == CommState.DONE then
+
+    if self.cur_simple_state == SimpleGoalState.PENDING or
+        self.cur_simple_state == SimpleGoalState.ACTIVE then
+
+      setSimpleState(self, SimpleGoalState.DONE)
+      if self.done_cb ~= nil then
+        self.done_cb(self:getState(), gh:getResult())
+      end
+
+    elseif self.cur_simple_state == SimpleGoalState.DONE then
+      ros.ERROR_NAMED("SimpleActionClient", "BUG: Got a second transition to DONE")
+    else
+      ros.FATAL("Unknown SimpleGoalState %u", self.cur_simple_state)
+    end
+
+  else
+    ros.ERROR_NAMED("SimpleActionClient", "Unknown CommState received [%u]", comm_state)
+  end
 end
 
 function handleFeedback(self, goal, feedback)
@@ -68,7 +159,11 @@ function SimpleActionClient:sendGoal(goal, done_cb, active_cb, feedback_cb)
 
   self.cur_simple_state = SimpleGoalState.PENDING
 
-  self.gh = self.ac:sendGoal(goal, function (goal) handleTransition(self, goal) end, function(goal, feedback) handleFeedback(self, goal, feedback) end)
+  self.gh = self.ac:sendGoal(
+    goal,
+    function(goal) handleTransition(self, goal) end,
+    function(goal, feedback) handleFeedback(self, goal, feedback) end
+  )
 end
 
 function SimpleActionClient:sendGoalAndWait(goal, execute_timeout, preempt_timeout)
@@ -119,7 +214,7 @@ function SimpleActionClient:waitForResult(timeout)
       return true
     end
 
-    -- wait
+    -- wait ## TODO
 
   end
 
@@ -131,7 +226,7 @@ function SimpleActionClient:getResult()
     ros.ERROR_NAMED("SimpleActionClient", "Trying to getResult() when no goal is running.")
     return nil
   end
-  return gh.result
+  return gh:getResult()
 end
 
 function SimpleActionClient:getState()
@@ -142,7 +237,7 @@ function SimpleActionClient:getState()
 
   local comm_state = gh.state
 
-  if  comm_state == CommState.WAITING_FOR_GOAL_ACK or
+  if comm_state == CommState.WAITING_FOR_GOAL_ACK or
       comm_state == CommState.PENDING or
       comm_state == CommState.RECALLING then
     return SimpleClientGoalState.PENDING
@@ -179,7 +274,7 @@ function SimpleActionClient:getState()
     end
 
   end
-    
+
   ros.ERROR_NAMED("SimpleActionClient", "Error trying to interpret CommState - %u", comm_state)
   return SimpleClientGoalState.LOST
 end

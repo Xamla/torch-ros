@@ -476,6 +476,15 @@ function ActionClient:sendGoal(goal, transition_cb, feedback_cb)
         ros.ERROR_NAMED("ActionClient", "Trying to resend() on an inactive goal handle.")
       end
       ac.goal_pub:publish(self.action_goal)
+    end,
+    getResult = function(self)
+      if not self.active then
+        ros.ERROR_NAMED("ActionClient", "Trying to getResult on an inactive ClientGoalHandle.")
+      end
+      if self.latest_result ~= nil then
+        return self.latest_result.result
+      end
+      return nil
     end
   }
   self.goals[action_goal.goal_id] = gh
