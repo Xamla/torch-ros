@@ -62,8 +62,9 @@
     <VirtualDirectory Name="actionlib">
       <File Name="lua/actionlib/ActionServer.lua"/>
       <File Name="lua/actionlib/ActionSpec.lua"/>
-      <File Name="lua/actionlib/ActionClient.lua"/>
       <File Name="lua/actionlib/ConnectionMonitor.lua"/>
+      <File Name="lua/actionlib/SimpleActionClient.lua"/>
+      <File Name="lua/actionlib/ActionClient.lua"/>
     </VirtualDirectory>
     <VirtualDirectory Name="tests">
       <File Name="lua/tests/test_subscription.lua"/>

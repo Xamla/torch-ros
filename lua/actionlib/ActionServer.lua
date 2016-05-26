@@ -1,4 +1,13 @@
 local ros = require 'ros.env'
+require 'ros.ros'
+require 'ros.Time'
+require 'ros.Duration'
+require 'ros.console'
+require 'ros.StorageWriter'
+require 'ros.StorageReader'
+require 'ros.MsgSpec'
+require 'ros.Message'
+require 'ros.NodeHandle'
 local std = ros.std
 
 local actionlib = ros.actionlib
@@ -13,7 +22,7 @@ https://github.com/timn/ros-actionlib_lua/blob/master/src/actionlib/action_clien
 
 local ActionServer = torch.class('ros.actionlib.ActionServer', actionlib)
 
-local GoalID_spec = ros.get_msgspec('actionlib_msgs/GoalID ')
+local GoalID_spec = ros.get_msgspec('actionlib_msgs/GoalID')
 local GoalStatusArray_spec = ros.get_msgspec('actionlib_msgs/GoalStatusArray')
 
 
@@ -86,7 +95,7 @@ function ActionServer:publishFeedback(status, feedback)
   af.header.stamp = ros.Time.now()
   af.status = status
   af.feedback = feedback
-  ros.DEBUG_NAMED("actionlib", "Publishing feedback for goal with id: %s and stamp: %.2f", status.goal_id.id, status.goal_id:stamp.toSec())
+  ros.DEBUG_NAMED("actionlib", "Publishing feedback for goal with id: %s and stamp: %.2f", status.goal_id.id, status.goal_id.stamp:toSec())
   self.feedback_pub:publish(af)
 end
 

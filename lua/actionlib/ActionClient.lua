@@ -15,6 +15,7 @@ local CommState = {
   DONE                    = 8,
   'WAITING_FOR_GOAL_ACK', 'PENDING', 'ACTIVE', 'WAITING_FOR_RESULT', 'WAITING_FOR_CANCEL_ACK', 'RECALLING', 'PREEMPTING', 'DONE'
 }
+actionlib.CommState = CommState
 
 -- http://docs.ros.org/api/actionlib_msgs/html/msg/GoalStatus.html
 local GoalStatus = {
@@ -36,13 +37,7 @@ local GoalStatus = {
   LOST            = 9   -- An action client can determine that a goal is LOST. This should not be
                         --    sent over the wire by an action server
 }
-
-local SimpleGoalState = {
-  PENDING                 = 1,
-  ACTIVE                  = 2,
-  DONE                    = 3,
-  'PENDING', 'ACTIVE', 'DONE'
-}
+actionlib.GoalStatus = GoalStatus
 
 local next_goal_id = 1    -- shared among all action clients
 local ActionClient = torch.class('ros.actionlib.ActionClient', actionlib)
@@ -359,8 +354,8 @@ end
 local function onResultMessage(self, action_result)
   local goal = self.goals[action_feedback.status.goal_id.id]
   if goal ~= nil then
-    self.latest_goal_status = action_result.status
-    self.latest_result = action_result
+    goal.latest_goal_status = action_result.status
+    goal.latest_result = action_result
 
     if goal.state == CommState.DONE then
       ros.ROS_ERROR_NAMED("ActionClient", "Got a result when we were already in the DONE state")
@@ -437,12 +432,51 @@ function ActionClient:sendGoal(goal, transition_cb, feedback_cb)
   action_goal.goal = goal
 
   -- register goal in goal table
+  local ac = self
   local gh = {
     id = id_msg.id,
     action_goal = action_goal,
     state = CommState.WAITING_FOR_GOAL_ACK,
     transition_cb = transition_cb,
-    feedback_cb = feedback_cb
+    feedback_cb = feedback_cb,
+    active = true,
+    reset = function(self)
+      self.transition_cb = nil
+      self.feedback_cb = nil
+      self.active = false
+    end,
+    cancel = function(self)
+      if not self.active then
+        ros.ERROR_NAMED("ActionClient", "Trying to cancel() on an inactive goal handle.")
+      end
+
+      -- check goal handle state
+      if self.state == CommState.WAITING_FOR_RESULT or
+          self.state == CommState.RECALLING or
+          self.state == CommState.PREEMPTING or
+          self.state == CommState.DONE then
+        ros.DEBUG_NAMED("ActionClient", "Got a cancel() request while in state [%s], so ignoring it", CommState[self.state])
+        return
+      elseif not (self.state == CommState.WAITING_FOR_GOAL_ACK or
+          self.state == CommState.PENDING or
+          self.state == CommState.ACTIVE or
+          self.state == CommState.WAITING_FOR_CANCEL_ACK) then
+        ros.DEBUG_NAMED("ActionClient", "BUG: Unhandled CommState: %u", self.state)
+        return
+      end
+
+      local cancel_msg = ros.Message('actionlib_msgs/GoalID')
+      cancel_msg.stamp = ros.Time(0, 0)
+      cancel_msg.id = id
+      ac.cancel_pub:publish(cancel_msg)
+      transitionToState(ac, self, CommState.WAITING_FOR_CANCEL_ACK)
+    end,
+    resend = function(self)
+      if not self.active then
+        ros.ERROR_NAMED("ActionClient", "Trying to resend() on an inactive goal handle.")
+      end
+      ac.goal_pub:publish(self.action_goal)
+    end
   }
   self.goals[action_goal.goal_id] = gh
 
