@@ -65,6 +65,9 @@
       <File Name="lua/actionlib/ConnectionMonitor.lua"/>
       <File Name="lua/actionlib/SimpleActionClient.lua"/>
       <File Name="lua/actionlib/ActionClient.lua"/>
+      <File Name="lua/actionlib/SimpleActionServer.lua"/>
+      <File Name="lua/actionlib/ServerGoalHandle.lua"/>
+      <File Name="lua/actionlib/GoalStatus.lua"/>
     </VirtualDirectory>
     <VirtualDirectory Name="tests">
       <File Name="lua/tests/test_subscription.lua"/>

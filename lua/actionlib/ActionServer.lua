@@ -8,15 +8,14 @@ require 'ros.StorageReader'
 require 'ros.MsgSpec'
 require 'ros.Message'
 require 'ros.NodeHandle'
+local GoalStatus = require 'ros.actionlib.GoalStatus'
 local std = ros.std
-
 local actionlib = ros.actionlib
 
 --[[
 http://wiki.ros.org/actionlib
 http://wiki.ros.org/actionlib/DetailedDescription
 https://github.com/ros/actionlib/tree/indigo-devel/include/actionlib
-https://github.com/timn/ros-actionlib_lua/blob/master/src/actionlib/action_client.lua
 ]]
 
 
@@ -26,16 +25,37 @@ local GoalID_spec = ros.get_msgspec('actionlib_msgs/GoalID')
 local GoalStatusArray_spec = ros.get_msgspec('actionlib_msgs/GoalStatusArray')
 
 
-function goalCallback(self, goal)
+local function goalCallback(self, goal)
+  if not self.started then
+    return
+  end
+
+  ros.DEBUG_NAMED("actionlib", "The action server has received a new goal request")
+
 
 end
 
-function cancelCallback(self, goal_id)
+local function cancelCallback(self, goal_id)
+  if not self.started then
+    return
+  end
+
+  ros.DEBUG_NAMED("actionlib", "The action server has received a new cancel request")
 
 end
 
 
-local function initialize(self)
+function ActionServer:__init(node_handle, action_name, action_spec, callback_queue)
+  callback_queue = callback_queue or ros.DEFAULT_CALLBACK_QUEUE
+  self.callback_queue = callback_queue
+  self.status_list = {}
+  self.node = node_handle
+  self.action_spec = action_spec
+  self.started = false
+end
+
+
+function ActionServer:start()
   -- msg emitting topics
   self.result_pub   = self.node:advertise("result", self.action_spec.action_result_spec, 50)
   self.feedback_pub = self.node:advertise("feedback", self.action_spec.action_feedback_spec, 50)
@@ -66,19 +86,34 @@ local function initialize(self)
   -- msg absorbing topics
   self.goal_sub     = self.node:subscribe("goal", self.action_spec.action_goal_spec, 50)
   self.cancel_sub   = self.node:subscribe("cancel", GoalID_spec, 50)
-end
 
-function ActionServer:__init(node_handle, action_name, action_spec)
-  self.node = node_handle
-  self.action_spec = action_spec
-  self.started = false
-end
-
-function ActionServer:start()
   self.started = true
-  initialize(self)
+
+  self.goal_sub:registerCallback(function(msg) goalCallback(self, msg) end)
+  self.cancel_sub:registerCallback(function(msg) cancelCallback(self, msg) end)
+
   self:publishStatus()
 end
+
+
+function ActionServer:registerGoalCallback(goal_cb)
+  self.goal_cb = goal_cb
+end
+
+
+function ActionServer:registerCancelCallback(cancel_cb)
+  self.cancel_cb = cancel_cb
+end
+
+
+function ActionServer:shutdown()
+  self.result_pub:shutdown()
+  self.feedback_pub:shutdown()
+  self.status_pub:shutdown()
+  self.goal_sub:shutdown()
+  self.cancel_sub:shutdown()
+end
+
 
 function ActionServer:publishResult(status, result)
   local ar = self.result_pub:createMessage()

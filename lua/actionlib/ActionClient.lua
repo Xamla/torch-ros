@@ -1,8 +1,9 @@
 local ros = require 'ros.env'
 local utils = require 'ros.utils'
+local GoalStatus = require 'ros.actionlib.GoalStatus'
 local std = ros.std
-
 local actionlib = ros.actionlib
+
 
 local CommState = {
   WAITING_FOR_GOAL_ACK    = 1,
@@ -17,35 +18,16 @@ local CommState = {
 }
 actionlib.CommState = CommState
 
--- http://docs.ros.org/api/actionlib_msgs/html/msg/GoalStatus.html
-local GoalStatus = {
-  PENDING         = 0,  -- The goal has yet to be processed by the action server
-  ACTIVE          = 1,  -- The goal is currently being processed by the action server
-  PREEMPTED       = 2,  -- The goal received a cancel request after it started executing
-                        --   and has since completed its execution (Terminal State)
-  SUCCEEDED       = 3,  -- The goal was achieved successfully by the action server (Terminal State)
-  ABORTED         = 4,  -- The goal was aborted during execution by the action server due
-                        --    to some failure (Terminal State)
-  REJECTED        = 5,  -- The goal was rejected by the action server without being processed,
-                        --    because the goal was unattainable or invalid (Terminal State)
-  PREEMPTING      = 6,  -- The goal received a cancel request after it started executing
-                        --    and has not yet completed execution
-  RECALLING       = 7,  -- The goal received a cancel request before it started executing,
-                        --    but the action server has not yet confirmed that the goal is canceled
-  RECALLED        = 8,  -- The goal received a cancel request before it started executing
-                        --    and was successfully cancelled (Terminal State)
-  LOST            = 9   -- An action client can determine that a goal is LOST. This should not be
-                        --    sent over the wire by an action server
-}
-actionlib.GoalStatus = GoalStatus
 
 local next_goal_id = 1    -- shared among all action clients
 local ActionClient = torch.class('ros.actionlib.ActionClient', actionlib)
+
 
 local function goalConnectCallback(self, name, topic)
   self.goalSubscribers[name] = (self.goalSubscribers[name] or 0) + 1
   ros.DEBUG_NAMED("ActionClient", "goalConnectCallback: Adding [%s] to goalSubscribers", name)
 end
+
 
 local function goalDisconnectCallback(self, name, topic)
   local count = self.goalSubscribers[name]
@@ -62,10 +44,12 @@ local function goalDisconnectCallback(self, name, topic)
   end
 end
 
+
 local function cancelConnectCallback(self, name, topic)
   self.cancelSubscribers[name] = (self.cancelSubscribers[name] or 0) + 1
   ros.DEBUG_NAMED("ActionClient", "cancelConnectCallback: Adding [%s] to cancelSubscribers", name)
 end
+
 
 local function cancelDisconnectCallback(self, name, topic)
   local count = self.cancelSubscribers[name]
@@ -82,6 +66,7 @@ local function cancelDisconnectCallback(self, name, topic)
   end
 end
 
+
 local function transitionToState(self, goal, next_state)
   ros.DEBUG_NAMED("ActionClient", "Transitioning CommState from %s to %s", CommState[goal.state], CommState[next_state])
   goal.state = next_state
@@ -89,6 +74,7 @@ local function transitionToState(self, goal, next_state)
     goal.transition_cb(goal)
   end
 end
+
 
 local function processLost(self, goal)
   ros.WARN_NAMED("ActionClient", "Transitioning goal to LOST")
@@ -98,6 +84,7 @@ local function processLost(self, goal)
   end
   transitionToState(self, goal, CommState.DONE)
 end
+
 
 local function updateStatus(self, goal, goal_status)
   -- check if pending action is correctly reflected by the status message
@@ -309,6 +296,7 @@ local function updateStatus(self, goal, goal_status)
 
 end
 
+
 local function findGoalInStatusList(status_list, goal_id)
   for i, status in ipairs(status_list) do
     if status.goal_id.id == goal_id then
@@ -317,6 +305,7 @@ local function findGoalInStatusList(status_list, goal_id)
   end
   return nil
 end
+
 
 local function onStatusMessage(self, status_msg, header)
   local callerid = header["callerid"]
@@ -344,12 +333,14 @@ local function onStatusMessage(self, status_msg, header)
   end
 end
 
+
 local function onFeedbackMessage(self, action_feedback)
   local goal = self.goals[action_feedback.status.goal_id.id]
   if goal ~= nil and goal.feedback_cb ~= nil then
     goal.feedback_cb(goal, action_feedback.feedback)
   end
 end
+
 
 local function onResultMessage(self, action_result)
   local goal = self.goals[action_feedback.status.goal_id.id]
@@ -376,11 +367,13 @@ local function onResultMessage(self, action_result)
   end
 end
 
+
 function ActionClient:__init(action_spec, name, parent_node_handle, callback_queue)
   callback_queue = callback_queue or ros.DEFAULT_CALLBACK_QUEUE
+  self.callback_queue = callback_queue
 
   self.action_spec = action_spec
-  self.nh = ros.NodeHandle(name, parent_node_handle)
+  self.nh = ros.NodeHandle(name, parent_node_handle)    -- parent_node_handle is optional, it can be nil
   self.status_received = false
   self.goals = {}
 
@@ -395,7 +388,7 @@ function ActionClient:__init(action_spec, name, parent_node_handle, callback_que
   self.status_sub:registerCallback(function(msg, header) onStatusMessage(self, msg, header) end)
   self.feedback_sub:registerCallback(function(msg) onFeedbackMessage(self, msg) end)
   self.result_sub:registerCallback(function(msg) onResultMessage(self, msg) end)
-
+  
   self.goal_pub = self.nh:advertise("goal", action_spec.action_goal_spec, 10, false,
     function(name, topic) goalConnectCallback(self, name, topic) end,
     function(name, topic) goalDisconnectCallback(self, name, topic) end,
@@ -409,6 +402,7 @@ function ActionClient:__init(action_spec, name, parent_node_handle, callback_que
   )
 end
 
+
 function ActionClient:shutdown()
   self.status_sub:shutdown()
   self.feedback_sub:shutdown()
@@ -416,6 +410,7 @@ function ActionClient:shutdown()
   self.goal_pub:shutdown()
   self.cancel_pub:shutdown()
 end
+
 
 function ActionClient:sendGoal(goal, transition_cb, feedback_cb)
   -- create goal id
@@ -495,15 +490,18 @@ function ActionClient:sendGoal(goal, transition_cb, feedback_cb)
   return gh
 end
 
+
 function ActionClient:cancelGoalsAtAndBeforeTime(time)
   local cancel_msg = ros.Message('actionlib_msgs/GoalID')
   cancel_msg.stamp = time
   self.cancel_pub:publish(cancel_msg)
 end
 
+
 function ActionClient:cancelAllGoals()
   self:cancelGoalsAtAndBeforeTime(ros.Time())     -- CancelAll is encoded by stamp=0
 end
+
 
 function ActionClient:waitForActionServerToStart(timeout)
   if timeout ~= nil and type(timeout) == 'number' then
@@ -533,12 +531,14 @@ function ActionClient:waitForActionServerToStart(timeout)
   return false
 end
 
+
 local function formatSubscriberDebugString(name, list)
   local subscribers = utils.getTableKeys(list)
   local s = name .. string.format(" (%d total)", #subscribers)
   if #subscribers > 0 then s = s .. "\n   - " end
   return s .. table.concat(subscribers, "\n   - ")
 end
+
 
 function ActionClient:isServerConnected()
   if not self.status_received then

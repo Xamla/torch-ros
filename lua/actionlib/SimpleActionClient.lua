@@ -6,6 +6,8 @@ local actionlib = ros.actionlib
 local SimpleActionClient = torch.class('ros.actionlib.SimpleActionClient', actionlib)
 
 local CommState = actionlib.CommState
+local ZERO_DURATION = ros.Duration(0)
+
 
 local SimpleGoalState = {
   PENDING     = 1,
@@ -15,6 +17,8 @@ local SimpleGoalState = {
 }
 actionlib.SimpleGoalState = SimpleGoalState
 
+
+-- as returned by SimpleActionClient:getState()
 local SimpleClientGoalState = {
   PENDING     = 1,
   ACTIVE      = 2,
@@ -28,20 +32,39 @@ local SimpleClientGoalState = {
 }
 actionlib.SimpleClientGoalState = SimpleClientGoalState
 
-function SimpleActionClient:__init(action_spec, name, parent_node_handle, callback_queue)
+
+function SimpleActionClient:__init(action_spec, name, parent_node_handle, register_spin_callback, callback_queue)
   self.callback_queue = callback_queue or ros.DEFAULT_CALLBACK_QUEUE
   self.cur_simple_state = SimpleGoalState.PENDING
+
+  if self.callback_queue ~= ros.DEFAULT_CALLBACK_QUEUE and register_spin_callback then
+    self.spin_cb = function() self.callback_queue:callAvailable(0) end
+    ros.registerSpinCallback(self.spin_cb)
+  end
+
   self.nh = ros.NodeHandle()
   self.ac = ros.actionlib.ActionClient(action_spec, name, parent_node_handle, self.callback_queue)
 end
+
+
+function SimpleActionClient:shutdown()
+  if self.spin_cb ~= nil then
+    ros.unregisterSpinCallback(self.spin_cb)
+    self.spin_cb = nil
+  end
+  self.ac:shutdown()
+end
+
 
 function SimpleActionClient:waitForServer(timeout)
   return self.ac:waitForServer(timeout)
 end
 
+
 function SimpleActionClient:isServerConnected()
   return self.ac:isServerConnected()
 end
+
 
 local function setSimpleState(self, next_state)
   ros.DEBUG_NAMED(
@@ -51,6 +74,7 @@ local function setSimpleState(self, next_state)
   )
   self.cur_simple_state = next_state
 end
+
 
 local function handleTransition(self, gh)
   local comm_state = gh.state
@@ -94,7 +118,7 @@ local function handleTransition(self, gh)
       self.cur_simple_state ~= SimpleGoalState.PENDING,
       "BUG: Got a transition to CommState [%s] when our in SimpleGoalState [%s]",
       CommState[comm_state],
-      SimpleGoalState[self.cur_simple_state)
+      SimpleGoalState[self.cur_simple_state]
     )
   elseif comm_state == CommState.PREEMPTING then
 
@@ -138,7 +162,8 @@ local function handleTransition(self, gh)
   end
 end
 
-function handleFeedback(self, goal, feedback)
+
+local function handleFeedback(self, goal, feedback)
   if self.gh ~= goal then
     ros.ERROR_NAMED("SimpleActionClient", "Got a callback on a goal handle that we're not tracking. This could be a GoalID collision")
   end
@@ -146,6 +171,7 @@ function handleFeedback(self, goal, feedback)
     self.feedback_cb(feedback)
   end
 end
+
 
 function SimpleActionClient:sendGoal(goal, done_cb, active_cb, feedback_cb)
   if self.gh ~= nil then
@@ -166,13 +192,14 @@ function SimpleActionClient:sendGoal(goal, done_cb, active_cb, feedback_cb)
   )
 end
 
+
 function SimpleActionClient:sendGoalAndWait(goal, execute_timeout, preempt_timeout)
   execute_timeout = execute_timeout or ros.Duration(0, 0)
   preempt_timeout = preempt_timeout or ros.Duration(0, 0)
 
   self:sendGoal(goal)
 
-  -- See if the goal finishes in time
+  -- see if the goal finishes in time
   if self:waitForResult(execute_timeout) then
     ros.DEBUG_NAMED("SimpleActionClient", "Goal finished within specified execute_timeout [%.2f]", execute_timeout:toSec())
     return self:getState()
@@ -180,10 +207,10 @@ function SimpleActionClient:sendGoalAndWait(goal, execute_timeout, preempt_timeo
 
   ros.DEBUG_NAMED("SimpleActionClient", "Goal didn't finish within specified execute_timeout [%.2f]", execute_timeout:toSec())
 
-  -- It didn't finish in time, so we need to preempt it
+  -- it didn't finish in time, so we need to preempt it
   self:cancelGoal()
 
-  -- Now wait again and see if it finishes
+  -- now wait again and see if it finishes
   if self:waitForResult(preempt_timeout) then
     ros.DEBUG_NAMED("SimpleActionClient", "Preempt finished within specified preempt_timeout [%.2f]", preempt_timeout:toSec())
   else
@@ -193,33 +220,49 @@ function SimpleActionClient:sendGoalAndWait(goal, execute_timeout, preempt_timeo
   return self:getState()
 end
 
+
 function SimpleActionClient:waitForResult(timeout)
   if self.gh == nil then
     ros.ERROR_NAMED("SimpleActionClient", "Trying to waitForGoalToFinish() when no goal is running.")
     return false
   end
 
-  if timeout ~= nil and timeout < ros.Duration(0, 0) then
+  local wait_timeout = ros.Duration(0.01)
+
+  timeout = timeout or ros.Duration(0)
+  local timeout_time = ros.Time.now() + timeout
+  if timeout < ros.Duration(0, 0) then
     ros.WARN_NAMED("SimpleActionClient", "Timeouts must not be negative. Timeout is [%.2fs]", timeout:toSec())
   end
 
-  local timeout_time = ros.Time.now() + timeout
-
   while self.nh:ok() do
     local time_left = timeout_time - ros.Time.now()
-    if timeout ~= nil and timeout < ros.Duration(0,0) then
+    if timeout > ZERO_DURATION and time_left < ZERO_DURATION then
       return false -- timeout
+    elseif self.cur_simple_state == SimpleGoalState.DONE then
+      return true -- result available
     end
+
+    -- dispatch incomipng calls
+    if not self.callback_queue:isEmpty() then
+      queue:callAvailable()
+    end
+
+    -- test for terminal state again before wait operation
     if self.cur_simple_state == SimpleGoalState.DONE then
       return true
     end
 
-    -- wait ## TODO
-
+    -- truncate wait-time if necessary
+    if timeout > ZERO_DURATION  and time_left < wait_timeout then
+      wait_timeout = time_left
+    end
+    self.callback_queue:waitCallAvailable(wait_timeout)
   end
 
   return false
 end
+
 
 function SimpleActionClient:getResult()
   if self.gh == nil then
@@ -228,6 +271,7 @@ function SimpleActionClient:getResult()
   end
   return gh:getResult()
 end
+
 
 function SimpleActionClient:getState()
   if self.gh == nil then
@@ -279,13 +323,16 @@ function SimpleActionClient:getState()
   return SimpleClientGoalState.LOST
 end
 
+
 function SimpleActionClient:cancelAllGoals()
   self.ac:cancelAllGoals()
 end
 
+
 function SimpleActionClient:cancelGoalsAtAndBeforeTime(time)
   self.ac:cancelGoalsAtAndBeforeTime(time)
 end
+
 
 function SimpleActionClient:cancelGoal()
   if self.gh == nil then
@@ -293,6 +340,7 @@ function SimpleActionClient:cancelGoal()
   end
   self.gh:cancel()
 end
+
 
 function SimpleActionClient:stopTrackingGoal()
  if self.gh == nil then
