@@ -57,7 +57,7 @@ end
 
 
 function SimpleActionClient:waitForServer(timeout)
-  return self.ac:waitForServer(timeout)
+  return self.ac:waitForActionServerToStart(timeout)
 end
 
 

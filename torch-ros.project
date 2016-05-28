@@ -221,5 +221,7 @@
     <File Name="demo/subscribe.lua"/>
     <File Name="demo/publish.lua"/>
     <File Name="demo/call_movegroup_action.lua"/>
+    <File Name="demo/action_client.lua"/>
+    <File Name="demo/action_server.lua"/>
   </VirtualDirectory>
 </CodeLite_Project>

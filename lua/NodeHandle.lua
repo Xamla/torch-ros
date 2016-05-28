@@ -232,7 +232,7 @@ local bool_ct = ffi.typeof('bool[1]')
 
 function NodeHandle:getParamDouble(key)
   local result = double_ct(0)
-  local ok = f.setParamDouble(self.o, key, result)
+  local ok = f.getParamDouble(self.o, key, result)
   return result[0], ok
 end
 

@@ -369,6 +369,10 @@ end
 
 
 function ActionClient:__init(action_spec, name, parent_node_handle, callback_queue)
+  if type(action_spec) == 'string' then
+    action_spec = actionlib.ActionSpec(action_spec)
+  end
+
   callback_queue = callback_queue or ros.DEFAULT_CALLBACK_QUEUE
   self.callback_queue = callback_queue
 
@@ -388,7 +392,7 @@ function ActionClient:__init(action_spec, name, parent_node_handle, callback_que
   self.status_sub:registerCallback(function(msg, header) onStatusMessage(self, msg, header) end)
   self.feedback_sub:registerCallback(function(msg) onFeedbackMessage(self, msg) end)
   self.result_sub:registerCallback(function(msg) onResultMessage(self, msg) end)
-  
+
   self.goal_pub = self.nh:advertise("goal", action_spec.action_goal_spec, 10, false,
     function(name, topic) goalConnectCallback(self, name, topic) end,
     function(name, topic) goalDisconnectCallback(self, name, topic) end,
@@ -417,7 +421,7 @@ function ActionClient:sendGoal(goal, transition_cb, feedback_cb)
   local id_msg = ros.Message('actionlib_msgs/GoalID')
   local now = ros.Time.now()
   id_msg.id = string.format("%s-%d-%d.%d", ros.this_node.getName(), next_goal_id, now:get_sec(), now:get_nsec())
-  id_msg.stap = now
+  id_msg.stamp = now
   next_goal_id = next_goal_id + 1
 
   -- prepare goal message
@@ -428,7 +432,7 @@ function ActionClient:sendGoal(goal, transition_cb, feedback_cb)
 
   -- register goal in goal table
   local ac = self
-  local gh = {
+  local goal_handle = {
     id = id_msg.id,
     action_goal = action_goal,
     state = CommState.WAITING_FOR_GOAL_ACK,
@@ -482,12 +486,12 @@ function ActionClient:sendGoal(goal, transition_cb, feedback_cb)
       return nil
     end
   }
-  self.goals[action_goal.goal_id] = gh
+  self.goals[action_goal.goal_id.id] = goal_handle
 
   -- publish goal message
   self.goal_pub:publish(action_goal)
   ros.DEBUG_NAMED("ActionClient", "Goal published")
-  return gh
+  return goal_handle
 end
 
 
