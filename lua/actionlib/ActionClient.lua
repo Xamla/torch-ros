@@ -309,7 +309,7 @@ end
 
 local function onStatusMessage(self, status_msg, header)
   local callerid = header["callerid"]
-  ros.DEBUG_NAMED("actionlib", "Getting status over the wire (callerid: %s).", callerid)
+  ros.DEBUG_NAMED("actionlib", "Getting status over the wire (callerid: %s; count: %d).", callerid, #status_msg.status_list)
 
   if self.status_received then
     if self.status_caller_id ~= callerid then
@@ -343,13 +343,13 @@ end
 
 
 local function onResultMessage(self, action_result)
-  local goal = self.goals[action_feedback.status.goal_id.id]
+  local goal = self.goals[action_result.status.goal_id.id]
   if goal ~= nil then
     goal.latest_goal_status = action_result.status
     goal.latest_result = action_result
 
     if goal.state == CommState.DONE then
-      ros.ROS_ERROR_NAMED("actionlib", "Got a result when we were already in the DONE state")
+      ros.ERROR_NAMED("actionlib", "Got a result when we were already in the DONE state (goal_id: %s)", action_result.status.goal_id.id)
     elseif goal.state == CommState.WAITING_FOR_GOAL_ACK or
       goal.state == CommState.PENDING or
       goal.state == CommState.ACTIVE or
@@ -361,7 +361,7 @@ local function onResultMessage(self, action_result)
       updateStatus(self, goal, action_result.status)
       transitionToState(self, goal, CommState.DONE)
     else
-      ros.ROS_ERROR_NAMED("actionlib", "Invalid comm for result message state: %u.", goal.state)
+      ros.ERROR_NAMED("actionlib", "Invalid comm for result message state: %u.", goal.state)
     end
 
   end
@@ -489,6 +489,9 @@ function ActionClient:sendGoal(goal, transition_cb, feedback_cb)
         return self.latest_result.result
       end
       return nil
+    end,
+    getGoalStatus = function(self)
+      return self.latest_goal_status
     end
   }
   self.goals[action_goal.goal_id.id] = goal_handle

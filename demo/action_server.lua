@@ -10,6 +10,15 @@ local as = actionlib.ActionServer(nh, 'test_action', 'actionlib/Test')
 
 local function ActionServer_Goal(goal_handle)
   ros.INFO("ActionServer_Goal")
+  local g = goal_handle:getGoal()
+  print(g)
+  goal_handle:setAccepted('yip')
+
+  local r = goal_handle:createResult()
+  r.result = 123
+  print(r)
+  --goal_handle:setAborted(r, 'no')
+  --goal_handle:setSucceeded(r, 'done')
 end
 
 local function ActionServer_Cancel(goal_handle)

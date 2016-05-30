@@ -122,6 +122,16 @@ function ActionServer:shutdown()
 end
 
 
+function ActionServer:createResult()
+  return ros.Message(self.action_spec.result_spec)
+end
+
+
+function ActionServer:createFeeback()
+  return ros.Message(self.action_spec.feedback_spec)
+end
+
+
 function ActionServer:start()
   if self.started then
     return
@@ -183,25 +193,25 @@ end
 
 
 function ActionServer:publishResult(status, result)
-  local ar = self.result_pub:createMessage()
-  ar.header.stamp = ros.Time.now()
-  ar.status = status
+  local action_result = self.result_pub:createMessage()
+  action_result.header.stamp = ros.Time.now()
+  action_result.status = status
   if result ~= nil then
-    ar.result = result
+    action_result.result = result
   end
   ros.DEBUG_NAMED("actionlib", "Publishing result for goal with id: %s and stamp: %.2f", status.goal_id.id, status.goal_id.stamp:toSec())
-  self.result_pub:publish(ar)
+  self.result_pub:publish(action_result)
   self:publishStatus()
 end
 
 
 function ActionServer:publishFeedback(status, feedback)
-  local af = self.feedback_pub:createMessage()
-  af.header.stamp = ros.Time.now()
-  af.status = status
-  af.feedback = feedback
+  local acfion_feedback = self.feedback_pub:createMessage()
+  acfion_feedback.header.stamp = ros.Time.now()
+  acfion_feedback.status = status
+  acfion_feedback.feedback = feedback
   ros.DEBUG_NAMED("actionlib", "Publishing feedback for goal with id: %s and stamp: %.2f", status.goal_id.id, status.goal_id.stamp:toSec())
-  self.feedback_pub:publish(af)
+  self.feedback_pub:publish(acfion_feedback)
 end
 
 

@@ -21,6 +21,16 @@ function ServerGoalHandle:__init(action_server, goal_id, status, goal)
 end
 
 
+function ServerGoalHandle:createResult()
+  return self.action_server:createResult()
+end
+
+
+function ServerGoalHandle:createFeeback()
+  return self.action_server:createFeeback()
+end
+
+
 function ServerGoalHandle:setAccepted(text)
   text = text or ''
   ros.DEBUG_NAMED("actionlib", "Accepting goal, id: %s, stamp: %.2f", self:getGoalID().id, self:getGoalID().stamp:toSec())

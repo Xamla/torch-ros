@@ -1,5 +1,6 @@
 local ros = require 'ros.env'
 require 'ros.actionlib.ActionClient'
+local GoalStatus = require 'ros.actionlib.GoalStatus'
 local std = ros.std
 local actionlib = ros.actionlib
 
@@ -256,7 +257,7 @@ function SimpleActionClient:waitForResult(timeout)
       return true -- result available
     end
 
-    -- dispatch incomipng calls
+    -- dispatch incoming calls
     if not self.callback_queue:isEmpty() then
       self.callback_queue:callAvailable()
     end
@@ -267,7 +268,7 @@ function SimpleActionClient:waitForResult(timeout)
     end
 
     -- truncate wait-time if necessary
-    if timeout > ZERO_DURATION  and time_left < wait_timeout then
+    if timeout > ZERO_DURATION and time_left < wait_timeout then
       wait_timeout = time_left
     end
 
@@ -283,7 +284,7 @@ function SimpleActionClient:getResult()
     ros.ERROR_NAMED("actionlib", "Trying to getResult() when no goal is running.")
     return nil
   end
-  return gh:getResult()
+  return self.gh:getResult()
 end
 
 
@@ -304,14 +305,20 @@ function SimpleActionClient:getState()
          comm_state == CommState.PREEMPTING then
     return SimpleClientGoalState.ACTIVE
 
-  elseif comm_state == CommState.Done then
+  elseif comm_state == CommState.DONE then
 
-    if     self.gh.state == GoalStatus.RECALLED  then return SimpleClientGoalState.RECALLED
-    elseif self.gh.state == GoalStatus.REJECTED  then return SimpleClientGoalState.REJECTED
-    elseif self.gh.state == GoalStatus.PREEMPTED then return SimpleClientGoalState.PREEMPTED
-    elseif self.gh.state == GoalStatus.ABORTED   then return SimpleClientGoalState.ABORTED
-    elseif self.gh.state == GoalStatus.SUCCEEDED then return SimpleClientGoalState.SUCCEEDED
-    elseif self.gh.state == GoalStatus.LOST      then return SimpleClientGoalState.LOST
+    local goal_status = self.gh:getGoalStatus()
+    local status = GoalStatus.LOST
+    if goal_status ~= nil then
+      status = goal_status.status
+    end
+
+    if     status == GoalStatus.RECALLED  then return SimpleClientGoalState.RECALLED
+    elseif status == GoalStatus.REJECTED  then return SimpleClientGoalState.REJECTED
+    elseif status == GoalStatus.PREEMPTED then return SimpleClientGoalState.PREEMPTED
+    elseif status == GoalStatus.ABORTED   then return SimpleClientGoalState.ABORTED
+    elseif status == GoalStatus.SUCCEEDED then return SimpleClientGoalState.SUCCEEDED
+    elseif status == GoalStatus.LOST      then return SimpleClientGoalState.LOST
     else
       ros.ERROR_NAMED("actionlib", "Unknown terminal state [%u]. This is a bug in SimpleActionClient", self.gh.state)
       return SimpleClientGoalState.LOST

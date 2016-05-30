@@ -118,7 +118,9 @@ local function create_logger(postfix, fn_builder)
     FATAL = console.Level.Fatal
   }
   for k,v in pairs(name_level) do
-    ros[k .. postfix] = fn_builder(v)
+    local fn = fn_builder(v)
+    ros[k .. postfix] = fn
+    ros['ROS_' .. k .. postfix] = fn
   end
 end
 
