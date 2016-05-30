@@ -23,7 +23,7 @@ end
 
 local f = init()
 
-console.level = {
+console.Level = {
   Debug = 0,
   Info  = 1,
   Warn  = 2,
@@ -32,15 +32,15 @@ console.level = {
 }
 
 function console.initialize()
-  f.initialize()
+  console.NAME_PREFIX = ffi.string(f.initialize())
 end
 
 function console.shutdown()
   f.shutdown()
 end
 
-function console.set_logger_level(name, level)
-  f.set_logger_level(name, level)
+function console.set_logger_level(name, level, no_default_prefix)
+  f.set_logger_level(name, level, no_default_prefix or false)
 end
 
 function console.get_loggers()
@@ -50,13 +50,18 @@ function console.get_loggers()
   return names, levels
 end
 
-function console.get_logger(name)
-  return f.get_logger(name)
+function console.get_logger(name, no_default_prefix)
+  return f.get_logger(name, no_default_prefix or false)
 end
 
-function console.check_loglevel(level)
-  return f.check_loglevel(level)
+function console.check_loglevel(name, level, no_default_prefix)
+  return f.check_loglevel(name, level, no_default_prefix or false)
 end
+
+-- aliases
+console.setLoggerLevel = console.set_logger_level
+console.getLoggers = console.get_loggers
+console.checkLogLevel = console.check_loglevel
 
 function console.print(logger, level, text, file, function_name, line)
   f.print(logger or ffi.NULL, level, text, file or '??', function_name or '??', line or 0)
@@ -64,7 +69,7 @@ end
 
 local function create_trace(level)
   return function(...)
-    if console.check_loglevel(level) then
+    if console.check_loglevel(nil, level) then
       local msg = string.format(...)
       local caller = debug.getinfo(2, 'nSl')
       console.print(nil, level, msg, caller.short_src, caller.name, caller.currentline or caller.linedefined)
@@ -74,7 +79,7 @@ end
 
 local function create_trace_named(level)
   return function(name, ...)
-    if console.check_loglevel(level) then
+    if console.check_loglevel(name, level) then
       local logger = console.get_logger(name)
       local msg = string.format(...)
       local caller = debug.getinfo(2, 'nSl')
@@ -85,7 +90,7 @@ end
 
 local function create_trace_conditional(level)
   return function(cond, ...)
-    if cond and console.check_loglevel(level) then
+    if cond and console.check_loglevel(nil, level) then
       local msg = string.format(...)
       local caller = debug.getinfo(2, 'nSl')
       console.print(nil, level, msg, caller.short_src, caller.name, caller.currentline or caller.linedefined)
@@ -95,7 +100,7 @@ end
 
 local function create_trace_conditional_named(level)
   return function(cond, name, ...)
-    if cond and console.check_loglevel(level) then
+    if cond and console.check_loglevel(name, level) then
       local logger = console.get_logger(name)
       local msg = string.format(...)
       local caller = debug.getinfo(2, 'nSl')
@@ -106,11 +111,11 @@ end
 
 local function create_logger(postfix, fn_builder)
   local name_level = {
-    DEBUG = console.level.Debug,
-    INFO = console.level.Info,
-    WARN = console.level.Warn,
-    ERROR = console.level.Error,
-    FATAL = console.level.Fatal
+    DEBUG = console.Level.Debug,
+    INFO = console.Level.Info,
+    WARN = console.Level.Warn,
+    ERROR = console.Level.Error,
+    FATAL = console.Level.Fatal
   }
   for k,v in pairs(name_level) do
     ros[k .. postfix] = fn_builder(v)

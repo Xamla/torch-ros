@@ -98,7 +98,6 @@
     <File Name="lua/SrvSpec.lua"/>
     <File Name="lua/md5.lua"/>
     <File Name="lua/console.lua"/>
-    <File Name="lua/Subscriber.lua"/>
     <File Name="lua/master.lua"/>
     <File Name="lua/NodeHandle.lua"/>
     <File Name="lua/ros.lua"/>
@@ -111,6 +110,7 @@
     <File Name="lua/Time.lua"/>
     <File Name="lua/ServiceServer.lua"/>
     <File Name="lua/StorageReader.lua"/>
+    <File Name="lua/Subscriber.lua"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
@@ -218,10 +218,10 @@
     <File Name="demo/logging.lua"/>
     <File Name="demo/orbit.lua"/>
     <File Name="demo/broadcast_transform.lua"/>
-    <File Name="demo/subscribe.lua"/>
     <File Name="demo/publish.lua"/>
     <File Name="demo/call_movegroup_action.lua"/>
     <File Name="demo/action_client.lua"/>
     <File Name="demo/action_server.lua"/>
+    <File Name="demo/subscribe.lua"/>
   </VirtualDirectory>
 </CodeLite_Project>

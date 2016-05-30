@@ -187,12 +187,12 @@ bool ros___isShuttingDown();
 bool ros___ok();
 void ros___waitForShutdown();
 
-void ros_Console_initialize();
+const char *ros_Console_initialize();
 void ros_Console_shutdown();
-void ros_Console_set_logger_level(const char *name, int level);
+void ros_Console_set_logger_level(const char *name, int level, bool no_default_prefix);
 bool ros_Console_get_loggers(std_StringVector *names, THShortTensor *levels);
-bool ros_Console_check_loglevel(int level);
-void *ros_Console_get_logger(const char *name);
+bool ros_Console_check_loglevel(const char *name, int level, bool no_default_prefix);
+void *ros_Console_get_logger(const char *name, bool no_default_prefix);
 void ros_Console_print(void *logger, int level, const char *text, const char *file, const char *function_name, int line);
 
 ros_AsyncSpinner* ros_AsyncSpinner_new(uint32_t thread_count);
@@ -310,7 +310,7 @@ bool ros_NodeHandle_ok(ros_NodeHandle *self);
 const char *ros_NodeHandle_getNamespace(ros_NodeHandle *self);
 const char *ros_NodeHandle_getUnresolvedNamespace(ros_NodeHandle *self);
 void ros_NodeHandle_resolveName(ros_NodeHandle *self, const char *name, bool remap, std_string *result);
-ros_Subscriber *ros_NodeHandle_subscribe(ros_NodeHandle *self, MessageBuffer *message_buffer, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype, std_StringVector *transports, std_StringMap *transport_options);
+ros_Subscriber *ros_NodeHandle_subscribe(ros_NodeHandle *self, MessageBuffer *message_buffer, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype, std_StringVector *transports, std_StringMap *transport_options, ros_CallbackQueue *callback_queue);
 ros_Publisher *ros_NodeHandle_advertise(ros_NodeHandle *self, const char *topic, unsigned int queue_size, const char *md5sum, const char *datatype, const char *message_definition, bool has_header, bool latch, _ServiceStatusCallback connect_cb, _ServiceStatusCallback disconnect_cb, ros_CallbackQueue *callback_queue);
 ros_ServiceClient *ros_NodeHandle_serviceClient(ros_NodeHandle *self, const char *service, const char *md5sum, bool persistent, std_StringMap *header);
 ros_ServiceServer* ros_NodeHandle_advertiseService(ros_NodeHandle *self, const char *service, const char *md5sum, const char *datatype, const char *req_datatype, const char *res_datatype, ServiceRequestCallback callback, ros_CallbackQueue *callback_queue);
@@ -437,6 +437,6 @@ void tf_TransformListener_getTFPrefix(tf_TransformListener *self, std_string *re
 
 ffi.cdef(tf_cdef)
 
-ros.lib = ffi.load(package.searchpath('libtorch-ros', package.cpath))
+ros.lib = ffi.load(package.searchpath('librostorch', package.cpath))
 
 return ros

@@ -26,7 +26,6 @@ function init()
 end
 
 local f = init()
-local spin_callbacks = { {}, {}, {}, {}, {} }
 
 ros.init_options = {
   NoSigintHandler = 1,
@@ -36,7 +35,7 @@ ros.init_options = {
 
 function ros.init(name, options)
   if not name then
-    name = 'torch-ros'
+    name = 'torch_ros'
     options = ros.init_options.AnonymousName
   end
   f.init(name, options or 0)
@@ -46,32 +45,21 @@ function ros.spinOnce(no_default_callbacks)
   f.spinOnce()
 
   if not no_default_callbacks then
-
     -- process pending callbacks on default queue
     local queue = ros.DEFAULT_CALLBACK_QUEUE
-    if queue ~= nil and not queue:isEmpty() and ros.ok() then
+    if queue ~= nil and ros.ok() then
       queue:callAvailable()
     end
-
-    -- call spin callbacks
-    for i,cbs in ipairs(spin_callbacks) do
-      local isolation_copy = utils.getTableKeys(cbs)   -- changes of spin_callbacks become effecitve after iteration
-      for _,f in ipairs(isolation_copy) do
-        if not ros.ok() then return end
-        f()
-      end
-    end
-
   end
 end
 
 -- callbacks with a higher round integer are called after all callbacks with lower round numbers have been called.
 function ros.registerSpinCallback(fn, round)
-  spin_callbacks[round or 1][fn] = true -- table used as set
+  ros.DEFAULT_CALLBACK_QUEUE:registerSpinCallback(fn, round)
 end
 
 function ros.unregisterSpinCallback(fn, round)
-  spin_callbacks[round or 1][fn] = nil
+  ros.DEFAULT_CALLBACK_QUEUE:unregisterSpinCallback(fn, round)
 end
 
 return ros

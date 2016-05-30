@@ -15,13 +15,13 @@ function init()
     "getTopic",
     "getNumPublishers"
   }
-  
+
   return utils.create_method_table("ros_Subscriber_", Subscriber_method_names)
 end
 
 local f = init()
 
-function Subscriber:__init(ptr, buffer, msg_spec)
+function Subscriber:__init(ptr, buffer, msg_spec, callback_queue)
   if not ptr or not ffi.typeof(ptr) == Subscriber_ptr_ct then
     error('argument 1: ros.Subscriber * expected.')
   end
@@ -29,6 +29,7 @@ function Subscriber:__init(ptr, buffer, msg_spec)
   self.buffer = buffer
   self.msg_spec = msg_spec
   ffi.gc(ptr, f.delete)
+  self.callback_queue = callback_queue or ros.DEFAULT_CALLBACK_QUEUE
   self.callbacks = {}
 end
 
@@ -37,7 +38,7 @@ function Subscriber:cdata()
 end
 
 function Subscriber:clone()
-  local c = torch.factory('ros.Subscriber')() 
+  local c = torch.factory('ros.Subscriber')()
   rawset(c, 'o', f.clone(self.o))
   return c
 end
@@ -94,14 +95,14 @@ function Subscriber:registerCallback(message_cb)
   self.callbacks[message_cb] = true -- table used as set
   if self.spin_callback_function == nil then
     self.spin_callback_function = function() self:triggerCallbacks() end
-    self.spin_callback_id = ros.registerSpinCallback(self.spin_callback_function)
+    self.spin_callback_id = self.callback_queue:registerSpinCallback(self.spin_callback_function)
   end
 end
 
 function Subscriber:unregisterCallback(message_cb)
   self.callbacks[message_cb] = nil
   if self.spin_callback_function ~= nil and next(self.callbacks) == nil then
-    ros.unregisterSpinCallback(self.spin_callback_function)
+    self.callback_queue:unregisterSpinCallback(self.spin_callback_function)
     self.spin_callback_function = nil
   end
 end

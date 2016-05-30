@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.11)
 
-project(torch-ros)
+project(rostorch)
 
 find_package(Torch REQUIRED)
 find_package(Boost 1.47.0 REQUIRED COMPONENTS system thread chrono)
@@ -50,9 +50,9 @@ link_directories(
   ${Boost_LIBRARY_DIRS}
 )
 
-add_library(torch-ros MODULE ${src})
+add_library(rostorch MODULE ${src})
 
-target_link_libraries(torch-ros TH ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
+target_link_libraries(rostorch TH ${catkin_LIBRARIES} ${Boost_LIBRARIES} )
 
-install(TARGETS torch-ros LIBRARY DESTINATION ${Torch_INSTALL_LUA_CPATH_SUBDIR})
+install(TARGETS rostorch LIBRARY DESTINATION ${Torch_INSTALL_LUA_CPATH_SUBDIR})
 install(DIRECTORY "lua/" DESTINATION "${Torch_INSTALL_LUA_PATH_SUBDIR}/ros" FILES_MATCHING PATTERN "*.lua")

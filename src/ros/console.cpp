@@ -1,24 +1,50 @@
 #include "torch-ros.h"
 #include <ros/console.h>
-#include "log4cxx/logger.h"
+#include <boost/unordered_map.hpp>
 
-ros::console::LogLocation global_locs[ros::console::levels::Count];
+namespace xamla {
 
-ROSIMP(void, Console, initialize)() {
-  ros::console::initialize();
-  for (int l = ros::console::levels::Debug; l < ros::console::levels::Count; ++l) {
-    ros::console::initializeLogLocation(&global_locs[l], ROSCONSOLE_DEFAULT_NAME, static_cast<ros::console::levels::Level>(l));
+typedef boost::unordered_map<std::string, boost::shared_ptr<ros::console::LogLocation> > NamedLoggerMap;
+NamedLoggerMap global_named_locs;
+
+ros::console::LogLocation *getNamedLoc(const std::string& name) {
+  NamedLoggerMap::iterator i = global_named_locs.find(name);
+  if (i == global_named_locs.end()) {
+    static ros::console::LogLocation __empty = { false, false, ::ros::console::levels::Count, 0 };
+    boost::shared_ptr<ros::console::LogLocation> ploc(new ros::console::LogLocation(__empty));
+    ros::console::initializeLogLocation(ploc.get(), name, ros::console::levels::Info);
+    i = global_named_locs.insert(std::make_pair(name, ploc)).first;
   }
+  return i->second.get();
+}
+
+inline std::string getLoggerName(const char *name, bool no_default_prefix) {
+  if (!name)
+    return ROSCONSOLE_DEFAULT_NAME;
+  else if (no_default_prefix)
+    return name;
+  else
+    return std::string(ROSCONSOLE_NAME_PREFIX) + "." + name;
+}
+
+} // namespace xamla
+
+
+ROSIMP(const char *, Console, initialize)() {
+  ros::console::initialize();
+  xamla::getNamedLoc(ROSCONSOLE_DEFAULT_NAME);
+  return ROSCONSOLE_NAME_PREFIX;
 }
 
 ROSIMP(void, Console, shutdown)() {
   ros::console::shutdown();
+  xamla::global_named_locs.clear();
 }
 
-ROSIMP(void, Console, set_logger_level)(const char *name, int level) {
-  if (!name)
-    name = ROSCONSOLE_DEFAULT_NAME;
-  if (ros::console::set_logger_level(name, (ros::console::levels::Level)level))
+ROSIMP(void, Console, set_logger_level)(const char *name, int level, bool no_default_prefix) {
+  const std::string& name_ = xamla::getLoggerName(name, no_default_prefix);
+  ros::console::setLogLocationLevel(xamla::getNamedLoc(name_), (ros::console::levels::Level)level);
+  if (ros::console::set_logger_level(name_, (ros::console::levels::Level)level))
     ros::console::notifyLoggerLevelsChanged();
 }
 
@@ -42,19 +68,21 @@ ROSIMP(bool, Console, get_loggers)(std::vector<std::string> *names, THShortTenso
   return true;
 }
 
-ROSIMP(bool, Console, check_loglevel)(int level) {
-  return level >= 0 && level < ros::console::levels::Count && global_locs[level].logger_enabled_;
+ROSIMP(bool, Console, check_loglevel)(const char *name, int level, bool no_default_prefix) {
+  const std::string& name_ = xamla::getLoggerName(name, no_default_prefix);
+  ros::console::LogLocation *loc = xamla::getNamedLoc(name_);
+  return loc != NULL && level >= loc->level_;
 }
 
-ROSIMP(void*, Console, get_logger)(const char *name) {
-  return &(*log4cxx::Logger::getLogger(name));
+ROSIMP(void*, Console, get_logger)(const char *name, bool no_default_prefix) {
+  const std::string& name_ = xamla::getLoggerName(name, no_default_prefix);
+  return xamla::getNamedLoc(name_)->logger_;
 }
 
 ROSIMP(void, Console, print)(void *logger, int level, const char *text, const char *file, const char *function_name, int line) {
-  static void *default_logger = global_locs[ros::console::levels::Info].logger_;
-
-  if (!logger)
-    logger = default_logger;
+  if (!logger) {
+    logger = xamla::getNamedLoc(ROSCONSOLE_DEFAULT_NAME)->logger_;
+  }
 
   ros::console::print(
     NULL,

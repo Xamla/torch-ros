@@ -81,7 +81,7 @@ function NodeHandle:resolveName(name, remap)
   return result
 end
 
-function NodeHandle:subscribe(topic, msg_spec, queue_size, transports, transport_options)
+function NodeHandle:subscribe(topic, msg_spec, queue_size, transports, transport_options, callback_queue)
   if type(msg_spec) == 'string' then
     msg_spec = ros.get_msgspec(msg_spec)
   end
@@ -106,6 +106,10 @@ function NodeHandle:subscribe(topic, msg_spec, queue_size, transports, transport
     end
   end
 
+  if callback_queue ~= nil and not torch.isTypeOf(callback_queue, ros.CallbackQueue) then
+    error('Invalid type of explicitly specified callback queue.')
+  end
+
   local buffer = ros.MessageBuffer(queue_size)
   local s = f.subscribe(
     self.o,
@@ -115,9 +119,10 @@ function NodeHandle:subscribe(topic, msg_spec, queue_size, transports, transport
     msg_spec:md5(),
     msg_spec.type,
     utils.cdata(transports),
-    utils.cdata(transport_options)
+    utils.cdata(transport_options),
+    utils.cdata(callback_queue)
   )
-  return ros.Subscriber(s, buffer, msg_spec)
+  return ros.Subscriber(s, buffer, msg_spec, callback_queue)
 end
 
 function NodeHandle:advertise(topic, msg_spec, queue_size, latch, connect_cb, disconnect_cb, callback_queue)

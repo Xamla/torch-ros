@@ -1,4 +1,5 @@
 local ros = require 'ros.env'
+local GoalStatus = require 'ros.actionlib.GoalStatus'
 local std = ros.std
 local actionlib = ros.actionlib
 

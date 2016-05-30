@@ -50,8 +50,8 @@ local function goalCallback(self, goal)
     -- create and register new goal handle
     gh = actionlib.ServerGoalHandle(self, goal.goal_id, GoalStatus.PENDING, goal)
     self.status_list[id] = gh
-    if self.goal_cb then
-      self.goal_cb(gh)
+    if self.goal_callback then
+      self.goal_callback(gh)
     end
   end
 end
@@ -160,8 +160,8 @@ function ActionServer:start()
   end
 
   -- msg absorbing topics
-  self.goal_sub     = self.node:subscribe("goal", self.action_spec.action_goal_spec, 50)
-  self.cancel_sub   = self.node:subscribe("cancel", GoalID_spec, 50)
+  self.goal_sub     = self.node:subscribe("goal", self.action_spec.action_goal_spec, 50, nil, nil, callback_queue)
+  self.cancel_sub   = self.node:subscribe("cancel", GoalID_spec, 50, nil, nil, callback_queue)
 
   self.started = true
 
@@ -173,12 +173,12 @@ end
 
 
 function ActionServer:registerGoalCallback(goal_cb)
-  self.goal_cb = goal_cb
+  self.goal_callback = goal_cb
 end
 
 
 function ActionServer:registerCancelCallback(cancel_cb)
-  self.cancel_cb = cancel_cb
+  self.cancel_callback = cancel_cb
 end
 
 

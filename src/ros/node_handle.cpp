@@ -51,7 +51,8 @@ ROSIMP(ros::Subscriber *, NodeHandle, subscribe)(
   const char *md5sum,
   const char *datatype,
   StringVector *transports,
-  StringMap *transport_options
+  StringMap *transport_options,
+  ros::CallbackQueue *callback_queue
 ) {
   ros::SubscribeOptions so(topic, queue_size, md5sum, datatype);
   if (transports != NULL) {
@@ -73,6 +74,7 @@ ROSIMP(ros::Subscriber *, NodeHandle, subscribe)(
         so.transport_hints.maxDatagramSize(boost::lexical_cast<int>(value));
     }
   }
+  so.callback_queue = callback_queue;
   so.helper = *message_buffer;
   return new ros::Subscriber(self->subscribe(so));
 }
