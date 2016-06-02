@@ -223,7 +223,7 @@ function ActionServer:publishStatus()
 
   local i = 1
   for k,v in pairs(self.status_list) do
-    table.insert(status_array.status_list, v.status)    -- add status message to list
+    table.insert(status_array.status_list, v.goal_status)    -- add status message to list
     -- check if the item is due for deletion from the status list
     if v.handle_destruction_time ~= nil and v.handle_destruction_time:add(self.status_list_timeout) < now then
       self.status_list[k] = nil   -- remove item
