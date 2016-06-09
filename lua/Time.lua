@@ -112,6 +112,10 @@ function Time:__eq(other)
   return f.eq(self.o, other:cdata())
 end
 
+function Time:__le(other)
+  return f.lt(self.o, other:cdata()) or f.eq(self.o, other:cdata())
+end
+
 function Time:add(d, result)
   result = result or self
   if type(d) == 'number' then

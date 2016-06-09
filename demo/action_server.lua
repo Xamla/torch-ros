@@ -1,33 +1,34 @@
 local ros = require 'ros'
-require 'ros.actionlib.ActionServer'
+require 'ros.actionlib.SimpleActionServer'
 local actionlib = ros.actionlib
 
 ros.init('test_action_server')
 nh = ros.NodeHandle()
 ros.console.setLoggerLevel('actionlib', ros.console.Level.Debug)
 
-local as = actionlib.ActionServer(nh, 'test_action', 'actionlib/Test')
+local as = actionlib.SimpleActionServer(nh, 'test_action', 'actionlib/Test')
 
-local function ActionServer_Goal(goal_handle)
+local function ActionServer_Goal()
   ros.INFO("ActionServer_Goal")
-  local g = goal_handle:getGoal()
-  print(g)
-  goal_handle:setAccepted('yip')
 
-  local r = goal_handle:createResult()
+  local g = as:acceptNewGoal()
+  print(g)
+
+  local r = as:createResult()
   r.result = 123
   print(r)
-  goal_handle:setAborted(r, 'no')
-  --goal_handle:setSucceeded(r, 'done')
+  as:setAborted(r, 'no')
+
+  --as:setSucceeded(r, 'done')
 end
 
-local function ActionServer_Cancel(goal_handle)
+local function ActionServer_Cancel()
   ros.INFO("ActionServer_Cancel")
-  goal_handle:setCanceled(nil, 'blub')
+  as:setPreempted(nil, 'blub')
 end
 
 as:registerGoalCallback(ActionServer_Goal)
-as:registerCancelCallback(ActionServer_Cancel)
+as:registerPreemptCallback(ActionServer_Cancel)
 
 print('Starting action server...')
 as:start()

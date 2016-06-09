@@ -25,7 +25,7 @@ end
 function ServerGoalHandle:__init(action_server, goal_id, status, goal)
   self.action_server = action_server
   self.goal_status = ros.Message('actionlib_msgs/GoalStatus')     -- http://docs.ros.org/jade/api/actionlib_msgs/html/msg/GoalStatus.html
-  self.goal_status.goal_id = goal_id
+  self.goal_status.goal_id:assign(goal_id)
 
   if self.goal_status.goal_id.stamp == ros.Time() then
    self.goal_status.goal_id.stamp = ros.Time.now()

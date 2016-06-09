@@ -4,8 +4,10 @@ local torch = require 'torch'
 local ros = require 'ros.env'
 local actionlib = ros.actionlib
 
+
 local ActionSpec = torch.class('ros.actionlib.ActionSpec', actionlib)
 local DEFAULT_PACKAGE = 'actionlib'
+
 
 --- (internal) load from iterator
 -- @param iterator iterator that returns one line of the specification at a time
@@ -41,17 +43,20 @@ local function load_from_iterator(self, iterator)
   self.action_feedback_spec = ros.get_msgspec(self.type .. 'ActionFeedback', action_feedback_msg)
 end
 
+
 local function load_from_action_file(self)
   local package_path = ros.find_package(self.package)
   self.file = path.join(package_path, 'action', self.short_type .. '.action')
   return load_from_iterator(self, io.lines(self.file))
 end
 
+
 --- (internal) Load specification from string.
 -- @param s string containing the message specification
 local function load_from_string(self, s)
   return load_from_iterator(self, s:gmatch('([^\r\n]+)\n?'))
 end
+
 
 function ActionSpec:__init(type, specstr)
   assert(type, 'Action type is expected')
@@ -73,6 +78,7 @@ function ActionSpec:__init(type, specstr)
   end
 end
 
+
 function ActionSpec:format_spec(ln)
   table.insert(ln, 'Action ' .. self.type)
   self.action_goal_spec:format_spec(ln)
@@ -82,6 +88,7 @@ function ActionSpec:format_spec(ln)
   self.action_feedback_spec:format_spec(ln)
   return ln
 end
+
 
 function ActionSpec:__tostring()
   lines = self:format_spec({})
