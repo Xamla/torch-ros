@@ -17,7 +17,7 @@ local function ActionServer_Goal(goal_handle)
   local r = goal_handle:createResult()
   r.result = 123
   print(r)
-  --goal_handle:setAborted(r, 'no')
+  goal_handle:setAborted(r, 'no')
   --goal_handle:setSucceeded(r, 'done')
 end
 

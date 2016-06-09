@@ -14,20 +14,27 @@ local std = ros.std
 local actionlib = ros.actionlib
 
 --[[
+
+General documentation about the actionlib
 http://wiki.ros.org/actionlib
 http://wiki.ros.org/actionlib/DetailedDescription
+
+C++ & Python source code:
 https://github.com/ros/actionlib/tree/indigo-devel/include/actionlib
+
 ]]
 
---- actionlib_msgs/GoalID Message
+--- actionlib_msgs/GoalID Message fields:
 -- time stamp
 -- string id
-local GoalID_spec = ros.get_msgspec('actionlib_msgs/GoalID')                      -- http://docs.ros.org/jade/api/actionlib_msgs/html/msg/GoalID.html
+-- Details: http://docs.ros.org/jade/api/actionlib_msgs/html/msg/GoalID.html
+local GoalID_spec = ros.get_msgspec('actionlib_msgs/GoalID')
 
---- actionlib_msgs/GoalStatusArray Message
+--- actionlib_msgs/GoalStatusArray Message fields:
 -- std_msgs/Header header
--- actionlib_msgs/GoalStatus[] status_list
-local GoalStatusArray_spec = ros.get_msgspec('actionlib_msgs/GoalStatusArray')    -- http://docs.ros.org/jade/api/actionlib_msgs/html/msg/GoalStatusArray.html
+-- actionlib_msgs/GoalStateeus[] status_list
+-- Details: http://docs.ros.org/jade/api/actionlib_msgs/html/msg/GoalStatusArray.html
+local GoalStatusArray_spec = ros.get_msgspec('actionlib_msgs/GoalStatusArray')
 
 
 local ActionServer = torch.class('ros.actionlib.ActionServer', actionlib)
@@ -225,7 +232,8 @@ function ActionServer:publishStatus()
   for k,v in pairs(self.status_list) do
     table.insert(status_array.status_list, v.goal_status)    -- add status message to list
     -- check if the item is due for deletion from the status list
-    if v.handle_destruction_time ~= nil and v.handle_destruction_time:add(self.status_list_timeout) < now then
+    if v.handle_destruction_time ~= nil and v.handle_destruction_time + self.status_list_timeout < now then
+      ros.DEBUG_NAMED("actionlib", "Removing server goal handle for goal id: %s", v:getGoalID().id)
       self.status_list[k] = nil   -- remove item
     end
   end
