@@ -9,14 +9,14 @@ local ServerGoalHandle = torch.class('ros.actionlib.ServerGoalHandle', actionlib
 
 local function ServerGoalHandle_setGoalStatus(self, status, text)
   self.goal_status.status = status
-  self.goal_status.text = text
+  self.goal_status.text = text or ''
   self.action_server:publishStatus()
 end
 
 
 local function ServerGoalHandle_setGoalResult(self, status, text, result)
   self.goal_status.status = status
-  self.goal_status.text = text
+  self.goal_status.text = text or ''
   self.action_server:publishResult(self.goal_status, result)
   self.handle_destruction_time = ros.Time.now()
 end
@@ -133,11 +133,11 @@ end
 function ServerGoalHandle:setCancelRequested()
   ros.DEBUG_NAMED("actionlib", "Transisitoning to a cancel requested state on goal id: %s, stamp: %.2f", self:getGoalID().id, self:getGoalID().stamp:toSec())
   if self.goal_status.status == GoalStatus.PENDING then
-    ServerGoalHandle_setGoalStatus(self, GoalStatus.RECALLING)
+    ServerGoalHandle_setGoalStatus(self, GoalStatus.RECALLING, 'RECALLING')
     return true
   end
   if self.goal_status.status == GoalStatus.ACTIVE then
-    ServerGoalHandle_setGoalStatus(self, GoalStatus.PREEMPTING)
+    ServerGoalHandle_setGoalStatus(self, GoalStatus.PREEMPTING, 'PREEMPTING')
     return true
   end
   return false

@@ -186,6 +186,11 @@ function SimpleActionClient:sendGoal(goal, done_cb, active_cb, feedback_cb)
     self.gh = nil
   end
 
+  if not self:isServerConnected() then
+    ros.ERROR_NAMED("actionlib", "Not connected to action server.")
+    error("Not connected to action server.")
+  end
+
   self.done_cb     = done_cb
   self.active_cb   = active_cb
   self.feedback_cb = feedback_cb
@@ -210,6 +215,14 @@ function SimpleActionClient:sendGoalAndWait(goal, execute_timeout, preempt_timeo
   end
   if type(preempt_timeout) == 'number' then
     preempt_timeout = ros.Duration(preempt_timeout)
+  end
+
+  if not self:isServerConnected() then
+    ros.DEBUG_NAMED("actionlib", "Not connected, waiting for connection")
+    if not self:waitForServer(execute_timeout) then
+      ros.ERROR_NAMED("actionlib", "No connection to action server was established within specified timeout interval.")
+      error("Not connected to action server.")
+    end
   end
 
   self:sendGoal(goal)
@@ -292,7 +305,7 @@ end
 function SimpleActionClient:getState()
   if self.gh == nil then
     ros.ERROR_NAMED("actionlib", "Trying to getState() when no goal is running.")
-    return SimpleClientGoalState.LOST
+    return SimpleClientGoalState.LOST, SimpleClientGoalState[SimpleClientGoalState.LOST]
   end
 
   local comm_state = self.gh.state
@@ -300,11 +313,11 @@ function SimpleActionClient:getState()
   if comm_state == CommState.WAITING_FOR_GOAL_ACK or
       comm_state == CommState.PENDING or
       comm_state == CommState.RECALLING then
-    return SimpleClientGoalState.PENDING
+    return SimpleClientGoalState.PENDING, SimpleClientGoalState[SimpleClientGoalState.PENDING]
 
   elseif comm_state == CommState.ACTIVE or
          comm_state == CommState.PREEMPTING then
-    return SimpleClientGoalState.ACTIVE
+    return SimpleClientGoalState.ACTIVE, SimpleClientGoalState[SimpleClientGoalState.ACTIVE]
 
   elseif comm_state == CommState.DONE then
 
@@ -314,27 +327,27 @@ function SimpleActionClient:getState()
       status = goal_status.status
     end
 
-    if     status == GoalStatus.RECALLED  then return SimpleClientGoalState.RECALLED
-    elseif status == GoalStatus.REJECTED  then return SimpleClientGoalState.REJECTED
-    elseif status == GoalStatus.PREEMPTED then return SimpleClientGoalState.PREEMPTED
-    elseif status == GoalStatus.ABORTED   then return SimpleClientGoalState.ABORTED
-    elseif status == GoalStatus.SUCCEEDED then return SimpleClientGoalState.SUCCEEDED
-    elseif status == GoalStatus.LOST      then return SimpleClientGoalState.LOST
+    if     status == GoalStatus.RECALLED  then return SimpleClientGoalState.RECALLED, SimpleClientGoalState[SimpleClientGoalState.RECALLED]
+    elseif status == GoalStatus.REJECTED  then return SimpleClientGoalState.REJECTED, SimpleClientGoalState[SimpleClientGoalState.REJECTED]
+    elseif status == GoalStatus.PREEMPTED then return SimpleClientGoalState.PREEMPTED, SimpleClientGoalState[SimpleClientGoalState.PREEMPTED]
+    elseif status == GoalStatus.ABORTED   then return SimpleClientGoalState.ABORTED, SimpleClientGoalState[SimpleClientGoalState.ABORTED]
+    elseif status == GoalStatus.SUCCEEDED then return SimpleClientGoalState.SUCCEEDED, SimpleClientGoalState[SimpleClientGoalState.SUCCEEDED]
+    elseif status == GoalStatus.LOST      then return SimpleClientGoalState.LOST, SimpleClientGoalState[SimpleClientGoalState.LOST]
     else
       ros.ERROR_NAMED("actionlib", "Unknown terminal state [%u]. This is a bug in SimpleActionClient", self.gh.state)
-      return SimpleClientGoalState.LOST
+      return SimpleClientGoalState.LOST, SimpleClientGoalState[SimpleClientGoalState.LOST]
     end
 
   elseif comm_state == CommState.WAITING_FOR_RESULT or
          comm_state == CommState.WAITING_FOR_CANCEL_ACK then
 
     if self.cur_simple_state == SimpleGoalState.PENDING then
-      return SimpleClientGoalState.PENDING
+      return SimpleClientGoalState.PENDING, SimpleClientGoalState[SimpleClientGoalState.PENDING]
     elseif self.cur_simple_state == SimpleGoalState.ACTIVE then
-      return SimpleClientGoalState.ACTIVE
+      return SimpleClientGoalState.ACTIVE, SimpleClientGoalState[SimpleClientGoalState.ACTIVE]
     elseif self.cur_simple_state == SimpleGoalState.DONE then
       ros.ERROR_NAMED("actionlib", "In WAITING_FOR_RESULT or WAITING_FOR_CANCEL_ACK, yet we are in SimpleGoalState DONE. This is a bug in SimpleActionClient")
-      return SimpleClientGoalState.LOST
+      return SimpleClientGoalState.LOST, SimpleClientGoalState[SimpleClientGoalState.LOST]
     else
       ros.ERROR_NAMED("actionlib", "Got a SimpleGoalState of [%u]. This is a bug in SimpleActionClient", self.cur_simple_state);
     end
@@ -342,7 +355,7 @@ function SimpleActionClient:getState()
   end
 
   ros.ERROR_NAMED("actionlib", "Error trying to interpret CommState - %u", comm_state)
-  return SimpleClientGoalState.LOST
+  return SimpleClientGoalState.LOST, SimpleClientGoalState[SimpleClientGoalState.LOST]
 end
 
 
