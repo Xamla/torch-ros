@@ -1,3 +1,9 @@
+--- Full interface to an ActionServer
+-- ActionClient provides a complete client side implementation of the ActionInterface protocol.
+-- It provides callbacks for every client side transition, giving the user full observation into
+-- the client side state machine.
+-- @classmod ActionClient
+
 local ros = require 'ros.env'
 local utils = require 'ros.utils'
 local actionlib = require 'ros.actionlib'
@@ -407,6 +413,7 @@ function ActionClient:__init(action_spec, name, parent_node_handle, callback_que
 end
 
 
+--- Shutdown the action client.
 function ActionClient:shutdown()
   self.status_sub:shutdown()
   self.feedback_sub:shutdown()
@@ -422,6 +429,9 @@ function ActionClient:createGoal()
 end
 
 
+--- Sends a goal to the ActionServer, and also registers callbacks
+-- @param transition_cb Callback that gets called on every client state transition
+-- @param feedback_cb Callback that gets called whenever feedback for this goal is received
 function ActionClient:sendGoal(goal, transition_cb, feedback_cb)
   -- create goal id
   local id_msg = ros.Message('actionlib_msgs/GoalID')
@@ -503,6 +513,8 @@ function ActionClient:sendGoal(goal, transition_cb, feedback_cb)
 end
 
 
+--- Cancel all goals that were stamped at and before the specified time
+-- All goals stamped at or before `time` will be canceled
 function ActionClient:cancelGoalsAtAndBeforeTime(time)
   local cancel_msg = ros.Message('actionlib_msgs/GoalID')
   cancel_msg.stamp = time
@@ -510,11 +522,25 @@ function ActionClient:cancelGoalsAtAndBeforeTime(time)
 end
 
 
+--- Cancel all goals currently running on the action server
+-- This preempts all goals running on the action server at the point that
+-- this message is serviced by the ActionServer.
 function ActionClient:cancelAllGoals()
   self:cancelGoalsAtAndBeforeTime(ros.Time())     -- CancelAll is encoded by stamp=0
 end
 
 
+--- Waits for the ActionServer to connect to this client
+-- Often, it can take a second for the action server & client to negotiate
+-- a connection, thus, risking the first few goals to be dropped. This call lets
+-- the user wait until the network connection to the server is negotiated
+-- NOTE: Using this call in a single threaded ROS application, or any
+-- application where the action client's callback queue is not being
+-- serviced, will not work. Without a separate thread servicing the queue, or
+-- a multi-threaded spinner, there is no way for the client to tell whether
+-- or not the server is up because it can't receive a status message.
+-- @param timeout Max time to block before returning. A zero timeout is interpreted as an infinite timeout.
+-- @return True if the server connected in the allocated time, false on timeout
 function ActionClient:waitForActionServerToStart(timeout)
   if timeout ~= nil and type(timeout) == 'number' then
     timeout = ros.Duration(timeout)
@@ -551,6 +577,8 @@ local function formatSubscriberDebugString(name, list)
 end
 
 
+--- Checks if the action client is successfully connected to the action server
+-- @return True if the server is connected, false otherwise
 function ActionClient:isServerConnected()
   if not self.status_received then
     ros.DEBUG_NAMED("actionlib", "isServerConnected: Didn't receive status yet, so not connected yet")
