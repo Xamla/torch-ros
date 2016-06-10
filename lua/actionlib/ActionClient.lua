@@ -1,8 +1,8 @@
 local ros = require 'ros.env'
 local utils = require 'ros.utils'
+local actionlib = require 'ros.actionlib'
 local GoalStatus = require 'ros.actionlib.GoalStatus'
 local std = ros.std
-local actionlib = ros.actionlib
 
 
 local CommState = {
@@ -23,13 +23,13 @@ local next_goal_id = 1    -- shared among all action clients
 local ActionClient = torch.class('ros.actionlib.ActionClient', actionlib)
 
 
-local function goalConnectCallback(self, name, topic)
+local function ActionClient_goalConnectCallback(self, name, topic)
   self.goalSubscribers[name] = (self.goalSubscribers[name] or 0) + 1
   ros.DEBUG_NAMED("actionlib", "goalConnectCallback: Adding [%s] to goalSubscribers", name)
 end
 
 
-local function goalDisconnectCallback(self, name, topic)
+local function ActionClient_goalDisconnectCallback(self, name, topic)
   local count = self.goalSubscribers[name]
   if count == nil then
     -- should never happen, warning copied from official actionlib impl
@@ -45,13 +45,13 @@ local function goalDisconnectCallback(self, name, topic)
 end
 
 
-local function cancelConnectCallback(self, name, topic)
+local function ActionClient_cancelConnectCallback(self, name, topic)
   self.cancelSubscribers[name] = (self.cancelSubscribers[name] or 0) + 1
   ros.DEBUG_NAMED("actionlib", "cancelConnectCallback: Adding [%s] to cancelSubscribers", name)
 end
 
 
-local function cancelDisconnectCallback(self, name, topic)
+local function ActionClient_cancelDisconnectCallback(self, name, topic)
   local count = self.cancelSubscribers[name]
   if count == nil then
     -- should never happen, warning copied from official actionlib impl
@@ -394,14 +394,14 @@ function ActionClient:__init(action_spec, name, parent_node_handle, callback_que
   self.result_sub:registerCallback(function(msg) onResultMessage(self, msg) end)
 
   self.goal_pub = self.nh:advertise("goal", action_spec.action_goal_spec, 10, false,
-    function(name, topic) goalConnectCallback(self, name, topic) end,
-    function(name, topic) goalDisconnectCallback(self, name, topic) end,
+    function(name, topic) ActionClient_goalConnectCallback(self, name, topic) end,
+    function(name, topic) ActionClient_goalDisconnectCallback(self, name, topic) end,
     callback_queue
   )
 
   self.cancel_pub = self.nh:advertise("cancel", "actionlib_msgs/GoalID", 10, false,
-    function(name, topic) cancelConnectCallback(self, name, topic) end,
-    function(name, topic) cancelDisconnectCallback(self, name, topic) end,
+    function(name, topic) ActionClient_cancelConnectCallback(self, name, topic) end,
+    function(name, topic) ActionClient_cancelDisconnectCallback(self, name, topic) end,
     callback_queue
   )
 end

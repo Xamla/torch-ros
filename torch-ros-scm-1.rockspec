@@ -6,7 +6,7 @@ source = {
 }
 
 description = {
-   summary = "ROS bindings for Torch",
+   summary = "ROS bindings for Torch7",
    detailed = [[
    ]],
    homepage = "https://github.com/Xamla/torch-ros",
@@ -15,7 +15,8 @@ description = {
 
 dependencies = {
    "torch >= 7.0",
-   "md5 >= 1.2-1"
+   "md5 >= 1.2-1",
+   "ldoc >= 1.4.4-1"
 }
 
 build = {

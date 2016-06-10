@@ -1,11 +1,20 @@
+--- SimpleActionServer
+-- The SimpleActionServer implements a single goal policy on top of the
+-- ActionServer class. The specification of the policy is as follows: only one
+-- goal can have an active status at a time, new goals preempt previous goals
+-- based on the stamp in their GoalID field (later goals preempt earlier ones),
+-- an explicit preempt goal preempts all goals with timestamps that are less
+-- than or equal to the stamp associated with the preempt, accepting a new goal
+-- implies successful preemption of any old goal and the status of the old goal
+-- will be change automatically to reflect this.
+-- @classmod SimpleActionServer
+
 local ros = require 'ros.env'
 local GoalStatus = require 'ros.actionlib.GoalStatus'
 require 'ros.actionlib.ActionServer'
 local std = ros.std
 local actionlib = ros.actionlib
-
-
-local CommState = actionlib.CommState
+local CommState = actionlib.CommState   -- CommState enum
 
 
 local SimpleActionServer = torch.class('ros.actionlib.SimpleActionServer', actionlib)
@@ -21,7 +30,7 @@ local function SimpleActionServer_goalCallback(self, goal)
 
     -- if next_goal has not been accepted already... its going to get bumped, but we need to let the client know we're preempting
     if self.next_goal ~= nil and self.next_goal:getGoal() ~= nil and self.current_goal:getGoal() ~= nil then
-      self.next_goal:setCanceled(self.next_goal:createResult(), "This goal was canceled because another goal was recieved by the simple action server")
+      self.next_goal:setCanceled(nil, "This goal was canceled because another goal was recieved by the simple action server")
     end
 
     self.next_goal = goal
@@ -44,7 +53,7 @@ local function SimpleActionServer_goalCallback(self, goal)
 
   else
     -- the goal requested has already been preempted by a different goal, so we're not going to execute it
-    goal:setCanceled(goal:createResult(), "This goal was canceled because another goal was recieved by the simple action server")
+    goal:setCanceled(nil, "This goal was canceled because another goal was recieved by the simple action server")
   end
 end
 
@@ -85,16 +94,27 @@ function SimpleActionServer:__init(node_handle, name, action_spec)
 end
 
 
+--- Start the action server.
 function SimpleActionServer:start()
   self.as:start()
 end
 
 
+--- Shutdown the action server
 function SimpleActionServer:shutdown()
   self.as:shutdown()
 end
 
 
+--- Accepts a new goal when one is available.
+-- The status of this goal is set to active upon acceptance, and the
+-- status of any previously active goal is set to preempted. Preempts
+-- received for the new goal between checking if isNewGoalAvailable or
+-- invokation of a goal callback and the acceptNewGoal call will not
+-- trigger a preempt callback. This means, isPreemptReqauested should
+-- be called after accepting the goal even for callback-based implementations
+-- to make sure the new goal does not have a pending preempt request.
+-- @return A new goal.
 function SimpleActionServer:acceptNewGoal()
   if self.new_goal == false or self.next_goal == nil or self.next_goal:getGoal() == nil then
     ros.ERROR_NAMED("actionlib", "Attempting to accept the next goal when a new goal is not available")
@@ -103,7 +123,7 @@ function SimpleActionServer:acceptNewGoal()
 
   -- check if we need to send a preempted message for the goal that we're currently pursuing
   if self:isActive() and self.current_goal:getGoal() ~= nil then
-    self.current_goal:setCanceled(self.current_goal:createResult(), "This goal was canceled because another goal was recieved by the simple action server")
+    self.current_goal:setCanceled(nil, "This goal was canceled because another goal was recieved by the simple action server")
   end
 
   ros.DEBUG_NAMED("actionlib", "Accepting a new goal")
@@ -123,21 +143,41 @@ function SimpleActionServer:acceptNewGoal()
 end
 
 
-function SimpleActionServer:createResult()
-  return self.current_goal:createResult()
+function SimpleActionServer:getCurrentGoal()
+  return self.current_goal:getGoal()
 end
 
 
+function SimpleActionServer:getCurrentGoalHandle()
+  return self.current_goal
+end
+
+
+function SimpleActionServer:createResult()
+  return self.as:createResult()
+end
+
+
+function SimpleActionServer:createFeeback()
+  return self.as:createFeeback()
+end
+
+
+--- Allows to query about the availability of a new goal.
+-- @return true if a new goal is available, false otherwise
 function SimpleActionServer:isNewGoalAvailable()
   return self.new_goal
 end
 
-
+--- Allows to query about preempt requests.
+-- @return true if a preempt is requested, false otherwise
 function SimpleActionServer:isPreemptRequested()
   return self.preempt_request
 end
 
 
+--- Allows to query about the status of the current goal.
+-- @return true if a goal is active, false otherwise
 function SimpleActionServer:isActive()
   if self.current_goal == nil or self.current_goal:getGoal() == nil then
     return false
@@ -148,34 +188,49 @@ function SimpleActionServer:isActive()
 end
 
 
+--- Sets the status of the active goal to succeeded.
+-- @param result An optional result to send back to any clients of the goal
+-- @param text An optional text message to send back to any clients of the goal
 function SimpleActionServer:setSucceeded(result, text)
   ros.DEBUG_NAMED("actionlib", "Setting the current goal as succeeded");
   self.current_goal:setSucceeded(result, text)
 end
 
 
+--- Sets the status of the active goal to aborted.
+-- @param result An optional result to send back to any clients of the goal
+-- @param text An optional text message to send back to any clients of the goal
 function SimpleActionServer:setAborted(result, text)
   ros.DEBUG_NAMED("actionlib", "Setting the current goal as aborted");
   self.current_goal:setAborted(result, text)
 end
 
 
+--- Publishes feedback for a given goal.
+-- @param feedback Feedback object to publish
 function SimpleActionServer:publishFeedback(feedback)
   self.current_goal:publishFeedback(feedback)
 end
 
 
+--- Sets the status of the active goal to preempted.
+-- @param result An optional result to send back to any clients of the goal
+-- @param text An optional text message to send back to any clients of the goal
 function SimpleActionServer:setPreempted(result, text)
   ros.DEBUG_NAMED("actionlib", "Setting the current goal as canceled");
   self.current_goal:setCanceled(result, text)
 end
 
 
+--- Allows users to register a callback to be invoked when a new goal is available.
+-- @param goal_cb The callback to be invoked
 function SimpleActionServer:registerGoalCallback(goal_cb)
   self.goal_callback = goal_cb
 end
 
 
+--- Allows users to register a callback to be invoked when a new preempt request is available.
+-- @param preempt_cb The callback to be invoked
 function SimpleActionServer:registerPreemptCallback(preempt_cb)
   self.preempt_callback = preempt_cb
 end

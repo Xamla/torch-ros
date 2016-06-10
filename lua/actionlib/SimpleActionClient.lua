@@ -4,6 +4,7 @@ local GoalStatus = require 'ros.actionlib.GoalStatus'
 local std = ros.std
 local actionlib = ros.actionlib
 
+
 local SimpleActionClient = torch.class('ros.actionlib.SimpleActionClient', actionlib)
 
 local CommState = actionlib.CommState

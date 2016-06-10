@@ -68,6 +68,7 @@
       <File Name="lua/actionlib/SimpleActionServer.lua"/>
       <File Name="lua/actionlib/ServerGoalHandle.lua"/>
       <File Name="lua/actionlib/GoalStatus.lua"/>
+      <File Name="lua/actionlib/init.lua"/>
     </VirtualDirectory>
     <VirtualDirectory Name="tests">
       <File Name="lua/tests/test_subscription.lua"/>
@@ -221,7 +222,8 @@
     <File Name="demo/publish.lua"/>
     <File Name="demo/call_movegroup_action.lua"/>
     <File Name="demo/action_client.lua"/>
-    <File Name="demo/action_server.lua"/>
     <File Name="demo/subscribe.lua"/>
+    <File Name="demo/simple_action_server.lua"/>
+    <File Name="demo/action_server.lua"/>
   </VirtualDirectory>
 </CodeLite_Project>

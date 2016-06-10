@@ -1,34 +1,16 @@
 local ros = require 'ros.env'
-require 'ros.ros'
-require 'ros.Time'
-require 'ros.Duration'
-require 'ros.console'
-require 'ros.StorageWriter'
-require 'ros.StorageReader'
-require 'ros.MsgSpec'
-require 'ros.Message'
-require 'ros.NodeHandle'
-local GoalStatus = require 'ros.actionlib.GoalStatus'
+local actionlib = require 'ros.actionlib'
 require 'ros.actionlib.ServerGoalHandle'
+local GoalStatus = require 'ros.actionlib.GoalStatus'
 local std = ros.std
-local actionlib = ros.actionlib
 
---[[
-
-General documentation about the actionlib
-http://wiki.ros.org/actionlib
-http://wiki.ros.org/actionlib/DetailedDescription
-
-C++ & Python source code:
-https://github.com/ros/actionlib/tree/indigo-devel/include/actionlib
-
-]]
 
 --- actionlib_msgs/GoalID Message fields:
 -- time stamp
 -- string id
 -- Details: http://docs.ros.org/jade/api/actionlib_msgs/html/msg/GoalID.html
 local GoalID_spec = ros.get_msgspec('actionlib_msgs/GoalID')
+
 
 --- actionlib_msgs/GoalStatusArray Message fields:
 -- std_msgs/Header header
@@ -40,7 +22,7 @@ local GoalStatusArray_spec = ros.get_msgspec('actionlib_msgs/GoalStatusArray')
 local ActionServer = torch.class('ros.actionlib.ActionServer', actionlib)
 
 
-local function goalCallback(self, goal)
+local function ActionServer_goalCallback(self, goal)
   if not self.started then return end
 
   ros.DEBUG_NAMED("actionlib", "The action server has received a new goal request")
@@ -64,7 +46,7 @@ local function goalCallback(self, goal)
 end
 
 
-local function cancelCallback(self, goal_id)
+local function ActionServer_cancelCallback(self, goal_id)
   if not self.started then return end
 
   ros.DEBUG_NAMED("actionlib", "The action server has received a new cancel request")
@@ -182,8 +164,8 @@ function ActionServer:start()
 
   self.started = true
 
-  self.goal_sub:registerCallback(function(msg) goalCallback(self, msg) end)
-  self.cancel_sub:registerCallback(function(msg) cancelCallback(self, msg) end)
+  self.goal_sub:registerCallback(function(msg) ActionServer_goalCallback(self, msg) end)
+  self.cancel_sub:registerCallback(function(msg) ActionServer_cancelCallback(self, msg) end)
 
   self:publishStatus()
 end

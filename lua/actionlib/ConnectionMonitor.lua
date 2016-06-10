@@ -1,16 +1,21 @@
 local ros = require 'ros.env'
 local std = ros.std
-
 local actionlib = ros.actionlib
+
 
 -- internal debug tracing helper functions
 local function CONNECTION_DEBUG(...)
   ros.DEBUG_NAMED("ConnectionMonitor", ...)
 end
 
+
 local function CONNECTION_WARN(fmt, ...)
   ros.WARN_NAMED("ConnectionMonitor", ...)
 end
+
+
+local ConnectionMonitor = torch.class('ros.actionlib.ConnectionMonitor', actionlib)
+
 
 local function cancelSubscribersString(self)
   local ss = {}
@@ -20,6 +25,7 @@ local function cancelSubscribersString(self)
   return table.concat(ss, '\n')
 end
 
+
 local function goalSubscribersString(self)
   local ss = {}
   table.insert(ss, string.format("Goal Subscribers (%d total)", self.goalSubscribersCount))
@@ -28,7 +34,6 @@ local function goalSubscribersString(self)
   return table.concat(ss, '\n')
 end
 
-local ConnectionMonitor = torch.class('ros.actionlib.ConnectionMonitor', actionlib)
 
 function ConnectionMonitor:__init(feedback_sub, result_sub)
   self.feedback_sub = feedback_sub
@@ -41,6 +46,7 @@ function ConnectionMonitor:__init(feedback_sub, result_sub)
   self.goalSubscribersCount = 0
 end
 
+
 function ConnectionMonitor:goalConnectCallback(subscriber_name)
   if self.goalSubscribers[subscriber_name] == nil then      -- Check if it's not in the list
     CONNECTION_DEBUG("goalConnectCallback: Adding [%s] to goalSubscribers", subscriber_name)
@@ -52,6 +58,7 @@ function ConnectionMonitor:goalConnectCallback(subscriber_name)
   end
   CONNECTION_DEBUG("%s", goalSubscribersString(self))
 end
+
 
 function ConnectionMonitor:goalDisconnectCallback(subscriber_name)
   if self.goalSubscribers[subscriber_name] == nil then
@@ -67,6 +74,7 @@ function ConnectionMonitor:goalDisconnectCallback(subscriber_name)
   CONNECTION_DEBUG("%s", goalSubscribersString(self))
 end
 
+
 function ConnectionMonitor:cancelConnectCallback(subscriber_name)
   if self.cancelSubscribers[subscriber_name] == nil then     -- Check if it's not in the list
     CONNECTION_DEBUG("cancelConnectCallback: Adding [%s] to cancelSubscribers", subscriber_name)
@@ -78,6 +86,7 @@ function ConnectionMonitor:cancelConnectCallback(subscriber_name)
   end
   CONNECTION_DEBUG("%s", cancelSubscribersString(self))
 end
+
 
 function ConnectionMonitor:cancelDisconnectCallback(subscriber_name)
   if self.cancelSubscribers[subscriber_name] == nil then
@@ -92,6 +101,7 @@ function ConnectionMonitor:cancelDisconnectCallback(subscriber_name)
   }
   CONNECTION_DEBUG("%s", cancelSubscribersString(self))
 end
+
 
 function ConnectionMonitor:processStatus(status_msg, caller_id)
   if self.status_received then
@@ -110,6 +120,7 @@ function ConnectionMonitor:processStatus(status_msg, caller_id)
     self.latest_status_time = status_msg.header.stamp
   end
 end
+
 
 function ConnectionMonitor:waitForActionServerToStart(timeout, node_handle )
   timeout = timeout or ros.Duration(0, 0)
@@ -140,6 +151,7 @@ function ConnectionMonitor:waitForActionServerToStart(timeout, node_handle )
 
   return self:isServerConnected()
 end
+
 
 function ConnectionMonitor:isServerConnected()
   if not self.status_received then

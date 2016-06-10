@@ -1,5 +1,6 @@
 local ros = require 'ros.env'
 
+
 -- http://docs.ros.org/api/actionlib_msgs/html/msg/GoalStatus.html
 local GoalStatus = {
   PENDING         = 0,  -- The goal has yet to be processed by the action server
@@ -21,5 +22,6 @@ local GoalStatus = {
                         --    sent over the wire by an action server
 }
 ros.actionlib.GoalStatus = GoalStatus
+
 
 return GoalStatus
