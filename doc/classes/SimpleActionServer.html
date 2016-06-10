@@ -1,0 +1,375 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Torch7/Lua Wrapper for ROS</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>torch-ros</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Methods">Methods</a></li>
+</ul>
+
+
+<h2>Classes</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><strong>SimpleActionServer</strong></li>
+</ul>
+<h2>Modules</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="../modules/ros.actionlib.html">ros.actionlib</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Class <code>SimpleActionServer</code></h1>
+<p>SimpleActionServer
+ The SimpleActionServer implements a single goal policy on top of the
+ ActionServer class.</p>
+<p> The specification of the policy is as follows: only one
+ goal can have an active status at a time, new goals preempt previous goals
+ based on the stamp in their GoalID field (later goals preempt earlier ones),
+ an explicit preempt goal preempts all goals with timestamps that are less
+ than or equal to the stamp associated with the preempt, accepting a new goal
+ implies successful preemption of any old goal and the status of the old goal
+ will be change automatically to reflect this.</p>
+
+
+<h2><a href="#Methods">Methods</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#SimpleActionServer:start">SimpleActionServer:start ()</a></td>
+	<td class="summary">Start the action server.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimpleActionServer:shutdown">SimpleActionServer:shutdown ()</a></td>
+	<td class="summary">Shutdown the action server</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimpleActionServer:acceptNewGoal">SimpleActionServer:acceptNewGoal ()</a></td>
+	<td class="summary">Accepts a new goal when one is available.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimpleActionServer:isNewGoalAvailable">SimpleActionServer:isNewGoalAvailable ()</a></td>
+	<td class="summary">Allows to query about the availability of a new goal.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimpleActionServer:isPreemptRequested">SimpleActionServer:isPreemptRequested ()</a></td>
+	<td class="summary">Allows to query about preempt requests.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimpleActionServer:isActive">SimpleActionServer:isActive ()</a></td>
+	<td class="summary">Allows to query about the status of the current goal.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimpleActionServer:setSucceeded">SimpleActionServer:setSucceeded (result, text)</a></td>
+	<td class="summary">Sets the status of the active goal to succeeded.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimpleActionServer:setAborted">SimpleActionServer:setAborted (result, text)</a></td>
+	<td class="summary">Sets the status of the active goal to aborted.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimpleActionServer:publishFeedback">SimpleActionServer:publishFeedback (feedback)</a></td>
+	<td class="summary">Publishes feedback for a given goal.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimpleActionServer:setPreempted">SimpleActionServer:setPreempted (result, text)</a></td>
+	<td class="summary">Sets the status of the active goal to preempted.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimpleActionServer:registerGoalCallback">SimpleActionServer:registerGoalCallback (goal_cb)</a></td>
+	<td class="summary">Allows users to register a callback to be invoked when a new goal is available.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimpleActionServer:registerPreemptCallback">SimpleActionServer:registerPreemptCallback (preempt_cb)</a></td>
+	<td class="summary">Allows users to register a callback to be invoked when a new preempt request is available.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Methods"></a>Methods</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "SimpleActionServer:start"></a>
+    <strong>SimpleActionServer:start ()</strong>
+    </dt>
+    <dd>
+    Start the action server.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimpleActionServer:shutdown"></a>
+    <strong>SimpleActionServer:shutdown ()</strong>
+    </dt>
+    <dd>
+    Shutdown the action server
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimpleActionServer:acceptNewGoal"></a>
+    <strong>SimpleActionServer:acceptNewGoal ()</strong>
+    </dt>
+    <dd>
+    Accepts a new goal when one is available.
+ The status of this goal is set to active upon acceptance, and the
+ status of any previously active goal is set to preempted. Preempts
+ received for the new goal between checking if isNewGoalAvailable or
+ invokation of a goal callback and the acceptNewGoal call will not
+ trigger a preempt callback. This means, isPreemptReqauested should
+ be called after accepting the goal even for callback-based implementations
+ to make sure the new goal does not have a pending preempt request.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        A new goal.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimpleActionServer:isNewGoalAvailable"></a>
+    <strong>SimpleActionServer:isNewGoalAvailable ()</strong>
+    </dt>
+    <dd>
+    Allows to query about the availability of a new goal.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        true if a new goal is available, false otherwise
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimpleActionServer:isPreemptRequested"></a>
+    <strong>SimpleActionServer:isPreemptRequested ()</strong>
+    </dt>
+    <dd>
+    Allows to query about preempt requests.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        true if a preempt is requested, false otherwise
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimpleActionServer:isActive"></a>
+    <strong>SimpleActionServer:isActive ()</strong>
+    </dt>
+    <dd>
+    Allows to query about the status of the current goal.
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        true if a goal is active, false otherwise
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimpleActionServer:setSucceeded"></a>
+    <strong>SimpleActionServer:setSucceeded (result, text)</strong>
+    </dt>
+    <dd>
+    Sets the status of the active goal to succeeded.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">result</span>
+         An optional result to send back to any clients of the goal
+        </li>
+        <li><span class="parameter">text</span>
+         An optional text message to send back to any clients of the goal
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimpleActionServer:setAborted"></a>
+    <strong>SimpleActionServer:setAborted (result, text)</strong>
+    </dt>
+    <dd>
+    Sets the status of the active goal to aborted.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">result</span>
+         An optional result to send back to any clients of the goal
+        </li>
+        <li><span class="parameter">text</span>
+         An optional text message to send back to any clients of the goal
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimpleActionServer:publishFeedback"></a>
+    <strong>SimpleActionServer:publishFeedback (feedback)</strong>
+    </dt>
+    <dd>
+    Publishes feedback for a given goal.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">feedback</span>
+         Feedback object to publish
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimpleActionServer:setPreempted"></a>
+    <strong>SimpleActionServer:setPreempted (result, text)</strong>
+    </dt>
+    <dd>
+    Sets the status of the active goal to preempted.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">result</span>
+         An optional result to send back to any clients of the goal
+        </li>
+        <li><span class="parameter">text</span>
+         An optional text message to send back to any clients of the goal
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimpleActionServer:registerGoalCallback"></a>
+    <strong>SimpleActionServer:registerGoalCallback (goal_cb)</strong>
+    </dt>
+    <dd>
+    Allows users to register a callback to be invoked when a new goal is available.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">goal_cb</span>
+         The callback to be invoked
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimpleActionServer:registerPreemptCallback"></a>
+    <strong>SimpleActionServer:registerPreemptCallback (preempt_cb)</strong>
+    </dt>
+    <dd>
+    Allows users to register a callback to be invoked when a new preempt request is available.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">preempt_cb</span>
+         The callback to be invoked
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.3</a></i>
+<i style="float:right;">Last updated 2016-06-10 13:28:13 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
