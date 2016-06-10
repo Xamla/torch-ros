@@ -7,7 +7,9 @@ ros.init('test_action_client')
 nh = ros.NodeHandle()
 ros.console.setLoggerLevel('actionlib', ros.console.Level.Debug)
 
+
 local ac = actionlib.SimpleActionClient('actionlib/Test', 'test_action', nh)
+
 
 function test_sync_api()
   local g = ac:createGoal()
