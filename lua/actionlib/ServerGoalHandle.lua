@@ -68,6 +68,7 @@ function ServerGoalHandle:setCanceled(result, text)
   elseif self.goal_status.status == GoalStatus.ACTIVE or self.goal_status.status == GoalStatus.PREEMPTING then
     ServerGoalHandle_setGoalResult(self, GoalStatus.PREEMPTED, text, result)
   else
+    errer('blub')
     ros.ERROR_NAMED("actionlib", "To transition to a cancelled state, the goal must be in a pending, recalling, active, or preempting state, it is currently in state: %d",
       self.goal_status.status)
   end
