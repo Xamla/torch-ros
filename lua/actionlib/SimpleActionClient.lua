@@ -130,7 +130,7 @@ local function handleTransition(self, gh)
       if self.active_cb ~= nil then
         self.active_cb()
       end
-    elseif self.cur_sipmle_state == SimpleGoalState.ACTIVE then
+    elseif self.cur_simple_state == SimpleGoalState.ACTIVE then
       ; -- NOP
     elseif self.cur_simple_state == SimpleGoalState.DONE then
       ros.ERROR_NAMED(

@@ -2,7 +2,7 @@
 -- ActionClient provides a complete client side implementation of the ActionInterface protocol.
 -- It provides callbacks for every client side transition, giving the user full observation into
 -- the client side state machine.
--- @classmod ros.actionlib.ActionClient
+-- @classmod ActionClient
 
 local ros = require 'ros.env'
 local utils = require 'ros.utils'

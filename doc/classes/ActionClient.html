@@ -1,0 +1,257 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Torch7/Lua Wrapper for ROS</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>torch-ros</h1>
+
+<ul>
+  <li><a href="../index.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Methods">Methods</a></li>
+</ul>
+
+
+<h2>Classes</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><strong>ActionClient</strong></li>
+  <li><a href="../classes/SimpleActionServer.html">SimpleActionServer</a></li>
+</ul>
+<h2>Modules</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="../modules/ros.actionlib.html">ros.actionlib</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Class <code>ActionClient</code></h1>
+<p>Full interface to an ActionServer
+ ActionClient provides a complete client side implementation of the ActionInterface protocol.</p>
+<p> It provides callbacks for every client side transition, giving the user full observation into
+ the client side state machine.</p>
+
+
+<h2><a href="#Methods">Methods</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#ActionClient:shutdown">ActionClient:shutdown ()</a></td>
+	<td class="summary">Shutdown the action client.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ActionClient:createGoal">ActionClient:createGoal ()</a></td>
+	<td class="summary">Creates a goal message that can be filled and then sent via the sendGoal() method.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ActionClient:sendGoal">ActionClient:sendGoal (transition_cb, feedback_cb)</a></td>
+	<td class="summary">Sends a goal to the ActionServer, and also registers callbacks</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ActionClient:cancelGoalsAtAndBeforeTime">ActionClient:cancelGoalsAtAndBeforeTime (time)</a></td>
+	<td class="summary">Cancel all goals that were stamped at and before the specified time
+ All goals stamped at or before <code>time</code> will be canceled</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ActionClient:cancelAllGoals">ActionClient:cancelAllGoals ()</a></td>
+	<td class="summary">Cancel all goals currently running on the action server
+ This preempts all goals running on the action server at the point that
+ this message is serviced by the ActionServer.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ActionClient:waitForActionServerToStart">ActionClient:waitForActionServerToStart (timeout)</a></td>
+	<td class="summary">Waits for the ActionServer to connect to this client
+ Often, it can take a second for the action server &amp; client to negotiate
+ a connection, thus, risking the first few goals to be dropped.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ActionClient:isServerConnected">ActionClient:isServerConnected ()</a></td>
+	<td class="summary">Checks if the action client is successfully connected to the action server</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2 class="section-header "><a name="Methods"></a>Methods</h2>
+
+    <dl class="function">
+    <dt>
+    <a name = "ActionClient:shutdown"></a>
+    <strong>ActionClient:shutdown ()</strong>
+    </dt>
+    <dd>
+    Shutdown the action client.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ActionClient:createGoal"></a>
+    <strong>ActionClient:createGoal ()</strong>
+    </dt>
+    <dd>
+    Creates a goal message that can be filled and then sent via the sendGoal() method.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ActionClient:sendGoal"></a>
+    <strong>ActionClient:sendGoal (transition_cb, feedback_cb)</strong>
+    </dt>
+    <dd>
+    Sends a goal to the ActionServer, and also registers callbacks
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">transition_cb</span>
+         Callback that gets called on every client state transition
+        </li>
+        <li><span class="parameter">feedback_cb</span>
+         Callback that gets called whenever feedback for this goal is received
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ActionClient:cancelGoalsAtAndBeforeTime"></a>
+    <strong>ActionClient:cancelGoalsAtAndBeforeTime (time)</strong>
+    </dt>
+    <dd>
+    Cancel all goals that were stamped at and before the specified time
+ All goals stamped at or before <code>time</code> will be canceled
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">time</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ActionClient:cancelAllGoals"></a>
+    <strong>ActionClient:cancelAllGoals ()</strong>
+    </dt>
+    <dd>
+    Cancel all goals currently running on the action server
+ This preempts all goals running on the action server at the point that
+ this message is serviced by the ActionServer.
+
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ActionClient:waitForActionServerToStart"></a>
+    <strong>ActionClient:waitForActionServerToStart (timeout)</strong>
+    </dt>
+    <dd>
+    Waits for the ActionServer to connect to this client
+ Often, it can take a second for the action server &amp; client to negotiate
+ a connection, thus, risking the first few goals to be dropped.  This call lets
+ the user wait until the network connection to the server is negotiated
+ NOTE: Using this call in a single threaded ROS application, or any
+ application where the action client's callback queue is not being
+ serviced, will not work. Without a separate thread servicing the queue, or
+ a multi-threaded spinner, there is no way for the client to tell whether
+ or not the server is up because it can't receive a status message.
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">timeout</span>
+         Max time to block before returning. A zero timeout is interpreted as an infinite timeout.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        True if the server connected in the allocated time, false on timeout
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ActionClient:isServerConnected"></a>
+    <strong>ActionClient:isServerConnected ()</strong>
+    </dt>
+    <dd>
+    Checks if the action client is successfully connected to the action server
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+        True if the server is connected, false otherwise
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.3</a></i>
+<i style="float:right;">Last updated 2016-06-13 20:16:52 </i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

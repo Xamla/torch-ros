@@ -29,13 +29,12 @@ local function SimpleActionServer_goalCallback(self, goal)
       (self.next_goal == nil or self.next_goal:getGoal() == nil or goal:getGoalID().stamp >= self.next_goal:getGoalID().stamp) then
 
     -- if next_goal has not been accepted already... its going to get bumped, but we need to let the client know we're preempting
-    if self.next_goal ~= nil and self.next_goal:getGoal() ~= nil and self.current_goal:getGoal() ~= nil then
+    if self.next_goal ~= nil and self.next_goal:getGoal() ~= nil and self.next_goal ~= self.current_goal then
       self.next_goal:setCanceled(nil, "This goal was canceled because another goal was recieved by the simple action server")
     end
 
     self.next_goal = goal
-    self.new_goal = true
-    self.new_goal_preempt_request = false
+    self.next_goal_preempt_request = false
 
     -- if the server is active, we'll want to call the preempt callback for the current goal
     if self:isActive() then
@@ -58,11 +57,11 @@ local function SimpleActionServer_goalCallback(self, goal)
 end
 
 
-local function SimpleActionServer_preemptCallback(self, preempt)
+local function SimpleActionServer_preemptCallback(self, preempt_goal)
   ros.DEBUG_NAMED("actionlib", "A preempt has been received by the SimpleActionServer")
 
   --if the preempt is for the current goal, then we'll set the preemptRequest flag and call the user's preempt callback
-  if preempt == self.current_goal then
+  if preempt_goal == self.current_goal then
     ros.DEBUG_NAMED("actionlib", "Setting preempt_request bit for the current goal to TRUE and invoking callback")
     self.preempt_request = true
 
@@ -72,17 +71,16 @@ local function SimpleActionServer_preemptCallback(self, preempt)
     end
 
   -- if the preempt applies to the next goal, we'll set the preempt bit for that
-  elseif preempt == self.next_goal then
+  elseif preempt_goal == self.next_goal then
     ros.DEBUG_NAMED("actionlib", "Setting preempt request bit for the next goal to TRUE")
-    self.new_goal_preempt_request = true
+    self.next_goal_preempt_request = true
   end
 end
 
 
 function SimpleActionServer:__init(node_handle, name, action_spec)
-  self.new_goal = false
   self.preempt_request = false
-  self.new_goal_preempt_request = false
+  self.next_goal_preempt_request = false
   self.need_to_terminate = false
 
   self.as = actionlib.ActionServer(node_handle, name, action_spec)
@@ -116,7 +114,7 @@ end
 -- to make sure the new goal does not have a pending preempt request.
 -- @return A new goal.
 function SimpleActionServer:acceptNewGoal()
-  if self.new_goal == false or self.next_goal == nil or self.next_goal:getGoal() == nil then
+  if self.next_goal == nil or self.next_goal:getGoal() == nil then
     ros.ERROR_NAMED("actionlib", "Attempting to accept the next goal when a new goal is not available")
     return nil
   end
@@ -130,11 +128,11 @@ function SimpleActionServer:acceptNewGoal()
 
   -- accept the next goal
   self.current_goal = self.next_goal
-  self.new_goal = false
+  self.next_goal = nil
 
   -- set preempt to request to equal the preempt state of the new goal
-  self.preempt_request = self.new_goal_preempt_request
-  self.new_goal_preempt_request = false
+  self.preempt_request = self.next_goal_preempt_request
+  self.next_goal_preempt_request = false
 
   --set the status of the current goal to be active
   self.current_goal:setAccepted("This goal has been accepted by the simple action server")
@@ -166,7 +164,7 @@ end
 --- Allows to query about the availability of a new goal.
 -- @return true if a new goal is available, false otherwise
 function SimpleActionServer:isNewGoalAvailable()
-  return self.new_goal
+  return self.next_goal ~= nil
 end
 
 --- Allows to query about preempt requests.
@@ -183,7 +181,12 @@ function SimpleActionServer:isActive()
     return false
   end
 
-  local status = self.current_goal:getGoalStatus()
+  local goal_status = self.current_goal:getGoalStatus()
+  if goal_status == nil or goal_status.status == nil then
+    return false
+  end
+
+  local status = goal_status.status
   return status == GoalStatus.ACTIVE or status == GoalStatus.PREEMPTING
 end
 
