@@ -183,7 +183,7 @@ function SimpleActionServer:isActive()
     return false
   end
 
-  local status = self.current_goal:getGoalStatus()
+  local status = self.current_goal:getGoalStatus().status
   return status == GoalStatus.ACTIVE or status == GoalStatus.PREEMPTING
 end
 

@@ -9,6 +9,8 @@ local function SimpleActionServer_onGoal(as)
   local g = as:acceptNewGoal()
   print(g)
 
+  assert(as:isActive())   -- ensure goal is active
+
   local r = as:createResult()
   r.result = 123
   print(r)
