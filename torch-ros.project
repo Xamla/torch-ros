@@ -98,7 +98,6 @@
     <File Name="lua/CallbackQueue.lua"/>
     <File Name="lua/SrvSpec.lua"/>
     <File Name="lua/md5.lua"/>
-    <File Name="lua/console.lua"/>
     <File Name="lua/master.lua"/>
     <File Name="lua/NodeHandle.lua"/>
     <File Name="lua/ros.lua"/>
@@ -112,6 +111,7 @@
     <File Name="lua/ServiceServer.lua"/>
     <File Name="lua/StorageReader.lua"/>
     <File Name="lua/Subscriber.lua"/>
+    <File Name="lua/console.lua"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
