@@ -1,3 +1,6 @@
+--- Wrapper for the ROS logging system
+-- @classmod console
+
 local ffi = require 'ffi'
 local torch = require 'torch'
 local ros = require 'ros.env'
@@ -31,18 +34,28 @@ console.Level = {
   Fatal = 4,
 }
 
+--- Don't call this function directly. Performs any required initialization/configuration.
+-- This function is called automatically during construction of the object.
 function console.initialize()
   console.NAME_PREFIX = ffi.string(f.initialize())
 end
 
+--- Shut down the console
 function console.shutdown()
   f.shutdown()
 end
 
+--- Set the log level for a given logger
+-- @param name string Name of the logger
+-- @param level New log level
+-- @param no_default_prefix bool, optional, default=false
 function console.set_logger_level(name, level, no_default_prefix)
   f.set_logger_level(name, level, no_default_prefix or false)
 end
 
+--- Returns the list of all loggers
+-- @return std.StringVector Names of all loggers
+-- @return torch.ShortTensor Log level of the loggers
 function console.get_loggers()
   local names = std.StringVector()
   local levels = torch.ShortTensor()
@@ -50,6 +63,10 @@ function console.get_loggers()
   return names, levels
 end
 
+--- Get a logger
+-- @param  name string Name of the logger
+-- @param  no_default_prefix bool, optional, default=false
+-- @return Pointer to the logger
 function console.get_logger(name, no_default_prefix)
   return f.get_logger(name, no_default_prefix or false)
 end
@@ -63,6 +80,7 @@ console.setLoggerLevel = console.set_logger_level
 console.getLoggers = console.get_loggers
 console.checkLogLevel = console.check_loglevel
 
+--- TODO: docu
 function console.print(logger, level, text, file, function_name, line)
   f.print(logger or ffi.NULL, level, text, file or '??', function_name or '??', line or 0)
 end
