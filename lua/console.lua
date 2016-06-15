@@ -1,5 +1,5 @@
 --- Wrapper for the ROS logging system
--- @classmod console
+-- @module console
 
 local ffi = require 'ffi'
 local torch = require 'torch'
@@ -46,16 +46,16 @@ function console.shutdown()
 end
 
 --- Set the log level for a given logger
--- @param name string Name of the logger
+-- @tparam string name Name of the logger
 -- @param level New log level
--- @param no_default_prefix bool, optional, default=false
+-- @tparam[opt=false] bool no_default_prefix
 function console.set_logger_level(name, level, no_default_prefix)
   f.set_logger_level(name, level, no_default_prefix or false)
 end
 
 --- Returns the list of all loggers
--- @return std.StringVector Names of all loggers
--- @return torch.ShortTensor Log level of the loggers
+-- @treturn std.StringVector Names of all loggers
+-- @treturn torch.ShortTensor Log level of the loggers
 function console.get_loggers()
   local names = std.StringVector()
   local levels = torch.ShortTensor()
@@ -64,8 +64,8 @@ function console.get_loggers()
 end
 
 --- Get a logger
--- @param  name string Name of the logger
--- @param  no_default_prefix bool, optional, default=false
+-- @tparam  string name Name of the logger
+-- @tparam[opt=false]  bool no_default_prefix
 -- @return Pointer to the logger
 function console.get_logger(name, no_default_prefix)
   return f.get_logger(name, no_default_prefix or false)

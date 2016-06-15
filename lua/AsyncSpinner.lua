@@ -28,14 +28,14 @@ end
 local f = init()
 
 --- Constructor
--- @param thread_count integer, optional, default=0. The number of threads to use. A value of 0 means to use the number of processor cores.
+-- @tparam[opt=0] int thread_count The number of threads to use. A value of 0 means to use the number of processor cores.
 function AsyncSpinner:__init(thread_count)
   self.o = f.new(thread_count or 0)
 end
 
 --- Check if the spinner can be started.
 -- A spinner can't be started if another spinner is already running.
--- @return true if the spinner could be started, false otherwise
+-- @treturn bool true if the spinner could be started, false otherwise
 function AsyncSpinner:canStart()
   return f.canStart(self.o)
 end

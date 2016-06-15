@@ -37,8 +37,8 @@ end
 local f = init()
 
 --- Construct a time duration
--- @param _1 number or ros.Duration; if number: time duration in secons, fractional number possible
--- @param _2 number, optional; If present, _1 represends the seconds and _2 represends the nanoseconds
+-- @tparam ?number|ros.Duration _1 If number: time duration in secons, fractional number possible
+-- @tparam[opt] number _2 If present, _1 represends the seconds and _2 represends the nanoseconds
 function Duration:__init(_1, _2)
   self.o = f.new()
   if _1 or _2 then
@@ -61,8 +61,8 @@ function Duration:clone()
 end
 
 --- Set the time value
--- @param _1 number or ros.Duration; if number: time duration in secons, fractional number possible
--- @param _2 number, optional; If present, _1 represends the seconds and _2 represends the nanoseconds
+-- @tparam ?number|ros.Duration _1 If number: time duration in secons, fractional number possible
+-- @tparam[opt] number _2 If present, _1 represends the seconds and _2 represends the nanoseconds
 function Duration:set(_1, _2)
   if torch.isTypeOf(_1, ros.Duration) then
     self:assign(_1)
@@ -74,45 +74,45 @@ function Duration:set(_1, _2)
 end
 
 --- Get the time value as seconds and nanoseconds
--- @return seconds, number
--- @return nanoseconds, number
+-- @treturn number seconds
+-- @treturn number nanoseconds
 function Duration:get()
   return self:get_sec(), self:get_nsec()
 end
 
 --- Assign operation
--- @param ros.Duration instance to set the values from
+-- @tparam ros.Duration other Instance to set the values from
 function Duration:assign(other)
   f.assign(self.o, other:cdata())
 end
 
 --- Get the seconds part of the stored duration
--- @return seconds, number
+-- @treturn number seconds
 function Duration:get_sec()
   return f.get_sec(self.o)
 end
 
 --- Set duration in seconds
--- @param sec number, seconds
+-- @tparam number sec seconds
 function Duration:set_sec(sec)
   f.set_sec(self.o, sec)
 end
 
 --- Get the nanoseconds part of the stored duration
--- @return nanoseconds seconds, number
+-- @treturn number nanoseconds
 function Duration:get_nsec()
   return f.get_nsec(self.o)
 end
 
 --- Set the nanoseconds part of the duration
--- @param nsec number, nanoseconds
+-- @tparam number nsec nanoseconds
 function Duration:set_nsec(nsec)
   f.set_nesc(self.o, nsec)
 end
 
 --- Add two durations and return the result
--- @param other The value to add, either the number of seconds (fractional numbers possible) or a ros:Duration
--- @param result ros:Duration, optional; If presend, the sum is assigned to result instead of creating a new instance of Duration
+-- @tparam ?number|ros:Duration other The value to add, either the number of seconds (fractional numbers possible) or a ros:Duration
+-- @tparam[opt] ros:Duration result If presend, the sum is assigned to result. Otherwise the operation is performed inplace.
 function Duration:add(other, result)
   result = result or self
   if type(other) == 'number' then
@@ -123,8 +123,8 @@ function Duration:add(other, result)
 end
 
 --- Substract a duration from this and return the result
--- @param other The value to substract, either the number of seconds (fractional numbers possible) or a ros:Duration
--- @param result ros:Duration, optional; If presend, the difference is assigned to result instead of creating a new instance of Duration
+-- @tparam ?number|ros:Duration other The value to substract, either the number of seconds (fractional numbers possible) or a ros:Duration
+-- @tparam[opt] ros:Duration result If presend, the difference is assigned to result. Otherwise the operation is performed inplace.
 function Duration:sub(other, result)
   result = result or self
   if type(other) == 'number' then
@@ -135,8 +135,8 @@ function Duration:sub(other, result)
 end
 
 --- Multiply a duration to this and return the result
--- @param other The value to multiply with, either the number of seconds (fractional numbers possible) or a ros:Duration
--- @param result ros:Duration, optional; If presend, the product is assigned to result instead of creating a new instance of Duration
+-- @tparam ?number|ros:Duration factor The value to multiply with, either the number of seconds (fractional numbers possible) or a ros:Duration
+-- @tparam[opt] ros:Duration result If presend, the product is assigned to result. Otherwise the operation is performed inplace.
 function Duration:mul(factor, result)
   result = result or self
   f.mul(self.o, factor, result:cdata())
@@ -171,19 +171,19 @@ function Duration:__le(other)
 end
 
 --- Converts the stored duration to seconds with fractional part
--- @return Number of seconds
+-- @treturn number Number of seconds
 function Duration:toSec()
   return f.toSec(self.o)
 end
 
 --- Stores a (fractional) number of seconds in this data structure
--- @param sec Number of seconds
+-- @tparam number sec Number of seconds
 function Duration:fromSec(sec)
   f.fromSec(self.o, sec)
 end
 
 --- Check if the Duration is zero
--- @return bool
+-- @treturn bool
 function Duration:isZero()
   return f.isZero(self.o, sec)
 end

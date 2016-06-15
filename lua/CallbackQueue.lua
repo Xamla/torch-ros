@@ -28,7 +28,7 @@ end
 local f = init()
 
 --- Constructor
--- @param enabled bool, optional, default=true indicating if the queue is enabled or disabled after construction
+-- @tparam[opt=true] bool enabled indicating if the queue is enabled or disabled after construction
 function CallbackQueue:__init(enabled)
   self.o = f.new(enabled or true)
   self.spin_callbacks = { {}, {}, {}, {}, {} }
@@ -40,17 +40,21 @@ function CallbackQueue:cdata()
   return self.o
 end
 
---- TODO: docu
+--- Register a function for callback
+-- @tparam func fn The function to execute as callback function
+-- @tparam[opt=1] int Prioriy/order of the callback. If unsure which value to use, omit the parameter
 function CallbackQueue:registerSpinCallback(fn, round)
   self.spin_callbacks[round or 1][fn] = true -- table used as set
 end
 
---- TODO: docu
+--- Remove a function from the callback list
+-- @tparam func fn The function to be removed
+-- @tparam[opt=1] int round ; Prioriy/order of the when added. Has to be the same value as used for registerSpinCallback()
 function CallbackQueue:unregisterSpinCallback(fn, round)
   self.spin_callbacks[round or 1][fn] = nil
 end
 
---- TODO: docu
+--- Trigger all callbacks one time
 function CallbackQueue:callSpinCallbacks()
   for i,cbs in ipairs(self.spin_callbacks) do
     local isolation_copy = utils.getTableKeys(cbs)   -- changes of spin_callbacks become effecitve after iteration
@@ -62,7 +66,7 @@ function CallbackQueue:callSpinCallbacks()
 end
 
 --- Pop a single callback off the front of the queue and invoke it. If the callback was not ready to be called, pushes it back onto the queue.
--- @param timeout Timeout for the callback, either in seconds (fractional numbers like 1.5 possible) or as an instance of ros:Duration
+-- @tparam ?number|ros:Duration timeout Timeout for the callback, either in seconds (fractional numbers like 1.5 possible) or as an instance of ros:Duration
 function CallbackQueue:callOne(timeout)
   if timeout and not torch.isTypeOf(ros.Duration, timeout) then
     timeout = ros.Duration(timeout)
@@ -72,8 +76,8 @@ end
 
 --- Invoke all callbacks currently in the queue.
 -- If a callback was not ready to be called, pushes it back onto the queue.
--- @param timeout Timeout for the callback, either in seconds (fractional numbers like 1.5 possible) or as an instance of ros:Duration
--- @param no_spin_callbacks
+-- @tparam ?number|ros:Duration timeout Timeout for the callback, either in seconds (fractional numbers like 1.5 possible) or as an instance of ros:Duration
+-- @tparam bool no_spin_callbacks
 function CallbackQueue:callAvailable(timeout, no_spin_callbacks)
   if timeout and not torch.isTypeOf(ros.Duration, timeout) then
     timeout = ros.Duration(timeout)
@@ -87,8 +91,8 @@ function CallbackQueue:callAvailable(timeout, no_spin_callbacks)
 end
 
 --- Waits until the next callback is enqueued or the timeout is expired
--- @param timeout Timeout for the callback, either in seconds (fractional numbers like 1.5 possible) or as an instance of ros:Duration
--- @return bool, true if a callback is enqueued, false if the queue is disabled or the timeout expired
+-- @tparam ?number|ros:Duration timeout Timeout for the callback, either in seconds (fractional numbers like 1.5 possible) or as an instance of ros:Duration
+-- @treturn bool true if a callback is enqueued, false if the queue is disabled or the timeout expired
 function CallbackQueue:waitCallAvailable(timeout)
   if timeout and not torch.isTypeOf(ros.Duration, timeout) then
     timeout = ros.Duration(timeout)
@@ -97,7 +101,7 @@ function CallbackQueue:waitCallAvailable(timeout)
 end
 
 --- Returns whether or not the queue is empty
--- @return bool, true if queue is empty, false otherwise
+-- @treturn bool true if queue is empty, false otherwise
 function CallbackQueue:isEmpty()
   return f.isEmpty(self.o)
 end
@@ -118,7 +122,7 @@ function CallbackQueue:disable()
 end
 
 --- Returns whether or not this queue is enabled.
--- @return bool, true if the queue is empty
+-- @treturn bool true if the queue is empty
 function CallbackQueue:isEnabled()
   return f.isEnabled(self.o)
 end
