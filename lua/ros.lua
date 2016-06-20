@@ -1,3 +1,5 @@
+--- ROS main class
+-- @classmod ros
 local ffi = require 'ffi'
 local torch = require 'torch'
 local ros = require 'ros.env'
@@ -33,6 +35,9 @@ ros.init_options = {
   NoRosout = 4
 }
 
+--- Initialize ROS
+-- @tparam[opt=torch_ros] string name Name
+-- @param[opt] options Options
 function ros.init(name, options)
   if not name then
     name = 'torch_ros'
@@ -41,6 +46,8 @@ function ros.init(name, options)
   f.init(name, options or 0)
 end
 
+---  Will call all the callbacks waiting to be called at the moment.
+-- @tparam[opt=false] bool no_default_callbacks If true, the callbacks waiting in the default callback queue will not be called
 function ros.spinOnce(no_default_callbacks)
   f.spinOnce()
 
@@ -53,11 +60,16 @@ function ros.spinOnce(no_default_callbacks)
   end
 end
 
--- callbacks with a higher round integer are called after all callbacks with lower round numbers have been called.
+--- Register a callback.
+-- @tparam func fn Callback function
+-- @tparam int round Callbacks with a higher round integer are called after all callbacks with lower round numbers have been called.
 function ros.registerSpinCallback(fn, round)
   ros.DEFAULT_CALLBACK_QUEUE:registerSpinCallback(fn, round)
 end
 
+--- Unregister a callback
+-- @tparam func fn Callback function
+-- @tparam int round Callbacks with a higher round integer are called after all callbacks with lower round numbers have been called.
 function ros.unregisterSpinCallback(fn, round)
   ros.DEFAULT_CALLBACK_QUEUE:unregisterSpinCallback(fn, round)
 end

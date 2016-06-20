@@ -47,7 +47,7 @@ function MessageBuffer:clear()
 end
 
 --- Get the next message from buffer
--- @tparam int Timeout to wait for next message if the buffer is empty
+-- @tparam int timeout_milliseconds Timeout to wait for next message if the buffer is empty
 -- @tparam[opt] torch.ByteStorage result_msg If present, this object is used to store the message data, otherwise the required memory is allocated by this function
 -- @tparam[opt] std.StringMap result_header If present, this object is used to store the message header, otherwise the required memory is allocated by this function
 -- @treturn torch.ByteStorage result_msg The message data
