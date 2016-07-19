@@ -55,6 +55,7 @@
       <File Name="src/ros/master.cpp"/>
       <File Name="src/ros/duration.cpp"/>
       <File Name="src/ros/console.cpp"/>
+      <File Name="src/ros/point_cloud2.cpp"/>
     </VirtualDirectory>
     <File Name="src/utils.h"/>
   </VirtualDirectory>
