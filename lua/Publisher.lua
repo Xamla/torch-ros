@@ -38,7 +38,7 @@ local f = init()
 -- @param msg_spec
 -- @param connect_cb
 -- @param disconnect_cb
-function Publisher:__init(ptr, msg_spec, connect_cb, disconnect_cb)
+function Publisher:__init(ptr, msg_spec, connect_cb, disconnect_cb, serialization_handlers)
   if not ptr or not ffi.typeof(ptr) == Publisher_ptr_ct then
     error('argument 1: ros::Publisher * expected.')
   end
@@ -46,6 +46,7 @@ function Publisher:__init(ptr, msg_spec, connect_cb, disconnect_cb)
   self.msg_spec = msg_spec
   self.connect_cb = connect_cb
   self.disconnect_cb = disconnect_cb
+  self.serialization_handlers = serialization_handlers
 
   ffi.gc(ptr,
     function(p)
@@ -106,10 +107,25 @@ end
 --- Publish the given message
 -- @tparam ros.Message msg The message to publish
 function Publisher:publish(msg)
-  -- serialize message to byte storage
-  local v = msg:serialize()
-  v:shrinkToFit()
-  f.publish(self.o, v.storage:cdata(), 0, v.length)
+  local sw = ros.StorageWriter(nil, 0, self.serialization_handlers)
+  if torch.isTypeOf(msg, ros.Message) then
+    -- serialize message to byte storage
+    msg:serialize(sw)
+
+  else
+    -- get serialization handler by message type
+    local handler = sw:getHandler(self.msg_spec.type)
+    if handler == nil then
+      error('No serialization handler defined for msg type')
+    end
+
+    sw:writeUInt32(0)   -- reserve space for message size
+    handler:write(sw, msg)
+    sw:writeUInt32(sw.offset - 4, offset)
+  end
+
+  sw:shrinkToFit()
+  f.publish(self.o, sw.storage:cdata(), 0, sw.length)
 end
 
 --- Wait for subscribers

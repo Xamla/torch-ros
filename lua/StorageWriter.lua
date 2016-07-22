@@ -13,12 +13,13 @@ local function ensurePosWriteable(self, pos, growth_factor)
   self.length = math.max(self.length, pos)
 end
 
-function StorageWriter:__init(storage, offset)  -- offset is zero based
+function StorageWriter:__init(storage, offset, serialization_handlers)  -- offset is zero based
   if not ffi.abi('le') then
     error('Big-endian systems not yet supported.')
   end
 
   self.offset = offset or 0
+  self.serialization_handlers = serialization_handlers
   self.length = self.offset
   if not storage then
     self.storage = torch.ByteStorage()
@@ -45,6 +46,13 @@ function StorageWriter:setCapacity(capacity)
   self.storage:resize(capacity)
   self.data = self.storage:data()
   self.capacity = capacity
+end
+
+function StorageWriter:storageChanged(newOffset)
+  self.capacity = self.storage:size()
+  self.offset = newOffset
+  self.length = math.max(self.length, newOffset)
+  self.data = self.storage:data()
 end
 
 function StorageWriter:shrinkToFit()
@@ -139,3 +147,7 @@ StorageWriter.writeIntTensor    = createTypedWriteTensorMethod(torch.IntTensor)
 StorageWriter.writeLongTensor   = createTypedWriteTensorMethod(torch.LongTensor)
 StorageWriter.writeFloatTensor  = createTypedWriteTensorMethod(torch.FloatTensor)
 StorageWriter.writeDoubleTensor = createTypedWriteTensorMethod(torch.DoubleTensor)
+
+function StorageWriter:getHandler(message_type)
+  return self.serialization_handlers and self.serialization_handlers[message_type]
+end

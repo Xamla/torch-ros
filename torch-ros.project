@@ -113,6 +113,7 @@
     <File Name="lua/StorageReader.lua"/>
     <File Name="lua/Subscriber.lua"/>
     <File Name="lua/console.lua"/>
+    <File Name="lua/PointCloud2SerializationHandler.lua"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
@@ -226,5 +227,6 @@
     <File Name="demo/subscribe.lua"/>
     <File Name="demo/simple_action_server.lua"/>
     <File Name="demo/action_server.lua"/>
+    <File Name="demo/pcl_interop.lua"/>
   </VirtualDirectory>
 </CodeLite_Project>

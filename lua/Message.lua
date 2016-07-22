@@ -26,7 +26,7 @@ function Message:__init(spec, no_prefill)
   if not torch.isTypeOf(spec, ros.MsgSpec) and type(spec) == 'string' then
     spec = ros.get_msgspec(spec)
   end
-  assert(spec, "Message specification must not be nil.")
+  assert(spec, 'Message specification must not be nil.')
   rawset(self, 'spec', spec)
   rawset(self, 'values', {})
   if not no_prefill then
@@ -285,7 +285,6 @@ local writeMethods = {
 }
 
 local function serialize_inner(sw, self)
-
   for _, f in ipairs(self.spec.fields) do
     local v = self.values[f.name]
     if f.is_array then
@@ -318,7 +317,12 @@ local function serialize_inner(sw, self)
       write(sw, v)
     else
       -- complex message
-      serialize_inner(sw, v)
+      local handler = sw.getHandler(f.type)
+      if handler ~= nil then
+        handler:write(sw, v)
+      else
+        serialize_inner(sw, v)
+      end
     end
   end
 end

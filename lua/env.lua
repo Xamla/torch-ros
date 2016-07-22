@@ -362,8 +362,8 @@ if package.loaded['pcl'] == nil then
 end
 
 ffi.cdef([[
-void ros_pcl_readPointCloud2(THByteStorage *serialized_message, pcl_PCLPointCloud2 *cloud);
-void ros_pcl_writePointCloud2(pcl_PCLPointCloud2 *cloud, THByteStorage *serialized_message);
+int32_t ros_pcl_readPointCloud2(THByteStorage *serialized_message, int32_t offset, pcl_PCLPointCloud2 *cloud);
+int32_t ros_pcl_writePointCloud2(THByteStorage *serialized_message, int32_t offset, pcl_PCLPointCloud2 *cloud);
 ]])
 
 

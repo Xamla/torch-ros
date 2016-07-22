@@ -70,6 +70,13 @@ function NodeHandle:cdata()
   return self.o
 end
 
+function NodeHandle:addSerializationHandler(handler)
+  if self.serialization_handlers == nil then
+    self.serialization_handlers = {}
+  end
+  self.serialization_handlers[handler:getType()] = handler
+end
+
 --- Shutdown every handle created through this NodeHandle.
 -- This method will unadvertise every topic and service advertisement,
 -- and unsubscribe every subscription created through this NodeHandle.
@@ -190,7 +197,7 @@ function NodeHandle:advertise(topic, msg_spec, queue_size, latch, connect_cb, di
   end
 
   local p = f.advertise(self.o, topic, queue_size or 1000, msg_spec:md5(), msg_spec.type, msg_spec.definition, msg_spec.has_header, latch or false, connect_, disconnect_, utils.cdata(callback_queue))
-  return ros.Publisher(p, msg_spec, connect_, disconnect_)
+  return ros.Publisher(p, msg_spec, connect_, disconnect_, self.serialization_handlers)
 end
 
 --- Create a client for a service
