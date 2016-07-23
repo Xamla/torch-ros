@@ -161,7 +161,7 @@ function NodeHandle:subscribe(topic, msg_spec, queue_size, transports, transport
     utils.cdata(transport_options),
     utils.cdata(callback_queue)
   )
-  return ros.Subscriber(s, buffer, msg_spec, callback_queue)
+  return ros.Subscriber(s, buffer, msg_spec, callback_queue, self.serialization_handlers)
 end
 
 --- Advertise a topic

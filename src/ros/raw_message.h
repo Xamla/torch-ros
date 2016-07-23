@@ -59,7 +59,9 @@ namespace serialization {
 template<>
 inline SerializedMessage serializeMessage(const RawMessage &message)
 {
-  return SerializedMessage(message.get_buffer(), message.get_length());
+  SerializedMessage sm(message.get_buffer(), message.get_length());
+  sm.message_start = sm.buf.get() + sizeof(uint32_t);
+  return sm;
 }
 
 }   // namespace serialization

@@ -317,7 +317,7 @@ local function serialize_inner(sw, self)
       write(sw, v)
     else
       -- complex message
-      local handler = sw.getHandler(f.type)
+      local handler = sw:getHandler(f.type)
       if handler ~= nil then
         handler:write(sw, v)
       else
@@ -429,13 +429,20 @@ local function deserialize_internal(self, sr)
       end
       self.values[f.name] = read(sr)
     else
-      local inner = self.values[f.name]
-      if inner == nil then
-        inner = ros.Message.new(f.spec, true)
-        self.values[f.name] = inner
-      end
       -- complex message
-      deserialize_internal(inner, sr)
+      local handler = sr:getHandler(f.type)
+      if handler ~= nil then
+        self.values[f.name] = handler:read(sr)
+      else
+
+        local inner = self.values[f.name]
+        if inner == nil then
+          inner = ros.Message.new(f.spec, true)
+          self.values[f.name] = inner
+        end
+
+        deserialize_internal(inner, sr)
+      end
     end
   end
 end

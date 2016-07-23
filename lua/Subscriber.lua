@@ -21,7 +21,7 @@ end
 
 local f = init()
 
-function Subscriber:__init(ptr, buffer, msg_spec, callback_queue)
+function Subscriber:__init(ptr, buffer, msg_spec, callback_queue, serialization_handlers)
   if not ptr or not ffi.typeof(ptr) == Subscriber_ptr_ct then
     error('argument 1: ros.Subscriber * expected.')
   end
@@ -31,6 +31,7 @@ function Subscriber:__init(ptr, buffer, msg_spec, callback_queue)
   ffi.gc(ptr, f.delete)
   self.callback_queue = callback_queue or ros.DEFAULT_CALLBACK_QUEUE
   self.callbacks = {}
+  self.serialization_handlers = serialization_handlers
 end
 
 function Subscriber:cdata()
@@ -72,8 +73,21 @@ function Subscriber:read(timeout_milliseconds, result)
   local msg_bytes, msg_header = self.buffer:read(timeout_milliseconds)
   local msg
   if msg_bytes then
-    msg = result or ros.Message(self.msg_spec, true)
-    msg:deserialize(msg_bytes)
+    local sr = ros.StorageReader(msg_bytes, 0, nil, nil, self.serialization_handlers)
+
+    --[[ debug
+    print('Subscriber:read():')
+    print('received:')
+    print(sr.storage) ]]
+
+    local handler = sr:getHandler(self.msg_spec.type)
+    if handler ~= nil then
+      local totalLength = sr:readUInt32()
+      msg = handler:read(sr)
+    else
+      msg = result or ros.Message(self.msg_spec, true)
+      msg:deserialize(sr)
+    end
   end
   return msg, msg_header
 end

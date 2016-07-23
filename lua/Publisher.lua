@@ -109,22 +109,28 @@ end
 function Publisher:publish(msg)
   local sw = ros.StorageWriter(nil, 0, self.serialization_handlers)
   if torch.isTypeOf(msg, ros.Message) then
-    -- serialize message to byte storage
+    -- serialize message to storage writer
     msg:serialize(sw)
-
   else
     -- get serialization handler by message type
     local handler = sw:getHandler(self.msg_spec.type)
     if handler == nil then
-      error('No serialization handler defined for msg type')
+      error('No serialization handler defined for custom message type')
     end
 
+    local offset = sw.offset
     sw:writeUInt32(0)   -- reserve space for message size
     handler:write(sw, msg)
     sw:writeUInt32(sw.offset - 4, offset)
   end
 
   sw:shrinkToFit()
+
+  --[[ debug
+  print('Publisher:publish(msg)')
+  print('sending:')
+  print(sw.storage) ]]
+
   f.publish(self.o, sw.storage:cdata(), 0, sw.length)
 end
 
