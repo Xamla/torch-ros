@@ -75,11 +75,6 @@ function Subscriber:read(timeout_milliseconds, result)
   if msg_bytes then
     local sr = ros.StorageReader(msg_bytes, 0, nil, nil, self.serialization_handlers)
 
-    --[[ debug
-    print('Subscriber:read():')
-    print('received:')
-    print(sr.storage) ]]
-
     local handler = sr:getHandler(self.msg_spec.type)
     if handler ~= nil then
       local totalLength = sr:readUInt32()

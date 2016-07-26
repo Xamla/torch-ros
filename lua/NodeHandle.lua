@@ -213,7 +213,7 @@ function NodeHandle:serviceClient(service_name, service_spec, persistent, header
     error("NodeHandle:serviceClient(): invalid 'service_spec' argument.")
   end
   local client = f.serviceClient(self.o, service_name, service_spec:md5(), persistent or false, utils.cdata(header_values))
-  return ros.ServiceClient(client, service_spec)
+  return ros.ServiceClient(client, service_spec, nil, nil, nil, self.serialization_handlers)
 end
 
 --- Advertise a service

@@ -26,7 +26,8 @@ end
 
 local f = init()
 
-function ServiceClient:__init(service_name, service_spec, persistent, header_values)
+function ServiceClient:__init(service_name, service_spec, persistent, header_values, serialization_handlers)
+  self.serialization_handlers = serialization_handlers
   if ffi.istype(ServiceClient_ptr_ct, service_name) then
     self.o = service_name
     self.spec = service_spec
@@ -59,6 +60,7 @@ function ServiceClient:call(request_msg)
     error('ros.ServiceClient instance is not valid.')
   end
 
+  local sw = ros.StorageWriter(nil, 0, self.serialization_handlers)
   if not torch.isTypeOf(request_msg, ros.Message) then
     -- support filling request message from simple value or table
     if type(request_msg) ~= 'table' then
@@ -67,19 +69,19 @@ function ServiceClient:call(request_msg)
     local req = self:createRequest()
     req:fillFromTable(request_msg)
     request_msg = req
+  else
+    request_msg:serialize(sw)
   end
-
-  local response_msg = ros.Message(self.spec.response_spec, true)
-
-  local v = request_msg:serialize()
-  v:shrinkToFit()
+  sw:shrinkToFit()
 
   local response_bytes = torch.ByteStorage()
-  local result = f.call(self.o, v.storage:cdata(), response_bytes:cdata(), self.spec:md5())
+  local result = f.call(self.o, sw.storage:cdata(), response_bytes:cdata(), self.spec:md5())
+
+  local response_msg
   if result == true then
-    response_msg:deserialize(response_bytes)
-  else
-    response_msg = nil
+    local sr = ros.StorageReader(response_bytes, 0, nil, nil, self.serialization_handlers)
+    response_msg = ros.Message(self.spec.response_spec, true)
+    response_msg:deserialize(sr)
   end
 
   return response_msg
