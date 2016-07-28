@@ -239,7 +239,12 @@ function Message:__tostring()
 end
 
 local writeMethods = {
-  bool    = ros.StorageWriter.writeInt8,
+  bool    = function(sw, value)
+    if type(value) == 'boolean' then
+      value = value and 1 or 0
+    end
+    sw:writeInt8(value)
+  end,
   byte    = ros.StorageWriter.writeUInt8,
   char    = ros.StorageWriter.writeInt8,
   int8    = ros.StorageWriter.writeInt8,
@@ -336,7 +341,7 @@ function Message:serializeServiceResponse(sw, ok)
 end
 
 local readMethods = {
-  bool    = ros.StorageReader.readInt8,
+  bool    = function(sr) return sr:readInt8() ~= 0 end,
   byte    = ros.StorageReader.readUInt8,
   char    = ros.StorageReader.readInt8,
   int8    = ros.StorageReader.readInt8,
