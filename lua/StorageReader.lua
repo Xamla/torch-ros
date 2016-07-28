@@ -6,12 +6,12 @@ local StorageReader = torch.class('ros.StorageReader', ros)
 local SIZE_OF_UINT32 = ffi.sizeof('uint32_t')
 
 local function ensurePosReadable(self, pos)
-  if pos < 0 or pos >= self.length then
-    error('Read position out of range.')
+  if pos < 0 or pos > self.length then
+    error(string.format('Read position out of range (buffer size: %d, read position: %d).', self.length, pos))
   end
 end
 
-function StorageReader:__init(storage, offset, length, byteOrder)
+function StorageReader:__init(storage, offset, length, byteOrder, serialization_handlers)
   byteOrder = byteOrder or ffi.abi('le') and 'le' or 'be'
   if byteOrder ~= 'le' then
     error('Big-endian systems not yet supported.')
@@ -31,6 +31,7 @@ function StorageReader:__init(storage, offset, length, byteOrder)
   self.offset = offset or 0
   self.length = length or storage:size()
   self.length = math.min(self.length, storage:size())
+  self.serialization_handlers = serialization_handlers
 end
 
 local function createReadMethod(type)
@@ -95,6 +96,15 @@ function StorageReader:readTensor(tensor_ctor, offset)
     self.offset = offset_ + sizeInBytes
   end
   return t
+end
+
+function StorageReader:setOffset(offset)
+  ensurePosReadable(self, offset)
+  self.offset = offset
+end
+
+function StorageReader:getHandler(message_type)
+  return self.serialization_handlers and self.serialization_handlers[message_type]
 end
 
 local function createReadTensorMethod(tensor_ctor)

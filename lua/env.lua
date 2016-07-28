@@ -354,6 +354,19 @@ void ros_ThisNode_getSubscribedTopics(std_StringVector *topics);
 
 ffi.cdef(ros_cdef)
 
+
+-- torch-pcl interop
+-- check whether torch-pcl has been loaded before, if not declare pcl_PCLPointCloud2 structure.
+if package.loaded['pcl'] == nil then
+  ffi.cdef('typedef struct pcl_PCLPointCloud2 {} pcl_PCLPointCloud2;')
+end
+
+ffi.cdef([[
+int32_t ros_pcl_readPointCloud2(THByteStorage *serialized_message, int32_t offset, pcl_PCLPointCloud2 *cloud);
+int32_t ros_pcl_writePointCloud2(THByteStorage *serialized_message, int32_t offset, pcl_PCLPointCloud2 *cloud);
+]])
+
+
 -- tf
 local tf_cdef = [[
 typedef struct tf_Transform {} tf_Transform;

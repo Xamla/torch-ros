@@ -11,13 +11,13 @@ Torch7/lua wrapper of roscpp via ffi. It offers dynamic serialization of ROS mes
 - basic parameter server support (NodeHandle:getParam*())
 - basic ROS time support
 - basic ROS-console/logging support (e.g. ros.WARN(), ros.INFO() etc.)
+- service calls (advertiseService & serviceClient)
+- ActionLib (ActionClient/ActionServer & SimpleActionClient/SimpleActionServer)
 - TF library (Transform, StampedTransform, Quaternion, TransformListener, TransformBroadcaster)
 - wrappers for basic std::string, std::vector<std::string>
 
 ## Todo:
 
-- service calls
-- lua compatible single threaded timer/callback mechanism
 - C++ error handing
 
 ## Limitations

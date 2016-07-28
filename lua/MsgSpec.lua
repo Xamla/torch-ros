@@ -1,3 +1,5 @@
+--- Message specification class
+-- @classmod MsgSpec
 local md5 = require 'md5'
 local path = require 'pl.path'
 local torch = require 'torch'
@@ -45,9 +47,6 @@ local function base_type(type)
    return type:match("^([^%[]+)") or type
 end
 
---- Get message specification.
--- @param msg_type message type (e.g. std_msgs/String). The name must include
--- the package.
 local function get_msgspec(msg_type, specstr)
   if not msgspec_cache[msg_type] then
     msgspec_cache[msg_type] = ros.MsgSpec(msg_type, specstr)
@@ -78,8 +77,7 @@ local tensor_type_map = {
   float64 = torch.DoubleTensor
 }
 
---- (internal) load from iterator
--- @param iterator iterator that returns one line of the specification at a time
+-- (internal) load from iterator
 local function load_from_iterator(self, iterator)
   local lines = {}
   self.fields = {}
@@ -147,13 +145,13 @@ local function load_from_iterator(self, iterator)
     end
 
   end
-  
+
   self.has_header = #self.fields > 0 and self.fields[1].type == 'std_msgs/Header'
   self.fixed_size = fixed_size
   self.definition = table.concat(lines, '\n')
 end
 
---- (internal) Load message specification from file.
+-- (internal) Load message specification from file.
 -- Will search for the appropriate message specification file (using rospack)
 -- and will then read and parse the file.
 local function load_msgspec(self)
@@ -162,13 +160,13 @@ local function load_msgspec(self)
   return load_from_iterator(self, io.lines(self.file))
 end
 
---- (internal) Load specification from string.
+-- (internal) Load specification from string.
 -- @param s string containing the message specification
 local function load_from_string(self, s)
   return load_from_iterator(self, s:gmatch('([^\r\n]+)\n?'))
 end
 
---- (internal) Calculate MD5 sum.
+-- (internal) Calculate MD5 sum.
 -- Generates the MD5 sum for this message type.
 -- @return MD5 sum as text
 local function calc_md5(self)
@@ -189,6 +187,9 @@ local function resolve_type(type, package)
   end
 end
 
+--- Constructor
+-- @param type Message type
+-- @tparam[opt] string specstr specification string
 function MsgSpec:__init(type, specstr)
   assert(type, 'Message type is expected')
   self.type = type
@@ -234,10 +235,17 @@ function MsgSpec:generate_hashtext()
   return table.concat(lines)
 end
 
+--- Calculate the MD5 of this instance
+-- @treturn string The MD5 string
 function MsgSpec:md5()
   return self.md5sum or calc_md5(self)
 end
 
+--- Creates a formatted string table of the class instance variables.
+-- Used by __tostring and usually not called manually
+-- @see __tostring
+-- @tparam tab ln Table to insert into (can be an empty table)
+-- @tparam[opt] string indent Indent string
 function MsgSpec:format_spec(ln, indent)
   local indent = indent or ''
   table.insert(ln, indent .. 'Message ' .. self.type)
@@ -257,6 +265,9 @@ function MsgSpec:instantiate(no_prefill)
   return ros.Message:new(self, no_prefill)
 end
 
+--- tostring operator
+-- @treturn string The string representation of this instance
+-- @see format_spec
 function MsgSpec:__tostring()
   local lines = self:format_spec({})
   table.insert(lines, '')

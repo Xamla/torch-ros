@@ -1,3 +1,5 @@
+--- ROS message class
+-- @classmod Message
 local ffi = require 'ffi'
 local torch = require 'torch'
 local ros = require 'ros.env'
@@ -17,11 +19,14 @@ local DEFAULT_VALUES = {
   string   = ""
 }
 
+--- Constructor
+-- @tparam ?ros.MsgSpec|string spec Message specification
+-- @tparam bool no_prefill If set to true, self:prefill() is executed
 function Message:__init(spec, no_prefill)
   if not torch.isTypeOf(spec, ros.MsgSpec) and type(spec) == 'string' then
     spec = ros.get_msgspec(spec)
   end
-  assert(spec, "Message specification must not be nil.")
+  assert(spec, 'Message specification must not be nil.')
   rawset(self, 'spec', spec)
   rawset(self, 'values', {})
   if not no_prefill then
@@ -29,6 +34,9 @@ function Message:__init(spec, no_prefill)
   end
 end
 
+--- Index operator
+-- @tparam string key The index key
+-- @return The key value
 function Message:__index(key)
   local v = rawget(self, idx)
   if not v then
@@ -40,6 +48,9 @@ function Message:__index(key)
   return v
 end
 
+--- Set index value operator
+-- @param key The index key
+-- @param key The index key value
 function Message:__newindex(key, value)
   self.values[key] = value
 end
@@ -67,7 +78,8 @@ function Message:prefill()
   end
 end
 
---- Assign values from other message or table.
+--- Assign values from other ros:Message or table.
+-- @tparam ?ros:Message|tab source The ros:Message object to copy from
 function Message:assign(source)
   if source == self then return end   -- ignore assignment to itself
   if torch.isTypeOf(source, ros.Message) then
@@ -78,6 +90,8 @@ function Message:assign(source)
 end
 
 --- Fill message fields from a source table.
+-- @see assign
+-- @tparam tab t Table to copy the values from
 function Message:fillFromTable(t)
   local fields = self.spec.fields
   for k,v in pairs(t) do
@@ -96,6 +110,8 @@ function Message:fillFromTable(t)
   end
 end
 
+--- Performs a deep copy of this object
+-- @treturn ros:Message Copy of the object
 function Message:clone()
   local m = ros.Message(self.spec, true)
   for _,f in ipairs(self.spec.fields) do
@@ -128,6 +144,9 @@ function Message:clone()
   return m
 end
 
+--- Assign values from another ros:Message
+-- @see assign
+-- @tparam ros:Message source The source object
 function Message:copy(source)
   for _,f in ipairs(self.spec.fields) do  -- for all target fields
     local v = source.values[f.name]   -- source value
@@ -232,6 +251,8 @@ format_field = function(ln, indent, prefix, ftype, fspec, fvalue)
   end
 end
 
+--- tostring operator
+-- @treturn string
 function Message:__tostring()
   local lines = format_message(self, {})
   table.insert(lines, '')
@@ -269,7 +290,6 @@ local writeMethods = {
 }
 
 local function serialize_inner(sw, self)
-
   for _, f in ipairs(self.spec.fields) do
     local v = self.values[f.name]
     if f.is_array then
@@ -302,11 +322,19 @@ local function serialize_inner(sw, self)
       write(sw, v)
     else
       -- complex message
-      serialize_inner(sw, v)
+      local handler = sw:getHandler(f.type)
+      if handler ~= nil then
+        handler:write(sw, v)
+      else
+        serialize_inner(sw, v)
+      end
     end
   end
 end
 
+--- Serialize this object
+-- @tparam[opt] ros.StorageWriter sw
+-- @treturn ros.StorageWriter
 function Message:serialize(sw)
   sw = sw or ros.StorageWriter()
   local offset = sw.offset
@@ -319,6 +347,10 @@ function Message:serialize(sw)
   return sw
 end
 
+---
+-- @tparam[opt] ros.StorageWriter sw
+-- @tparam[opt] bool ok
+-- @treturn ros.StorageWriter
 function Message:serializeServiceResponse(sw, ok)
   sw = sw or ros.StorageWriter()
 
@@ -402,17 +434,26 @@ local function deserialize_internal(self, sr)
       end
       self.values[f.name] = read(sr)
     else
-      local inner = self.values[f.name]
-      if inner == nil then
-        inner = ros.Message.new(f.spec, true)
-        self.values[f.name] = inner
-      end
       -- complex message
-      deserialize_internal(inner, sr)
+      local handler = sr:getHandler(f.type)
+      if handler ~= nil then
+        self.values[f.name] = handler:read(sr)
+      else
+
+        local inner = self.values[f.name]
+        if inner == nil then
+          inner = ros.Message.new(f.spec, true)
+          self.values[f.name] = inner
+        end
+
+        deserialize_internal(inner, sr)
+      end
     end
   end
 end
 
+---
+-- @treturn ros:StorageReader
 function Message:deserialize(sr)
   if torch.isTypeOf(sr, torch.ByteStorage) then
     sr = ros.StorageReader(sr)

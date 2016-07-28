@@ -42,7 +42,7 @@ end
 
 --- Register a function for callback
 -- @tparam func fn The function to execute as callback function
--- @tparam[opt=1] int Prioriy/order of the callback. If unsure which value to use, omit the parameter
+-- @tparam[opt=1] int round Prioriy/order of the callback. If unsure which value to use, omit the parameter
 function CallbackQueue:registerSpinCallback(fn, round)
   self.spin_callbacks[round or 1][fn] = true -- table used as set
 end

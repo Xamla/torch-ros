@@ -1,3 +1,5 @@
+--- Utility module to calculate the MD5 sum
+-- @module md5
 local md5 = {
   _VERSION     = "md5.lua 1.0.2",
   _DESCRIPTION = "MD5 computation in Lua (5.1-3, LuaJIT)",
@@ -351,6 +353,9 @@ end
 
 ----------------------------------------------------------------
 
+--- Calculates the MD5 sum
+-- @param s The object to calculate the MD5 sum for
+-- @treturn string MD5 sum as hexadecimal string
 function md5.sumhexa(s)
   local msgLen = #s
   local padLen = 56 - msgLen % 64
@@ -376,6 +381,9 @@ function md5.sumhexa(s)
   return format("%08x%08x%08x%08x",swap(a),swap(b),swap(c),swap(d))
 end
 
+--- Calculates the MD5 sum
+-- @param s The object to calculate the MD5 sum for
+-- @return MD5 sum in binary representation
 function md5.sum(s)
   return hex2binary(md5.sumhexa(s))
 end
