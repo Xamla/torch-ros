@@ -102,36 +102,36 @@ end
 function TransformListener:getLatestCommonTime(source_frame, target_frame)
   local result = ros.Time()
   local error_msg = std.String()
-  if t.getLatestCommonTime(self.o, source_frame, target_frame, result:cdata(), error_msg:cdata()) == 0 then
+  if f.getLatestCommonTime(self.o, source_frame, target_frame, result:cdata(), error_msg:cdata()) == 0 then
     error(error_msg:get())
   end
 end
 
 function TransformListener:chainAsVector(target_frame, target_time, source_frame, source_time, fixed_frame, result)
   result = result or std.StringVector
-  t.chainAsVector(self.o, target_frame, target_time:cdata(), source_frame, source_time:cdata(), fixed_frame, result:cdata())
+  f.chainAsVector(self.o, target_frame, target_time:cdata(), source_frame, source_time:cdata(), fixed_frame, result:cdata())
   return result
 end
 
 function TransformListener:getParent(frame_id, time)
   time = time or ros.Time(0)
   local parent = std.String()
-  t.getParent(self.o, frame_id, time:cdata(), parent:cdata())
+  f.getParent(self.o, frame_id, time:cdata(), parent:cdata())
   return parent:get()
 end
 
 function TransformListener:frameExists(frame_id)
-  return t.frameExists(self.o, frame_id)
+  return f.frameExists(self.o, frame_id)
 end
 
 function TransformListener:getCacheLength()
   local duration = ros.Duration()
-  t.getCacheLength(self.o, duration:cdata())
+  f.getCacheLength(self.o, duration:cdata())
   return duration
 end
 
 function TransformListener:getTFPrefix()
   local prefix = std.String()
-  t.getTFPrefix(self.o, prefix:cdata())
+  f.getTFPrefix(self.o, prefix:cdata())
   return prefix
 end
