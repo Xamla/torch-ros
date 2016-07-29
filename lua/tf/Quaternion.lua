@@ -215,6 +215,35 @@ function Quaternion:toTensor()
   return result
 end
 
+function Quaternion:toMatrixTensor()
+  local result = torch.DoubleTensor(3,3)
+  local q = self:toTensor()
+  local sqw = q[4]*q[4]
+  local sqx = q[1]*q[1]
+  local sqy = q[2]*q[2]
+  local sqz = q[3]*q[3]
+
+  local invs = 1 / (sqx + sqy + sqz + sqw)
+  result[1][1] = ( sqx - sqy - sqz + sqw)*invs
+  result[2][2] = (-sqx + sqy - sqz + sqw)*invs
+  result[3][3] = (-sqx - sqy + sqz + sqw)*invs
+
+  local tmp1 = q[1]*q[2];
+  local tmp2 = q[3]*q[4];
+  result[2][1] = 2.0 * (tmp1 + tmp2)*invs
+  result[1][2] = 2.0 * (tmp1 - tmp2)*invs
+
+  tmp1 = q[1]*q[3]
+  tmp2 = q[2]*q[4]
+  result[3][1] = 2.0 * (tmp1 - tmp2)*invs
+  result[1][3] = 2.0 * (tmp1 + tmp2)*invs
+  tmp1 = q[2]*q[3]
+  tmp2 = q[1]*q[4]
+  result[3][2] = 2.0 * (tmp1 + tmp2)*invs
+  result[2][3] = 2.0 * (tmp1 - tmp2)*invs
+  return result
+end
+
 function Quaternion:__tostring()
   local t = self:toTensor()
   return string.format("{ x:%f, y:%f, z:%f, w:%f }", t[1], t[2], t[3], t[4]);
