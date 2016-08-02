@@ -29,6 +29,13 @@ local f = init()
 
 function StampedTransform:__init(transform, stamp, frame_id, child_frame_id)
   transform = transform or tf.Transform()
+  if torch.isTensor(transform) then
+    if transform:nDimension() == 2 and transform:size(1) == 4 and transform:size(2) == 4 then
+      transform = tf.Transform():fromTensor(transform)
+    else
+      error('Invalid tensor specified. 4x4 matrix expected.')
+    end
+  end
   stamp = stamp or ros.Time.getNow()
   self.t = f.new(transform:cdata(), stamp:cdata(), frame_id or '', child_frame_id or '')
   self.o = f.getBasePointer(self.t)
