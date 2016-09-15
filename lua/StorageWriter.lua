@@ -115,7 +115,7 @@ function StorageWriter:writeString(value)
   self.offset = self.offset + #value
 end
 
-function StorageWriter:writeTensor(value)
+function StorageWriter:writeTensor(value, fixed_array_size)
   -- only tensors with a single dimension are supported for now (sufficient for ROS array support)
   if not torch.isTensor(value) or value:nDimension() > 1 then
     error('argument 1: tensor with one dimension expected')
@@ -126,8 +126,15 @@ function StorageWriter:writeTensor(value)
   local n = value:nElement()
   local sizeInBytes = n * value:elementSize()
 
-  ensurePosWriteable(self, self.offset + SIZE_OF_UINT32 + sizeInBytes)
-  self:writeUInt32(n)                                           -- length of array
+  if fixed_array_size == nil then
+    ensurePosWriteable(self, self.offset + SIZE_OF_UINT32 + sizeInBytes)
+    self:writeUInt32(n)                                           -- length of array
+  else
+    if n ~= fixed_array_size then
+      error(string.format('Wrong number of elements in fixed size array (expected: %d; actual: %d).', fixed_array_size, n))
+    end
+    ensurePosWriteable(self, self.offset + sizeInBytes)
+  end
   ffi.copy(self.data + self.offset, value:data(), sizeInBytes)  -- binary data
   self.offset = self.offset + sizeInBytes
 end

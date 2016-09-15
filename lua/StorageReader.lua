@@ -83,12 +83,14 @@ function StorageReader:readString(offset)
   return ffi.string(self.data + offset_, length)
 end
 
-function StorageReader:readTensor(tensor_ctor, offset)
+function StorageReader:readTensor(tensor_ctor, offset, fixed_array_size)
   local offset_ = offset or self.offset
-  local n = self:readUInt32(offset_)
+  local n = fixed_array_size or self:readUInt32(offset_)
   local t = tensor_ctor()
   local sizeInBytes = n * t:elementSize()
-  offset_ = offset_ + SIZE_OF_UINT32
+  if fixed_array_size == nil then
+    offset_ = offset_ + SIZE_OF_UINT32
+  end
   ensurePosReadable(self, offset_ + sizeInBytes - 1)
   t:resize(n)
   ffi.copy(t:data(), self.data + offset_, sizeInBytes)

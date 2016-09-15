@@ -39,12 +39,22 @@ local function is_array_type(type)
   return type:find("%[") ~= nil
 end
 
+--- Determine fixed size of an array.
+-- @return element count or nil if array has variable size.
+local function fixed_array_size(type)
+  local b,e = type:find("%b[]")
+  if b ~= nil and e-b > 2 then
+    return tonumber(type:sub(b+1,e-1))
+  end
+  return nil
+end
+
 --- Get the base version of type, i.e. the non-array type.
 -- @param type type to get base type for
 -- @return base type, for array types returns the non-array type, for non-array
 -- type returns the given value.
 local function base_type(type)
-   return type:match("^([^%[]+)") or type
+  return type:match("^([^%[]+)") or type
 end
 
 local function get_msgspec(msg_type, specstr)
@@ -123,6 +133,7 @@ local function load_from_iterator(self, iterator)
         if typeinfo.is_array then
           typeinfo.tensor_type = tensor_type_map[typeinfo.base_type]
           fixed_size = false
+          typeinfo.fixed_array_size = fixed_array_size(ftype)
         elseif typeinfo.is_builtin and typeinfo.type == 'string' then
           fixed_size = false
         end

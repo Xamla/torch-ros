@@ -62,8 +62,25 @@ function Message:prefill()
       if f.is_array then
         if f.tensor_type then
           self.values[f.name] = f.tensor_type()             -- empty tensor
+          if f.fixed_array_size ~= nil then
+            self.values[f.name]:zeros(f.fixed_array_size)
+          end
         else
           self.values[f.name] = {}                          -- empty array
+          if f.fixed_array_size ~= nil then
+            local a = self.values[f.name]
+            for i=1,f.fixed_array_size do
+              if f.is_builtin then
+                local v = DEFAULT_VALUES[f.base_type]
+                if f.cloneable then
+                  v = v:clone()                                     -- clone time or duration
+                end
+                table.insert(a, v)
+              else
+                table.insert(a, ros.Message.new(f.spec))
+              end
+            end
+          end
         end
       elseif f.is_builtin then
         local v = DEFAULT_VALUES[f.type]
@@ -295,11 +312,17 @@ local function serialize_inner(sw, self)
     if f.is_array then
       if f.tensor_type then
         -- tensor
-        sw:writeTensor(v)
+        sw:writeTensor(v, f.fixed_array_size)
       else
         -- regular array
         local n = #v
-        sw:writeUInt32(n)    -- element count
+        if f.fixed_array_size == nil then
+          sw:writeUInt32(n)    -- element count
+        else
+          if n ~= f.fixed_array_size then
+            error(string.format('Wrong number of elements in fixed size array (expected: %d; actual: %d).', f.fixed_array_size, n))
+          end
+        end
         local write
         if f.is_builtin then
           write = writeMethods[f.base_type]
@@ -403,10 +426,10 @@ local function deserialize_internal(self, sr)
         if not self.values[f.name] then
           self.values[f.name] = f.tensor_type()
         end
-        self.values[f.name]:set(sr:readTensor(f.tensor_type))
+        self.values[f.name]:set(sr:readTensor(f.tensor_type, nil, f.fixed_array_size))
       else
         -- regular array
-        local n = sr:readUInt32()    -- element count
+        local n = f.fixed_array_size or sr:readUInt32()    -- element count
         local read
         if f.is_builtin then
           read = readMethods[f.base_type]

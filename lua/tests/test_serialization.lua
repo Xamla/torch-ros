@@ -41,3 +41,16 @@ msg2:deserialize(v.storage)
 
 print(msg2.spec)
 print(msg2)
+
+
+function testFixedSizeArray()
+  local m = ros.Message('geometry_msgs/PoseWithCovariance')
+  m.covariance[5] = 123
+  local v = m:serialize()
+  v:shrinkToFit()
+  n = ros.Message('geometry_msgs/PoseWithCovariance')
+  n:deserialize(v.storage)
+  assert(n.covariance[5] == 123)
+end
+
+testFixedSizeArray()

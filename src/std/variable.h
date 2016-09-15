@@ -43,7 +43,8 @@ public:
     this->value.i64 = 0;
   }
 
-  Variable(const Variable &src) {
+  Variable(const Variable &src)
+    : type_code(VariableType::Void) {
     if (src.type_code == VariableType::String) {
       this->set_string(*src.value.s);
     } else if (src.type_code == VariableType::Vector) {
