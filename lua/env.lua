@@ -15,7 +15,10 @@ local rospack_path_cache = {}
 local asserted_rospack = false
 function assert_rospack()
   if not asserted_rospack then
-    local rv = os.execute("rospack 2>/dev/null")
+    local ok, e, rv = os.execute("rospack 2>/dev/null")
+    if type(ok) == "number" then    -- support Lua < 5.2
+      rv = ok
+    end
     assert(rv == 0, "Cannot find rospack command, must be in PATH")
     asserted_rospack = true
  end

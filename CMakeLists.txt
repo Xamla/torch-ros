@@ -4,7 +4,9 @@ project(rostorch)
 
 find_package(Torch REQUIRED)
 find_package(Boost 1.47.0 REQUIRED COMPONENTS system thread chrono)
-find_package(catkin REQUIRED COMPONENTS roscpp std_msgs tf pcl_ros)
+find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
+find_package(tf)
+find_package(pcl_ros)
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmax-errors=3 -Wall" )
@@ -31,14 +33,29 @@ set(src
   "${SOURCE_DIR}/ros/time.cpp"
   "${SOURCE_DIR}/ros/duration.cpp"
   "${SOURCE_DIR}/ros/console.cpp"
-  "${SOURCE_DIR}/ros/point_cloud2.cpp"
-
-  "${SOURCE_DIR}/tf/transform.cpp"
-  "${SOURCE_DIR}/tf/quaternion.cpp"
-  "${SOURCE_DIR}/tf/stamped_transform.cpp"
-  "${SOURCE_DIR}/tf/transform_broadcaster.cpp"
-  "${SOURCE_DIR}/tf/transform_listener.cpp"
 )
+
+# compile TF support if available
+if (${tf_FOUND})
+  set(src ${src}
+    "${SOURCE_DIR}/tf/transform.cpp"
+    "${SOURCE_DIR}/tf/quaternion.cpp"
+    "${SOURCE_DIR}/tf/stamped_transform.cpp"
+    "${SOURCE_DIR}/tf/transform_broadcaster.cpp"
+    "${SOURCE_DIR}/tf/transform_listener.cpp"
+  )
+  list(APPEND catkin_INCLUDE_DIRS ${tf_INCLUDE_DIRS})
+  list(APPEND catkin_LIBRARIES ${tf_LIBRARIES})
+endif()
+
+# compile PCL support if available
+if (${pcl_ros_FOUND})
+  set(src ${src}
+    "${SOURCE_DIR}/ros/point_cloud2.cpp"
+  )
+  list(APPEND catkin_INCLUDE_DIRS ${pcl_ros_INCLUDE_DIRS})
+  list(APPEND catkin_LIBRARIES ${pcl_ros_LIBRARIES})
+endif()
 
 include_directories(
   ${Boost_INCLUDE_DIRS}
