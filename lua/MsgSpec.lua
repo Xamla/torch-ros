@@ -43,7 +43,7 @@ end
 -- @return element count or nil if array has variable size.
 local function fixed_array_size(type)
   local b,e = type:find("%b[]")
-  if b ~= nil and e-b > 2 then
+  if b ~= nil and e-b >= 2 then
     return tonumber(type:sub(b+1,e-1))
   end
   return nil

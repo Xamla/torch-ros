@@ -51,6 +51,30 @@ function testFixedSizeArray()
   n = ros.Message('geometry_msgs/PoseWithCovariance')
   n:deserialize(v.storage)
   assert(n.covariance[5] == 123)
+  
+  local test_msg_definiton = [[Header header
+uint32[5] id
+string[4] names
+time[2] times
+float64 confidence
+]]
+  local s = ros.MsgSpec('test', test_msg_definiton)
+  
+  local now = ros.Time.now()
+  m = ros.Message(s)
+  m.id[1] = 1
+  m.id[4] = 4
+  m.names[2] = 'hallo'
+  m.times[2] = now
+  local v = m:serialize()
+  v:shrinkToFit()
+  x = ros.Message(s)
+  x:deserialize(v.storage)
+  assert(1 == x.id[1])
+  assert(4 == x.id[4])
+  assert('hallo' == x.names[2])
+  assert(now == x.times[2])
+  assert(x.times[1] == ros.Time(0))
 end
 
 testFixedSizeArray()
