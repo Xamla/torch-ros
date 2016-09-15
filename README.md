@@ -14,11 +14,11 @@ Torch7/lua wrapper of roscpp via ffi. It offers dynamic serialization of ROS mes
 - service calls (advertiseService & serviceClient)
 - ActionLib (ActionClient/ActionServer & SimpleActionClient/SimpleActionServer)
 - TF library (Transform, StampedTransform, Quaternion, TransformListener, TransformBroadcaster)
-- wrappers for basic std::string, std::vector<std::string>
+- wrappers for basic std::string, std::vector&lt;std::string&gt;
 
 ## Todo:
 
-- C++ error handing
+- C++ exception handling/translation to lua
 
 ## Limitations
 
