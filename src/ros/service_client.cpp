@@ -24,9 +24,9 @@ ROSIMP(bool, ServiceClient, call)(ros::ServiceClient *self, THByteStorage *reque
   // fill request message from request_msg byte storage
   RawMessage msg;
   msg.copyFrom(THByteStorage_data(request_msg), THByteStorage_size(request_msg));
-  ros::SerializedMessage req(msg.get_buffer(), msg.get_length());
-  ros::SerializedMessage resp;
 
+  ros::SerializedMessage req = ros::serialization::serializeMessage(msg);
+  ros::SerializedMessage resp;
   bool result = self->call(req, resp, service_md5sum);
 
   // copy response message back to response_msg byte storage

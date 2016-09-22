@@ -70,6 +70,7 @@ function ServiceClient:call(request_msg)
     req:fillFromTable(request_msg)
     request_msg = req
   end
+
   request_msg:serialize(sw)
   sw:shrinkToFit()
 
@@ -93,7 +94,7 @@ end
 function ServiceClient:getService()
   local s = std.String()
   f.getService(self.o, s:cdata())
-  return s
+  return s:get()
 end
 
 function ServiceClient:waitForExistence(timeout)
