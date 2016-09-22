@@ -37,11 +37,11 @@ uint32 step
 uint8[] data
 ]]
 
-msg.height = lena:size()[1]
-msg.width = lena:size()[2]
+msg.height = lena:size(1)
+msg.width = lena:size(2)
 msg.encoding = "rgb8"
 msg.is_bigendian = false
-msg.step = lena:stride()[1]
+msg.step = lena:stride(1)
 msg.data = lena:reshape(msg.height * msg.width * 3)
 
 print('press ctrl+c to exit')
