@@ -69,9 +69,8 @@ function ServiceClient:call(request_msg)
     local req = self:createRequest()
     req:fillFromTable(request_msg)
     request_msg = req
-  else
-    request_msg:serialize(sw)
   end
+  request_msg:serialize(sw)
   sw:shrinkToFit()
 
   local response_bytes = torch.ByteStorage()

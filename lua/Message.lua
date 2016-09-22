@@ -110,6 +110,7 @@ end
 -- @see assign
 -- @tparam tab t Table to copy the values from
 function Message:fillFromTable(t)
+  assert(t ~= nil, 'Source table argument must not be nil.')
   local fields = self.spec.fields
   for k,v in pairs(t) do
     local f = fields[k]   -- check if field or index exists
