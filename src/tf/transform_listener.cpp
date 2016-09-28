@@ -14,7 +14,14 @@ TFIMP(void, TransformListener, clear)(tf::TransformListener *self) {
 }
 
 TFIMP(void, TransformListener, getFrameStrings)(tf::TransformListener *self, std::vector<std::string> *result) {
-  self->getFrameStrings(*result);
+  try
+    {
+      self->getFrameStrings(*result);
+    }
+  catch (std::runtime_error& e)
+    {
+      ROS_ERROR("Exception: [%s]", e.what());
+    }
 }
 
 TFIMP(void, TransformListener, lookupTransform)(
@@ -23,7 +30,14 @@ TFIMP(void, TransformListener, lookupTransform)(
   const char *source_frame, ros::Time *time,
   tf::StampedTransform *result
 ) {
-  self->lookupTransform(target_frame, source_frame, *time, *result);
+  try
+    {
+      self->lookupTransform(target_frame, source_frame, *time, *result);
+    }
+  catch (std::runtime_error& e)
+    {
+      ROS_ERROR("Exception: [%s]", e.what());
+    }
 }
 
 TFIMP(bool, TransformListener, waitForTransform)(
@@ -102,7 +116,15 @@ TFIMP(bool, TransformListener, getParent)(
 }
 
 TFIMP(bool, TransformListener, frameExists)(tf::TransformListener *self, const char *frame_id) {
-  return self->frameExists(frame_id);
+  try
+    {
+      return self->frameExists(frame_id);
+    }
+  catch (std::runtime_error& e)
+    {
+      ROS_ERROR("Exception: [%s]", e.what());
+      return false;
+    }
 }
 
 TFIMP(void, TransformListener, getCacheLength)(tf::TransformListener *self, ros::Duration *result) {
