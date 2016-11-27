@@ -6,7 +6,7 @@ require 'ros.actionlib.ActionClient'
 ros.init('call_movegroup_demo')
 ros.console.initialize()
 ros.console.get_logger('ActionClient')
-ros.console.set_logger_level('ActionClient', ros.console.level.Debug)
+ros.console.set_logger_level('ActionClient', ros.console.Level.Debug)
 ros.DEBUG_NAMED('ActionClient', 'bulb')
 
 local move_group_action_spec = ros.actionlib.ActionSpec('moveit_msgs/MoveGroup')

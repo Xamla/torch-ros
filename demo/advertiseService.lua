@@ -20,7 +20,7 @@ function myServiceHandler(request, response, header)
   print('header:')
   print(header)
 
-  for k,v in pairs(ros.console.level) do
+  for k,v in pairs(ros.console.Level) do
     local l = ros.Message('roscpp/Logger')
     l.name = 'dummyname' .. v
     l.level = k

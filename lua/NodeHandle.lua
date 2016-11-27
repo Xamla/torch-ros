@@ -236,8 +236,7 @@ function NodeHandle:advertiseService(service_name, service_spec, service_handler
     request_storage = torch.pushudata(request_storage, 'torch.ByteStorage')
     request_storage:retain()
 
-    response_storage = torch.pushudata(response_storage, 'torch.ByteStorage')
-    response_storage:retain()
+    response_storage = ros.SerializedMessage.fromPtr(response_storage)
 
     -- create class around header values string map...
     local header = torch.factory('std.StringMap')()

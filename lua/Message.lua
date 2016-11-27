@@ -478,7 +478,7 @@ end
 
 ---
 -- @treturn ros:StorageReader
-function Message:deserialize(sr)
+function Message:deserialize(sr, no_length)
   if torch.isTypeOf(sr, torch.ByteStorage) then
     sr = ros.StorageReader(sr)
   end
@@ -487,7 +487,10 @@ function Message:deserialize(sr)
     error('argument 1: storage reader object expected')
   end
 
-  local totalLength = sr:readUInt32()
+  local totalLength = -1
+  if not no_length then
+    totalLength = sr:readUInt32()
+  end
   deserialize_internal(self, sr)
   return sr
 end

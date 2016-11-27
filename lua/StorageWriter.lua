@@ -25,7 +25,7 @@ function StorageWriter:__init(storage, offset, serialization_handlers)  -- offse
     self.storage = torch.ByteStorage()
     self:setCapacity(16)
   else
-    if not torch.isTypeOf(storage, torch.ByteStorage) then
+    if not torch.isTypeOf(storage, torch.ByteStorage) and not torch.isTypeOf(storage, ros.SerializedMessage) then
       error('argument 1: torch.ByteStorage expected')
     end
     self.storage = storage

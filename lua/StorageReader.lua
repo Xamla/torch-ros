@@ -86,14 +86,22 @@ end
 function StorageReader:readTensor(tensor_ctor, offset, fixed_array_size)
   local offset_ = offset or self.offset
   local n = fixed_array_size or self:readUInt32(offset_)
-  local t = tensor_ctor()
-  local sizeInBytes = n * t:elementSize()
   if fixed_array_size == nil then
     offset_ = offset_ + SIZE_OF_UINT32
   end
-  ensurePosReadable(self, offset_ + sizeInBytes - 1)
-  t:resize(n)
-  ffi.copy(t:data(), self.data + offset_, sizeInBytes)
+
+  local t, sizeInBytes
+  if tensor_ctor == torch.ByteTensor then         -- special handling for ByteTensor (direct view into storage for perf reasons)
+    sizeInBytes = n
+    ensurePosReadable(self, offset_ + sizeInBytes - 1)
+    t = tensor_ctor(self.storage, offset_, n)
+  else
+    t = tensor_ctor()
+    sizeInBytes = n * t:elementSize()
+    ensurePosReadable(self, offset_ + sizeInBytes - 1)
+    t:resize(n)
+    ffi.copy(t:data(), self.data + offset_, sizeInBytes)
+  end
   if not offset then
     self.offset = offset_ + sizeInBytes
   end

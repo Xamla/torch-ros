@@ -6,7 +6,7 @@ find_package(Torch REQUIRED)
 find_package(Boost 1.47.0 REQUIRED COMPONENTS system thread chrono)
 find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
 find_package(tf)
-find_package(pcl_ros)
+#find_package(pcl_ros)
 
 set(SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmax-errors=3 -Wall" )
@@ -25,6 +25,7 @@ set(src
   "${SOURCE_DIR}/ros/master.cpp"
   "${SOURCE_DIR}/ros/this_node.cpp"
   "${SOURCE_DIR}/ros/message_buffer.cpp"
+  "${SOURCE_DIR}/ros/serialized_message.cpp"
   "${SOURCE_DIR}/ros/subscriber.cpp"
   "${SOURCE_DIR}/ros/publisher.cpp"
   "${SOURCE_DIR}/ros/service_client.cpp"

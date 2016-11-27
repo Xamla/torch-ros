@@ -20,23 +20,13 @@ ROSIMP(void, ServiceClient, delete)(ros::ServiceClient *ptr) {
   delete ptr;
 }
 
-ROSIMP(bool, ServiceClient, call)(ros::ServiceClient *self, THByteStorage *request_msg, THByteStorage *response_msg, const char *service_md5sum) {
+ROSIMP(bool, ServiceClient, call)(ros::ServiceClient *self, THByteStorage *request_msg, ros::SerializedMessage *response_msg, const char *service_md5sum) {
   // fill request message from request_msg byte storage
   RawMessage msg;
   msg.copyFrom(THByteStorage_data(request_msg), THByteStorage_size(request_msg));
 
   ros::SerializedMessage req = ros::serialization::serializeMessage(msg);
-  ros::SerializedMessage resp;
-  bool result = self->call(req, resp, service_md5sum);
-
-  // copy response message back to response_msg byte storage
-  if (result) {
-    THByteStorage_resize(response_msg, resp.num_bytes + sizeof(uint32_t));
-    uint8_t *response_data = THByteStorage_data(response_msg);
-    ros::serialization::OStream stream(response_data, THByteStorage_size(response_msg));
-    stream.next((uint32_t)resp.num_bytes);
-    memcpy(stream.advance(resp.num_bytes), resp.message_start, resp.num_bytes);
-  }
+  bool result = self->call(req, *response_msg, service_md5sum);
 
   return result;
 }

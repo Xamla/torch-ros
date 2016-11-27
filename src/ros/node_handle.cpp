@@ -123,7 +123,7 @@ ROSIMP(ros::ServiceClient *, NodeHandle, serviceClient)(
   return new ros::ServiceClient(self->serviceClient(ops));
 }
 
-typedef bool (*ServiceRequestCallback)(THByteStorage *, THByteStorage *, std::map<std::string, std::string> *);
+typedef bool (*ServiceRequestCallback)(THByteStorage *, ros::SerializedMessage *, std::map<std::string, std::string> *);
 
 class ServiceRequestCallbackHandler
  : public ros::ServiceCallbackHelper
@@ -134,7 +134,6 @@ public:
   }
 
   virtual bool call(ros::ServiceCallbackHelperCallParams &params) {
-    THByteStorage *response = THByteStorage_new();
 
     // copy request data
     THByteStorage *request = THByteStorage_newWithSize(params.request.num_bytes + sizeof(uint32_t));
@@ -143,20 +142,8 @@ public:
     stream.next((uint32_t)params.request.num_bytes);
     memcpy(stream.advance(params.request.num_bytes), params.request.message_start, params.request.num_bytes);
 
-    bool result = this->callback(request, response, params.connection_header.get());
+    bool result = this->callback(request, &params.response, params.connection_header.get());
 
-    // copy response
-    long response_length = THByteStorage_size(response);
-    if (response_length > 0) {
-      uint8_t *response_data = THByteStorage_data(response);
-      boost::shared_array<uint8_t> dst(new uint8_t[response_length]);
-      memcpy(dst.get(), response_data, response_length);
-      params.response = ros::SerializedMessage(dst, response_length);
-    } else {
-      params.response = ros::SerializedMessage();
-    }
-
-    THByteStorage_free(response);
     THByteStorage_free(request);
 
     return result;

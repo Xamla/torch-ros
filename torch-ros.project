@@ -56,6 +56,7 @@
       <File Name="src/ros/duration.cpp"/>
       <File Name="src/ros/console.cpp"/>
       <File Name="src/ros/point_cloud2.cpp"/>
+      <File Name="src/ros/serialized_message.cpp"/>
     </VirtualDirectory>
     <File Name="src/utils.h"/>
   </VirtualDirectory>
@@ -114,6 +115,7 @@
     <File Name="lua/Subscriber.lua"/>
     <File Name="lua/console.lua"/>
     <File Name="lua/PointCloud2SerializationHandler.lua"/>
+    <File Name="lua/SerializedMessage.lua"/>
   </VirtualDirectory>
   <Description/>
   <Dependencies/>
@@ -141,6 +143,8 @@
     <File Name="demo/action_server.lua"/>
     <File Name="demo/pcl_interop.lua"/>
     <File Name="demo/service_client.lua"/>
+    <File Name="demo/publish_multi_array.lua"/>
+    <File Name="demo/service_throughput_test.lua"/>
   </VirtualDirectory>
   <Settings Type="Dynamic Library">
     <GlobalSettings>

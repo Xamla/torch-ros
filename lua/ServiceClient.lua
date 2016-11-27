@@ -74,14 +74,15 @@ function ServiceClient:call(request_msg)
   request_msg:serialize(sw)
   sw:shrinkToFit()
 
-  local response_bytes = torch.ByteStorage()
-  local result = f.call(self.o, sw.storage:cdata(), response_bytes:cdata(), self.spec:md5())
-
+  local response_serialized_msg = ros.SerializedMessage()
+  local result = f.call(self.o, sw.storage:cdata(), response_serialized_msg:cdata(), self.spec:md5())
   local response_msg
   if result == true then
-    local sr = ros.StorageReader(response_bytes, 0, nil, nil, self.serialization_handlers)
+    local view = response_serialized_msg:view()
+    local storage = view:storage() or torch.ByteStorage()   -- storage may be nil if response is empty messages
+    local sr = ros.StorageReader(storage, view:storageOffset()-1, nil, nil, self.serialization_handlers)
     response_msg = ros.Message(self.spec.response_spec, true)
-    response_msg:deserialize(sr)
+    response_msg:deserialize(sr, true)    -- true singals not that no total length was prepended to message
   end
 
   return response_msg

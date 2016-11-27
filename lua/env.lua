@@ -286,11 +286,19 @@ int ros_MessageBuffer_count(MessageBuffer *self);
 void ros_MessageBuffer_clear(MessageBuffer *self);
 bool ros_MessageBuffer_read(MessageBuffer *self, int timeout_milliseconds, THByteStorage *msg_output, std_StringMap *header_output);
 
+typedef struct ros_SerializedMessage {} ros_SerializedMessage;
+ros_SerializedMessage *ros_SerializedMessage_new();
+void ros_SerializedMessage_delete(ros_SerializedMessage *self);
+void ros_SerializedMessage_view(ros_SerializedMessage *self, THByteTensor *view);
+int ros_SerializedMessage_size(ros_SerializedMessage *self);
+uint8_t* ros_SerializedMessage_data(ros_SerializedMessage *self);
+void ros_SerializedMessage_resize(ros_SerializedMessage *self, size_t new_size);
+
 typedef struct ros_ServiceClient {} ros_ServiceClient;
 ros_ServiceClient *ros_ServiceClient_new(const char *service_name, bool persistent, std_StringMap *header_values, const char *service_md5sum);
 ros_ServiceClient *ros_ServiceClient, clone(ros_ServiceClient *self);
 void ros_ServiceClient_delete(ros_ServiceClient *ptr);
-bool ros_ServiceClient_call(ros_ServiceClient *self, THByteStorage *request_msg, THByteStorage *response_msg, const char *service_md5sum);
+bool ros_ServiceClient_call(ros_ServiceClient *self, THByteStorage *request_msg, ros_SerializedMessage *response_msg, const char *service_md5sum);
 bool ros_ServiceClient_isPersistent(ros_ServiceClient *self);
 void ros_ServiceClient_getService(ros_ServiceClient *self, std_string *output);
 bool ros_ServiceClient_waitForExistence(ros_ServiceClient *self, ros_Duration *timeout);
@@ -305,7 +313,7 @@ void ros_ServiceServer_getService(ros_ServiceServer *self, std_string *result);
 
 typedef struct ros_NodeHandle {} ros_NodeHandle;
 typedef void (*_ServiceStatusCallback)(const char *subscriber_name, const char *subscriber_topic);
-typedef bool (*ServiceRequestCallback)(THByteStorage *, THByteStorage *, std_StringMap *);
+typedef bool (*ServiceRequestCallback)(THByteStorage *, ros_SerializedMessage *, std_StringMap *);
 ros_NodeHandle *ros_NodeHandle_new(const char *ns, ros_NodeHandle *parent, std_StringMap *remappings);
 void ros_NodeHandle_delete(ros_NodeHandle *self);
 void ros_NodeHandle_shutdown(ros_NodeHandle *self);
