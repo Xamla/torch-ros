@@ -48,7 +48,7 @@ function TransformListener:getFrameStrings()
 end
 
 function TransformListener:lookupTransform(target_frame, source_frame, time, result)
-  result = result or tf.StampedTransform()
+  local result = result or tf.StampedTransform()
   f.lookupTransform(self.o, target_frame, source_frame, time:cdata(), result:cdata())
   return result
 end
