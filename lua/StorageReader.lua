@@ -91,17 +91,17 @@ function StorageReader:readTensor(tensor_ctor, offset, fixed_array_size)
   end
 
   local t, sizeInBytes
---  if tensor_ctor == torch.ByteTensor then         -- special handling for ByteTensor (direct view into storage for perf reasons)
---    sizeInBytes = n
---    ensurePosReadable(self, offset_ + sizeInBytes - 1)
---    t = tensor_ctor(self.storage, offset_+1, n)   -- offset_+1 to handle zero based arrays (C) vs. one based arrays (lua)
---  else
+  if tensor_ctor == torch.ByteTensor then         -- special handling for ByteTensor (direct view into storage for perf reasons)
+    sizeInBytes = n
+    ensurePosReadable(self, offset_ + sizeInBytes - 1)
+    t = tensor_ctor(self.storage, offset_ + 1, n)   -- offset_ + 1 to handle zero based arrays (C) vs. one based arrays (lua)
+  else
     t = tensor_ctor()
     sizeInBytes = n * t:elementSize()
     ensurePosReadable(self, offset_ + sizeInBytes - 1)
     t:resize(n)
     ffi.copy(t:data(), self.data + offset_, sizeInBytes)
---  end
+  end
   if not offset then
     self.offset = offset_ + sizeInBytes
   end
