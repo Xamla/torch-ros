@@ -57,3 +57,30 @@ TFIMP(void, StampedTransform, setData)(tf::StampedTransform *self, tf::Transform
 TFIMP(bool, StampedTransform, eq)(tf::StampedTransform *self, tf::StampedTransform *other) {
   return *self == *other;
 }
+
+TFIMP(void, StampedTransform,toStampedTransformMsg)(tf::StampedTransform *self, THByteStorage *output)
+{
+  geometry_msgs::TransformStamped msg;
+  tf::transformStampedTFToMsg(*self, msg);
+
+  uint32_t length = ros::serialization::serializationLength(msg);
+  THByteStorage_resize(output, length + sizeof(uint32_t));
+  ros::serialization::OStream stream(THByteStorage_data(output), length + sizeof(uint32_t));
+  stream.next((uint32_t)length);
+  ros::serialization::serialize(stream, msg);
+}
+
+TFIMP(void, StampedTransform,toStampedPoseMsg)(tf::StampedTransform *self, THByteStorage *output)
+{
+  const tf::Pose tf_(self->getRotation(), self->getOrigin());
+
+  geometry_msgs::PoseStamped msg;
+  tf::Stamped<tf::Pose> pose (tf_, self->stamp_,self->frame_id_);
+  tf::poseStampedTFToMsg(pose, msg);
+
+  uint32_t length = ros::serialization::serializationLength(msg);
+  THByteStorage_resize(output, length + sizeof(uint32_t));
+  ros::serialization::OStream stream(THByteStorage_data(output), length + sizeof(uint32_t));
+  stream.next((uint32_t)length);
+  ros::serialization::serialize(stream, msg);
+}

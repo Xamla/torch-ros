@@ -434,6 +434,8 @@ void tf_StampedTransform_set_frame_id(tf_StampedTransform *self, const char *id)
 const char *tf_StampedTransform_get_child_frame_id(tf_StampedTransform *self);
 void tf_StampedTransform_set_child_frame_id(tf_StampedTransform *self, const char *id);
 void tf_StampedTransform_setData(tf_StampedTransform *self, tf_Transform *input);
+void tf_StampedTransform_toStampedTransformMsg(tf_StampedTransform *self, THByteStorage *output);
+void tf_StampedTransform_toStampedPoseMsg(tf_StampedTransform *self, THByteStorage *output);
 bool tf_StampedTransform_eq(tf_StampedTransform *self, tf_StampedTransform *other);
 
 tf_TransformBroadcaster *tf_TransformBroadcaster_new();

@@ -53,7 +53,7 @@ function Transform:setIdentity()
 end
 
 function Transform:getBasis(basis)
-  basis = base or torch.DoubleTensor()
+  basis = basis or torch.DoubleTensor()
   f.getBasis(self.o, basis:cdata())
   return basis
 end
