@@ -28,10 +28,10 @@ local img_spec = ros.MsgSpec('sensor_msgs/Image')
 
 local msg = ros.Message(img_spec)
 msg.header.seq = 918273
-msg.width = 123
-msg.height = 456
-msg.step = 987
-msg.data = torch.ByteTensor(10):fill(1)
+msg.width = 5
+msg.height = 6
+msg.step = 5
+msg.data = torch.range(2,60,2):byte() -- creates torch.ByteTensor with 30 elements
 
 v = msg:serialize()
 v:shrinkToFit()
