@@ -60,7 +60,7 @@ local f = init()
 -- @tparam[opt] tab remappings remapping table
 function NodeHandle:__init(ns, parent, remappings)
   if remappings ~= nil and type(remappings) == 'table' then
-    remappins = std.StringMap(remappings)
+    remappings = std.StringMap(remappings)
   end
   self.o = f.new(ns or '', utils.cdata(parent), utils.cdata(remappings))
 end

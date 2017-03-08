@@ -89,7 +89,9 @@ end
 
 function Subscriber:triggerCallbacks()
   local cbs
-  while self:hasMessage() do
+  local count = self:getMessageCount()
+  while count > 0 do
+    count=count-1
     local msg, header = self:read(0)
     if msg ~= nil then
       cbs = cbs or utils.getTableKeys(self.callbacks)   -- lazy isolation copy of callbacks
