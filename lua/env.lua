@@ -180,7 +180,7 @@ typedef struct ros_AsyncSpinner {} ros_AsyncSpinner;
 typedef struct ros_Time {} ros_Time;
 typedef struct ros_Duration {} ros_Duration;
 
-void ros___init(const char *name, uint32_t options);
+void ros___init(const char *name, uint32_t options, int argc, const char **arcv);
 void ros___shutdown();
 void ros___spinOnce();
 void ros___requestShutdown();

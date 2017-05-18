@@ -38,12 +38,20 @@ ros.init_options = {
 --- Initialize ROS
 -- @tparam[opt=torch_ros] string name Name
 -- @param[opt] options Options
-function ros.init(name, options)
+function ros.init(name, options, args)
+
   if not name then
     name = 'torch_ros'
     options = ros.init_options.AnonymousName
   end
-  f.init(name, options or 0)
+  local result = {}
+  for i,v in pairs(args) do
+      table.insert(result,v)
+  end
+  local arg = ffi.new(string.format("const char*[%d]",#result),result)
+  print(string.format("Number of arguments: %d", #result))
+  print(arg)
+  f.init(name, options or 0, #result, arg)
 end
 
 ---  Will call all the callbacks waiting to be called at the moment.

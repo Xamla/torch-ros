@@ -1,8 +1,16 @@
 #include "torch-ros.h"
 
-ROSIMP(void, _, init)(const char *name, uint32_t options) {
-  int argc = 0;
-  ros::init(argc, NULL, name, options);
+ROSIMP(void, _, init)(const char *name, uint32_t options, int argc, const char ** carcv) {
+  char **argv = (char**)malloc( sizeof( char * ) * argc );
+  if (argv)
+  {
+    int i = 0;
+    for(; i < argc; ++i){
+        argv[i] = (char *)strdup(carcv[i]); // allocate memory for new string and copy string
+        std::cout << i << " " << argv[i] << std::endl;
+    }
+  }
+  ros::init(argc, argv, name, options);
 }
 
 ROSIMP(void, _, shutdown)() {
