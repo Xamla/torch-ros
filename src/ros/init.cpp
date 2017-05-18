@@ -6,8 +6,7 @@ ROSIMP(void, _, init)(const char *name, uint32_t options, int argc, const char *
   {
     int i = 0;
     for(; i < argc; ++i){
-        argv[i] = (char *)strdup(carcv[i]); // allocate memory for new string and copy string
-        std::cout << i << " " << argv[i] << std::endl;
+        argv[i] = (char *)strdup(carcv[i]);
     }
   }
   ros::init(argc, argv, name, options);
