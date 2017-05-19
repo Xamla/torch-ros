@@ -4,6 +4,7 @@ local ffi = require 'ffi'
 local torch = require 'torch'
 local ros = require 'ros.env'
 local utils = require 'ros.utils'
+local std = ros.std
 
 function init()
   local ros_method_names = {
@@ -37,24 +38,30 @@ ros.init_options = {
 
 --- Initialize ROS
 -- @tparam[opt=torch_ros] string name Name
--- @param[opt] options Options
-function ros.init(name, options, args)
-  local args = args or {}
-  assert(type(args) == "table", "Arguments should be of type Table. See https://github.com/torch/torch7/blob/master/doc/cmdline.md")
+-- @param[opt] int options Options
+-- @param[opt] tab remappings Table with with key->value (local_name->external_name) remappings or list with command line args of which entries containing ':=' will be passed as remappings to ros::init().
+function ros.init(name, options, remappings)
+  remappings = remappings or {}
+  assert(type(remappings) == "table", "Argument 'remappings' must be of type table. See https://github.com/torch/torch7/blob/master/doc/cmdline.md")
+
+  local remap = std.StringMap()
+  for k,v in pairs(remappings) do
+    if type(k) == 'string' and type(v) == 'string' then
+      remap[k] = v
+    elseif type(k) == 'number' then
+      local local_name, external_name = string.match(v, '(.*):=(.*)')
+      if local_name and external_name then
+        ros.DEBUG("remap: %s => %s", local_name, external_name)
+        remap[local_name] = external_name
+      end
+    end
+  end
 
   if not name then
     name = 'torch_ros'
     options = ros.init_options.AnonymousName
   end
-  local result = {}
-  for i,v in pairs(args) do
-      table.insert(result,v)
-  end
-  local arg
-  if #args > 1 then
-    arg = ffi.new(string.format("const char*[%d]",#args),args)
-  end
-  f.init(name, options or 0, #result, arg)
+  f.init(remap:cdata(), name, options or 0)
 end
 
 ---  Will call all the callbacks waiting to be called at the moment.
