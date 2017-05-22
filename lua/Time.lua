@@ -18,7 +18,7 @@ function init()
     "get_sec",
     "set_sec",
     "get_nsec",
-    "set_nesc",
+    "set_nsec",
     "lt",
     "eq",
     "add_Duration",
