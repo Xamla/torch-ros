@@ -298,3 +298,7 @@ ROSIMP(void, NodeHandle, setParamFloatVector)(ros::NodeHandle *self, const char 
   Tensor2vector(value, v);
   self->setParam(key, v);
 }
+
+ROSIMP(void, NodeHandle, getParamStringMap)(ros::NodeHandle *self, const char *key, StringMap *result) {
+  self->getParam(key, *result);
+}

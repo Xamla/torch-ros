@@ -12,8 +12,8 @@ ROSIMP(void, Subscriber, shutdown)(ros::Subscriber *self) {
   self->shutdown();
 }
 
-ROSIMP(const char *, Subscriber, getTopic)(ros::Subscriber *self) {
-  return self->getTopic().c_str();
+ROSIMP(void, Subscriber, getTopic)(ros::Subscriber *self, std::string *output) {
+  *output = self->getTopic();
 }
 
 ROSIMP(int, Subscriber, getNumPublishers)(ros::Subscriber *self) {

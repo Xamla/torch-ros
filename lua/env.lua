@@ -267,14 +267,14 @@ typedef struct ros_Subscriber {} ros_Subscriber;
 ros_Subscriber *ros_Subscriber_clone(ros_Subscriber *self);
 void ros_Subscriber_delete(ros_Subscriber *self);
 void ros_Subscriber_shutdown(ros_Subscriber *self);
-const char *ros_Subscriber_getTopic(ros_Subscriber *self);
+void ros_Subscriber_getTopic(ros_Subscriber *self, std_string *output);
 int ros_Subscriber_getNumPublishers(ros_Subscriber *self);
 
 typedef struct ros_Publisher {} ros_Publisher;
 ros_Publisher *ros_Publisher_clone(ros_Publisher *self);
 void ros_Publisher_delete(ros_Publisher *self);
 void ros_Publisher_shutdown(ros_Publisher *self);
-const char *ros_Publisher_getTopic(ros_Publisher *self);
+void ros_Publisher_getTopic(ros_Publisher *self, std_string *output);
 int ros_Publisher_getNumSubscribers(ros_Publisher *self);
 bool ros_Publisher_isLatched(ros_Publisher *self);
 void ros_Publisher_publish(ros_Publisher *self, THByteStorage *serialized_msg, ptrdiff_t offset, size_t length);
@@ -342,6 +342,7 @@ bool ros_NodeHandle_getParamBoolVector(ros_NodeHandle *self, const char *key, TH
 bool ros_NodeHandle_getParamIntVector(ros_NodeHandle *self, const char *key, THIntTensor *result);
 bool ros_NodeHandle_getParamDoubleVector(ros_NodeHandle *self, const char *key, THDoubleTensor *result);
 bool ros_NodeHandle_getParamFloatVector(ros_NodeHandle *self, const char *key, THFloatTensor *result);
+void ros_NodeHandle_getParamStringMap(ros_NodeHandle *self, const char *key, std_StringMap *result);
 void ros_NodeHandle_setParamStringVector(ros_NodeHandle *self, const char *key, std_StringVector *value);
 void ros_NodeHandle_setParamBoolVector(ros_NodeHandle *self, const char *key, THByteTensor *value);
 void ros_NodeHandle_setParamIntVector(ros_NodeHandle *self, const char *key, THIntTensor *value);

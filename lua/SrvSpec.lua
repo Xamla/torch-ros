@@ -41,7 +41,8 @@ end
 
 local function load_srvspec(self)
   local package_path = ros.find_package(self.package)
-  self.file = path.join(package_path, 'srv', self.short_type .. ".srv")
+  local tmp_path = path.join(package_path, 'srv')
+  self.file = path.join(tmp_path, self.short_type .. ".srv")
   return load_from_iterator(self, io.lines(self.file))
 end
 

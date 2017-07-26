@@ -42,7 +42,8 @@ function init()
     'setParamBoolVector',
     'setParamIntVector',
     'setParamDoubleVector',
-    'setParamFloatVector'
+    'setParamFloatVector',
+    'getParamStringMap'
   }
 
   return utils.create_method_table('ros_NodeHandle_', NodeHandle_method_names)
@@ -432,6 +433,16 @@ end
 function NodeHandle:getParamFloatVector(key)
   local result = torch.FloatTensor()
   local ok = f.getParamDoubleVector(self.o, key, result:cdata())
+  return result, ok
+end
+
+--- Get the parameter value for key key.
+-- @tparam string key The key to get the value for
+-- @treturn std.StringMap The key value
+-- @treturn bool true if the parameters value was retrieved, false otherwise
+function NodeHandle:getParamStringMap(key)
+  local result = std.StringMap()
+  local ok = f.getParamStringMap(self.o, key, result:cdata())
   return result, ok
 end
 
