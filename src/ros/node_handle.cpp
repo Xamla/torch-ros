@@ -302,3 +302,9 @@ ROSIMP(void, NodeHandle, setParamFloatVector)(ros::NodeHandle *self, const char 
 ROSIMP(void, NodeHandle, getParamStringMap)(ros::NodeHandle *self, const char *key, StringMap *result) {
   self->getParam(key, *result);
 }
+
+ROSIMP(void, NodeHandle, getParamVariable)(ros::NodeHandle *self, const char *key, xamla::Variable *result) {
+  XmlRpc::XmlRpcValue tmp;
+  self->getParam(key, tmp);
+  XmlRpcValueToVariable(tmp, *result);
+}

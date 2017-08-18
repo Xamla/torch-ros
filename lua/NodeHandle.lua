@@ -43,7 +43,8 @@ function init()
     'setParamIntVector',
     'setParamDoubleVector',
     'setParamFloatVector',
-    'getParamStringMap'
+    'getParamStringMap',
+    'getParamVariable'
   }
 
   return utils.create_method_table('ros_NodeHandle_', NodeHandle_method_names)
@@ -484,4 +485,13 @@ end
 -- @treturn bool true if the parameter value was set successfully, false otherwise
 function NodeHandle:setParamFloatVector(key, value)
   f.setParamFloatVector(self.o, key, value:cdata())
+end
+
+--- Get an arbitrary XML/RPC value from the parameter server.
+-- @tparam string key The key to get the value
+-- @treturn table
+function NodeHandle:getParamVariable(key)
+  local result = std.Variable()
+  f.getParamVariable(self.o, key, result:cdata())
+  return result:get()
 end

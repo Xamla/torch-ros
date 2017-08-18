@@ -348,6 +348,7 @@ void ros_NodeHandle_setParamBoolVector(ros_NodeHandle *self, const char *key, TH
 void ros_NodeHandle_setParamIntVector(ros_NodeHandle *self, const char *key, THIntTensor *value);
 void ros_NodeHandle_setParamDoubleVector(ros_NodeHandle *self, const char *key, THDoubleTensor *value);
 void ros_NodeHandle_setParamFloatVector(ros_NodeHandle *self, const char *key, THFloatTensor *value);
+void ros_NodeHandle_getParamVariable(ros_NodeHandle *self, const char *key, Variable *result);
 
 bool ros_Master_execute(const char *method, Variable *request, Variable *response, Variable *payload, bool wait_for_master);
 const char* ros_Master_getHost();
