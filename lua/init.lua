@@ -39,5 +39,8 @@ require 'ros.tf.TransformListener'
 
 -- actionlib
 require 'ros.actionlib.ActionSpec'
+require 'ros.actionlib.SimpleActionServer'
+require 'ros.actionlib.SimpleActionClient'
+require 'ros.actionlib.ServerGoalHandle'
 
 return ros
