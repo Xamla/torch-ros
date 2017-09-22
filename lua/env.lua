@@ -179,6 +179,7 @@ local ros_cdef = [[
 typedef struct ros_AsyncSpinner {} ros_AsyncSpinner;
 typedef struct ros_Time {} ros_Time;
 typedef struct ros_Duration {} ros_Duration;
+typedef struct ros_Rate {} ros_Rate;
 
 void ros___init(std_StringMap *remappings, const char *name, uint32_t options);
 void ros___shutdown();
@@ -250,6 +251,14 @@ double ros_Duration_toSec(ros_Duration *self);
 void ros_Duration_fromSec(ros_Duration *self, double t);
 bool ros_Duration_isZero(ros_Duration *self);
 void ros_Duration_sleep(ros_Duration *self);
+
+ros_Rate* ros_Rate_new(double frequency);
+void ros_Rate_delete(ros_Rate *self);
+ros_Rate* ros_Rate_clone(ros_Rate *self);
+void ros_Rate_reset(ros_Rate *self);
+void ros_Rate_sleep(ros_Rate *self);
+void ros_Rate_expectedCycleTime(ros_Rate *self, ros_Duration* output);
+void ros_Rate_cycleTime(ros_Rate *self, ros_Duration* output);
 
 typedef struct ros_CallbackQueue {} ros_CallbackQueue;
 ros_CallbackQueue * ros_CallbackQueue_new(bool enabled);
