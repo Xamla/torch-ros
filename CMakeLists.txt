@@ -33,6 +33,7 @@ set(src
   "${SOURCE_DIR}/ros/async_spinner.cpp"
   "${SOURCE_DIR}/ros/time.cpp"
   "${SOURCE_DIR}/ros/duration.cpp"
+  "${SOURCE_DIR}/ros/rate.cpp"
   "${SOURCE_DIR}/ros/console.cpp"
 )
 

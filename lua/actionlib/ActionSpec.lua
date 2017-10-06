@@ -46,7 +46,8 @@ end
 
 local function load_from_action_file(self)
   local package_path = ros.find_package(self.package)
-  self.file = path.join(package_path, 'action', self.short_type .. '.action')
+  local tmp_path = path.join(package_path, 'action')
+  self.file = path.join(tmp_path, self.short_type .. '.action')
   return load_from_iterator(self, io.lines(self.file))
 end
 

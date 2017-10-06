@@ -167,7 +167,8 @@ end
 -- and will then read and parse the file.
 local function load_msgspec(self)
   local package_path = ros.find_package(self.package)
-  self.file = path.join(package_path, 'msg', self.short_type .. '.msg')
+  local tmp_path = path.join(package_path, 'msg')
+  self.file = path.join(tmp_path,self.short_type .. '.msg')
   return load_from_iterator(self, io.lines(self.file))
 end
 

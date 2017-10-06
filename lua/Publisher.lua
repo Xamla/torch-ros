@@ -89,7 +89,9 @@ end
 --- Returns the topic that this Publisher will publish on.
 -- @treturn string The topic that this Publisher will publish on.
 function Publisher:getTopic()
-  return ffi.string(f.getTopic(self.o))
+  local s = std.String()
+  f.getTopic(self.o, s:cdata())
+  return s:get()
 end
 
 --- Number of subscribers of this publisher.

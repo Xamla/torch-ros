@@ -76,7 +76,7 @@ TFIMP(void, Quaternion, sub)(tf::Quaternion *self, tf::Quaternion *other, tf::Qu
 TFIMP(void, Quaternion, mul)(tf::Quaternion *self, tf::Quaternion *other, tf::Quaternion *result) {
   if (result != self)
     *result = *self;
-  result->operator*=(*other);
+  *result = result->operator*=(*other);
 }
 
 TFIMP(void, Quaternion, mul_scalar)(tf::Quaternion *self, double factor, tf::Quaternion *result) {

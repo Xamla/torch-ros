@@ -12,6 +12,7 @@ require 'ros.std.VariableTable'
 require 'ros.ros'
 require 'ros.Time'
 require 'ros.Duration'
+require 'ros.Rate'
 require 'ros.console'
 require 'ros.master'
 require 'ros.this_node'
@@ -39,5 +40,8 @@ require 'ros.tf.TransformListener'
 
 -- actionlib
 require 'ros.actionlib.ActionSpec'
+require 'ros.actionlib.SimpleActionServer'
+require 'ros.actionlib.SimpleActionClient'
+require 'ros.actionlib.ServerGoalHandle'
 
 return ros

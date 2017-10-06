@@ -54,7 +54,9 @@ function Subscriber:shutdown()
 end
 
 function Subscriber:getTopic()
-  return ffi.string(f.getTopic(self.o))
+  local s = std.String()
+  f.getTopic(self.o, s:cdata())
+  return s:get()
 end
 
 function Subscriber:getNumPublishers()

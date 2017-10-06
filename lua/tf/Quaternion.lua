@@ -109,7 +109,11 @@ function Quaternion:setRPY(roll, pitch, yaw, deg)
   if deg then
     roll, pitch, yaw = math.rad(roll), math.rad(pitch), math.rad(yaw)
   end
-  f.setRPY(self.o, roll, pitch, yaw)
+  if type(roll) == 'number' then
+    f.setRPY(self.o, roll, pitch, yaw)
+  else
+    f.setRPY(self.o, roll[1],roll[2],roll[3])
+  end
   return self
 end
 
@@ -157,23 +161,23 @@ function Quaternion:angleShortestPath()
 end
 
 function Quaternion:add(other, result)
-  result = result or tf.Quaternion()
+  local result = result or tf.Quaternion()
   f.add(self.o, other:cdata(), result:cdata())
   return result
 end
 
 function Quaternion:sub(other, result)
-  result = result or tf.Quaternion()
+  local result = result or tf.Quaternion()
   f.sub(self.o, other:cdata(), result:cdata())
   return result
 end
 
 function Quaternion:mul(other, result)
-  result = result or tf.Quaternion()
+  local result = result or tf.Quaternion()
   if torch.isTypeOf(other, tf.Quaternion) then
     f.mul(self.o, other:cdata(), result:cdata())
   elseif type(other) == 'number' then
-    f.mul_scalar(self.o, other:cdata(), result:cdata())
+    f.mul_scalar(self.o, other, result:cdata())
   else
     error('Unsupported type of factor for quaternion multiplication.')
   end
@@ -242,6 +246,41 @@ function Quaternion:toMatrixTensor()
   result[3][2] = 2.0 * (tmp1 + tmp2)*invs
   result[2][3] = 2.0 * (tmp1 - tmp2)*invs
   return result
+end
+
+function Quaternion:conjugate()
+  local c = self:clone()
+  local qt = self:toTensor():clone()
+  qt[{{1,3}}]:mul(-1)
+  c:fromTensor(qt)
+  return c
+end
+
+function Quaternion:getAxisAngle()
+  local axis = self:getAxis()
+  local angle = self:getAngle()
+  local norm = axis:norm()
+  if (norm > 1e-5) then
+    axis = axis * (angle / norm)
+  else
+    axis:zero()
+  end
+  return axis
+end
+
+function Quaternion:setAxisAngle(value)
+    local c = self:clone()
+    local norm = value:norm()
+    local w = math.cos(0.5 * norm)
+    local sin_a = math.sin(0.5 * norm)
+    local result = c:toTensor()
+    result[4] = w
+    if (norm > 1e-5) then
+      result[{{1,3}}] = value * sin_a / norm
+    else
+      result[{{1,3}}]:zero()
+    end
+    return c
 end
 
 function Quaternion:__tostring()
