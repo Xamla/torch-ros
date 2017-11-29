@@ -128,14 +128,14 @@ end
 
 function VariableVector:__pairs()
   return function (t, k)
-    local i = k or 1
+    local i = k + 1
     if i > #t then
       return nil
     else
       local v = t[i]
-      return i+1, v
+      return i, v
     end
-  end, self, nil
+  end, self, 0
 end
 
 function VariableVector:__ipairs()
