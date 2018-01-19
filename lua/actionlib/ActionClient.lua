@@ -315,6 +315,7 @@ end
 
 local function onStatusMessage(self, status_msg, header)
   local callerid = header["callerid"]
+  local timestamp = status_msg.header.stamp
   ros.DEBUG_NAMED("actionlib", "Getting status over the wire (callerid: %s; count: %d).", callerid, #status_msg.status_list)
 
   if self.status_received then
@@ -328,14 +329,16 @@ local function onStatusMessage(self, status_msg, header)
     self.status_received = true
     self.status_caller_id = callerid
   end
-  self.latest_status_time = status_msg.header.stamp
+  self.latest_status_time = timestamp
 
   -- process status message
   local status_list = status_msg.status_list
 
   for id, goal in pairs(self.goals) do
-    local goal_status = findGoalInStatusList(status_list, goal.id)
-    updateStatus(self, goal, goal_status)
+    if goal.latest_result ~= nil and goal.latest_result.header.stamp < timestamp then
+      local goal_status = findGoalInStatusList(status_list, goal.id)
+      updateStatus(self, goal, goal_status)
+    end
   end
 end
 
@@ -549,6 +552,7 @@ function ActionClient:waitForActionServerToStart(timeout)
     timeout = nil
   end
   local tic = ros.Time.now()
+  local spin_rate = ros.Rate(1000)
   while ros.ok() do
 
     if self:isServerConnected() then
@@ -563,7 +567,8 @@ function ActionClient:waitForActionServerToStart(timeout)
     end
 
     ros.spinOnce()  -- process incoming messages
-    sys.sleep(0.001)
+    spin_rate:sleep()
+    collectgarbage()
   end
   return false
 end

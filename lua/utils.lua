@@ -51,8 +51,19 @@ end
 
 function utils.cloneList(l)
   local c = {}
-  for i=1,#l do table.insert(c, l[i]) end
+  for i,x in ipairs(l) do
+    c[#c+1] = x
+  end
   return c
+end
+
+function utils.indexOf(t, v)
+  for i,x in ipairs(t) do
+    if v == x then
+      return i
+    end
+  end
+  return -1
 end
 
 function utils.getTableKeys(t)

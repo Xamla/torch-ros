@@ -44,20 +44,27 @@ end
 -- @tparam func fn The function to execute as callback function
 -- @tparam[opt=1] int round Prioriy/order of the callback. If unsure which value to use, omit the parameter
 function CallbackQueue:registerSpinCallback(fn, round)
-  self.spin_callbacks[round or 1][fn] = true -- table used as set
+  local list = self.spin_callbacks[round or 1]
+  if utils.indexOf(list, fn) < 0 then
+    list[#list+1] = fn
+  end
 end
 
 --- Remove a function from the callback list
 -- @tparam func fn The function to be removed
 -- @tparam[opt=1] int round ; Prioriy/order of the when added. Has to be the same value as used for registerSpinCallback()
 function CallbackQueue:unregisterSpinCallback(fn, round)
-  self.spin_callbacks[round or 1][fn] = nil
+  local list = self.spin_callbacks[round or 1]
+  local i = utils.indexOf(list, fn)
+  if i >= 0 then
+    table.remove(list, i)
+  end
 end
 
 --- Trigger all callbacks one time
 function CallbackQueue:callSpinCallbacks()
   for i,cbs in ipairs(self.spin_callbacks) do
-    local isolation_copy = utils.getTableKeys(cbs)   -- changes of spin_callbacks become effecitve after iteration
+    local isolation_copy = utils.cloneList(cbs)   -- changes of spin_callbacks become effecitve after iteration
     for _,f in ipairs(isolation_copy) do
       if not ros.ok() then return end
       f()
