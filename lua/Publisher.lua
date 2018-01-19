@@ -84,6 +84,7 @@ end
 -- of scope
 function Publisher:shutdown()
   f.shutdown(self.o)
+  self.o = nil
 end
 
 --- Returns the topic that this Publisher will publish on.

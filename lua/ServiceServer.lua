@@ -44,7 +44,8 @@ function ServiceServer:cdata()
 end
 
 function ServiceServer:shutdown()
-  return f.shutdown(self.o)
+  f.shutdown(self.o)
+  self.o = nil
 end
 
 function ServiceServer:getService()
