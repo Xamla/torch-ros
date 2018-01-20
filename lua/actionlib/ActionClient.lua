@@ -3,7 +3,6 @@
 -- It provides callbacks for every client side transition, giving the user full observation into
 -- the client side state machine.
 -- @classmod ActionClient
-
 local ros = require 'ros.env'
 local utils = require 'ros.utils'
 local actionlib = require 'ros.actionlib'
@@ -29,6 +28,11 @@ local next_goal_id = 1    -- shared among all action clients
 local ActionClient = torch.class('ros.actionlib.ActionClient', actionlib)
 
 
+-- forward declarations of private method
+local ActionClient_checkConnection
+local ActionClient_handleConnectionLoss
+
+
 local function ActionClient_goalConnectCallback(self, name, topic)
   self.goalSubscribers[name] = (self.goalSubscribers[name] or 0) + 1
   ros.DEBUG_NAMED("actionlib", "goalConnectCallback: Adding [%s] to goalSubscribers", name)
@@ -48,6 +52,8 @@ local function ActionClient_goalDisconnectCallback(self, name, topic)
       self.goalSubscribers[name] = count - 1
     end
   end
+
+  ActionClient_checkConnection(self)
 end
 
 
@@ -78,6 +84,10 @@ local function transitionToState(self, goal, next_state)
   goal.state = next_state
   if goal.transition_cb ~= nil then
     goal.transition_cb(goal)
+  end
+  if next_state == CommState.DONE then
+    -- stop tracking goal
+    self.goals[goal.id] = nil
   end
 end
 
@@ -316,7 +326,17 @@ end
 local function onStatusMessage(self, status_msg, header)
   local callerid = header["callerid"]
   local timestamp = status_msg.header.stamp
+  local seq = status_msg.header.seq
+
   ros.DEBUG_NAMED("actionlib", "Getting status over the wire (callerid: %s; count: %d).", callerid, #status_msg.status_list)
+
+  if self.last_status_seq ~= nil and seq <= self.last_status_seq then
+    -- message sequence number decreased, assuming restart of action server
+    ros.WARN_NAMED("actionlib", "onStatusMessage: Status sequence number decreased (%d -> %d), assuming restart of ActionServer.",
+                   self.last_status_seq, seq)
+    ActionClient_handleConnectionLoss(self)
+  end
+  self.last_status_seq = seq
 
   if self.status_received then
     if self.status_caller_id ~= callerid then
@@ -335,7 +355,7 @@ local function onStatusMessage(self, status_msg, header)
   local status_list = status_msg.status_list
 
   for id, goal in pairs(self.goals) do
-    if goal.latest_result ~= nil and goal.latest_result.header.stamp < timestamp then
+    if goal.latest_result == nil or goal.latest_result.header.stamp < timestamp then
       local goal_status = findGoalInStatusList(status_list, goal.id)
       updateStatus(self, goal, goal_status)
     end
@@ -552,7 +572,7 @@ function ActionClient:waitForActionServerToStart(timeout)
     timeout = nil
   end
   local tic = ros.Time.now()
-  local spin_rate = ros.Rate(1000)
+  local spin_rate = ros.Rate(250)
   while ros.ok() do
 
     if self:isServerConnected() then
@@ -614,4 +634,21 @@ function ActionClient:isServerConnected()
 
   ros.DEBUG_NAMED("actionlib", "isServerConnected: Server [%s] is fully connected.", self.status_caller_id)
   return true
+end
+
+
+ActionClient_handleConnectionLoss = function(self)
+  local pending_goals = self.goals
+  self.goals = {}
+  for id,gh in pairs(pending_goals) do
+    processLost(self, gh)
+  end
+end
+
+
+ActionClient_checkConnection = function(self)
+  if self.status_caller_id ~= nil and not self:isServerConnected() then
+    -- lost connection to action server
+    ActionClient_handleConnectionLoss(self)
+  end
 end

@@ -121,6 +121,12 @@ function ActionServer:createFeeback()
 end
 
 
+local function ActionServer_statusConnectCallback(self, name, topic)
+  -- publish first status immediately (e.g. too let client detect a restarted action-server)
+  self:publishStatus()
+end
+
+
 function ActionServer:start()
   if self.started then
     return
@@ -129,7 +135,9 @@ function ActionServer:start()
   -- msg emitting topics
   self.result_pub   = self.node:advertise("result", self.action_spec.action_result_spec, 50)
   self.feedback_pub = self.node:advertise("feedback", self.action_spec.action_feedback_spec, 50)
-  self.status_pub   = self.node:advertise("status", GoalStatusArray_spec, 50)
+  self.status_pub   = self.node:advertise("status", GoalStatusArray_spec, 50, false,
+    function(name, topic) ActionServer_statusConnectCallback(self, name, topic) end
+  )
 
   -- read the frequency with which to publish status from the parameter server
   -- if not specified locally explicitly, use search param to find actionlib_status_frequency
