@@ -127,6 +127,47 @@ local function create_trace_conditional_named(level)
   end
 end
 
+local function create_trace_once_conditional_named(level)
+  return function(cond, name, ...)
+    if not console.trace_stack[name] and cond and console.check_loglevel(name, level) then
+      console.trace_stack[name] = true
+      local logger = console.get_logger(name)
+      local msg = string.format(...)
+      local caller = debug.getinfo(2, 'nSl')
+      console.print(logger, level, msg, caller.short_src, caller.name, caller.currentline or caller.linedefined)
+    end
+  end
+end
+
+local function create_trace_once_named(level)
+  return function(name, ...)
+    if not console.trace_once_stack[name] and console.check_loglevel(nil, level) then
+      console.trace_once_stack[name] = true
+      local msg = string.format(...)
+      local caller = debug.getinfo(2, 'nSl')
+      console.print(nil, level, msg, caller.short_src, caller.name, caller.currentline or caller.linedefined)
+    end
+  end
+end
+
+local function create_trace_throttle_named(level)
+  return function(period, name, ...)
+    if console.check_loglevel(nil, level) then
+      local msg = string.format(...)
+      local caller = debug.getinfo(2, 'nSl')
+      if not console.trace_throttle_stack[name] then
+        console.trace_throttle_stack[name] = ros.Time.now()
+        console.print(nil, level, msg, caller.short_src, caller.name, caller.currentline or caller.linedefined)
+      else
+        if (ros.Time.now() - console.trace_throttle_stack[name]):toSec() > period then
+          console.print(nil, level, msg, caller.short_src, caller.name, caller.currentline or caller.linedefined)
+          console.trace_throttle_stack[name] = ros.Time.now()
+        end
+      end
+    end
+  end
+end
+
 local function create_logger(postfix, fn_builder)
   local name_level = {
     DEBUG = console.Level.Debug,
@@ -147,5 +188,7 @@ create_logger('', create_trace)
 create_logger('_NAMED', create_trace_named)
 create_logger('_COND', create_trace_conditional)
 create_logger('_COND_NAMED', create_trace_conditional_named)
+create_logger('_THROTTLE_NAMED', create_trace_throttle_named)
+create_logger('_ONCE_NAMED', create_trace_once_named)
 
 console.initialize()
