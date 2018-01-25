@@ -13,10 +13,10 @@ ros.DEBUG_COND(true, 'Messages can also have conditions')
 ros.DEBUG_COND(false, 'This message will not be printed...')
 
 for i = 1, 10 do
-  ros.ROS_ERROR_ONCE_NAMED('throttle', "This messege will be printed once")
-  ros.ROS_INFO_THROTTLE_NAMED(5,'throttle', "This messege will be printed every 5 seconds")
-  ros.ROS_WARN_THROTTLE_NAMED(2,'throttle1', "This messege will be printed every 2 seconds")
-  sys.sleep(2)
+    ros.ROS_ERROR_ONCE('throttle', 'This messege will be printed once')
+    ros.ROS_INFO_THROTTLE('throttle', 5, 'This messege will be printed every 5 seconds')
+    ros.ROS_WARN_THROTTLE('throttle1', 2, 'This messege will be printed every 2 seconds')
+    sys.sleep(2)
 end
 
 -- get name and log level of registered loggers
