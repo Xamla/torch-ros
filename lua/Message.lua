@@ -122,7 +122,11 @@ function Message:fillFromTable(t)
           self.values[f.name] = v
         end
       else
-        self.values[f.name]:assign(v)
+        if f.type == 'sensor_msgs/PointCloud2' then
+          self.values[f.name] = v
+        else
+          self.values[f.name]:assign(v)
+        end
       end
     end
   end
