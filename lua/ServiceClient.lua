@@ -99,7 +99,7 @@ function ServiceClient:getService()
 end
 
 function ServiceClient:waitForExistence(timeout)
-  if timeout and not torch.isTypeOf(ros.Duration, timeout) then
+  if timeout and not torch.isTypeOf(timeout, ros.Duration) then
     timeout = ros.Duration(timeout)
   end
   return f.waitForExistence(self.o, utils.cdata(timeout))
