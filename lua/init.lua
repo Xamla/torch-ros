@@ -7,6 +7,7 @@ require 'ros.std.StringMap'
 require 'ros.std.Variable'
 require 'ros.std.VariableVector'
 require 'ros.std.VariableTable'
+require 'ros.std.Task'
 
 -- ros
 require 'ros.ros'
