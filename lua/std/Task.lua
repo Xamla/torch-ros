@@ -11,6 +11,7 @@ local TaskState = {
   Succeeded = 3,
   Failed = 4,
   Cancelled = 5,
+  'NOT_STARTED', 'RUNNING', 'SUCCEEDED', 'FAILED', 'CANCELLED'
 }
 std.TaskState = TaskState
 
@@ -57,6 +58,10 @@ end
 
 
 function Task:start()
+  if self.state ~= TaskState.NotStarted then
+    error(string.format('Task already started. Current state is: \'%s\'', TaskState[self.state]))
+  end
+
   self.state = TaskState.Running
   self:start_handler()
 end
