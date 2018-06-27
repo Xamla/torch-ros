@@ -4,6 +4,9 @@ local ros = require 'ros.env'
 local utils = require 'ros.utils'
 local tf = ros.tf
 
+local moveit_msgs_StampedTransform = ros.get_msgspec('geometry_msgs/TransformStamped')
+local moveit_msgs_StampedPose = ros.get_msgspec('geometry_msgs/PoseStamped')
+
 local StampedTransform, parent = torch.class('tf.StampedTransform', 'tf.Transform', tf)
 
 function init()
@@ -41,8 +44,6 @@ function StampedTransform:__init(transform, stamp, frame_id, child_frame_id)
   stamp = stamp or ros.Time.getNow()
   self.t = f.new(transform:cdata(), stamp:cdata(), frame_id or '', child_frame_id or '')
   self.o = f.getBasePointer(self.t)
-  self.moveit_msgs_StampedTransform = ros.get_msgspec('geometry_msgs/TransformStamped')
-  self.moveit_msgs_StampedPose = ros.get_msgspec('geometry_msgs/PoseStamped')
 end
 
 function StampedTransform:cdata()
@@ -94,7 +95,7 @@ end
 function StampedTransform:toStampedTransformMsg(output)
   local msg_bytes = torch.ByteStorage()
   f.toStampedTransformMsg(self.t, msg_bytes:cdata())
-  local msg = output or ros.Message(self.moveit_msgs_StampedTransform, true)
+  local msg = output or ros.Message(moveit_msgs_StampedTransform, true)
   msg:deserialize(msg_bytes)
   return msg
 end
@@ -102,7 +103,7 @@ end
 function StampedTransform:toStampedPoseMsg(output)
   local msg_bytes = torch.ByteStorage()
   f.toStampedPoseMsg(self.t, msg_bytes:cdata())
-  local msg = output or ros.Message(self.moveit_msgs_StampedPose, true)
+  local msg = output or ros.Message(moveit_msgs_StampedPose, true)
   msg:deserialize(msg_bytes)
   return msg
 end
