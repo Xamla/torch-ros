@@ -264,7 +264,7 @@ function SimpleActionClient:waitForResult(timeout)
 
   local timeout_time = ros.Time.now() + timeout
 
-  while self.nh:ok() do
+  while ros.ok() and self.nh:ok() do
     -- detect loss of connection to action server
     if not self:isServerConnected() then
       ros.WARN_NAMED("actionlib", "Lost connection to ActionServer.")
@@ -293,7 +293,7 @@ function SimpleActionClient:waitForResult(timeout)
       wait_timeout = time_left
     end
 
-    self.callback_queue:waitCallAvailable(wait_timeout)
+    ros.spinOnce()
   end
 
   return false

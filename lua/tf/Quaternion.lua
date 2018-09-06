@@ -156,7 +156,8 @@ function Quaternion:angle(other)
   return f.angle(self.o, other:cdata())
 end
 
-function Quaternion:angleShortestPath()
+function Quaternion:angleShortestPath(other)
+  assert(torch.isTypeOf(other, tf.Quaternion),"Invalid argument")
   return f.angleShortestPath(self.o, other:cdata())
 end
 
