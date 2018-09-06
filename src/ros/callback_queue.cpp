@@ -15,7 +15,7 @@ public:
       return false;
 
     if (callbacks_.empty() && !timeout.isZero())
-      condition_.timed_wait(lock, boost::posix_time::microseconds(timeout.toSec() * 1000000.0f));
+      condition_.wait_for(lock, boost::chrono::nanoseconds(timeout.toNSec()));
 
     return !callbacks_.empty() && enabled_;
   }

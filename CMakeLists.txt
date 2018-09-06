@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8.11)
 project(rostorch)
 
 find_package(Torch REQUIRED)
-find_package(Boost 1.47.0 REQUIRED COMPONENTS system thread chrono)
+find_package(Boost 1.58.0 REQUIRED COMPONENTS system thread chrono)
 find_package(catkin REQUIRED COMPONENTS roscpp std_msgs)
 find_package(tf)
 #find_package(pcl_ros)

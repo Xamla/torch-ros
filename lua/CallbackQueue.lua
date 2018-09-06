@@ -78,7 +78,12 @@ function CallbackQueue:callOne(timeout)
   if timeout and not torch.isTypeOf(timeout, ros.Duration) then
     timeout = ros.Duration(timeout)
   end
-  return f.callOne(self.o, utils.cdata(timeout))
+
+  jit.off()
+  local result = f.callOne(self.o, utils.cdata(timeout))
+  jit.on()
+
+  return result
 end
 
 --- Invoke all callbacks currently in the queue.
@@ -89,9 +94,11 @@ function CallbackQueue:callAvailable(timeout, no_spin_callbacks)
   if timeout and not torch.isTypeOf(timeout, ros.Duration) then
     timeout = ros.Duration(timeout)
   end
-  if not self:isEmpty() then
-    f.callAvailable(self.o, utils.cdata(timeout))
-  end
+
+  jit.off()
+  f.callAvailable(self.o, utils.cdata(timeout))
+  jit.on()
+
   if not no_spin_callbacks then
     self:callSpinCallbacks()
   end

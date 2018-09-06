@@ -263,7 +263,6 @@ function SimpleActionClient:waitForResult(timeout)
   end
 
   local timeout_time = ros.Time.now() + timeout
-
   while ros.ok() and self.nh:ok() do
     -- detect loss of connection to action server
     if not self:isServerConnected() then
@@ -272,28 +271,19 @@ function SimpleActionClient:waitForResult(timeout)
     end
 
     local time_left = timeout_time - ros.Time.now()
-    if timeout > ZERO_DURATION and time_left < ZERO_DURATION then
-      return false -- timeout
-    elseif self.cur_simple_state == SimpleGoalState.DONE then
-      return true -- result available
-    end
-
-    -- dispatch incoming calls
-    if not self.callback_queue:isEmpty() then
-      self.callback_queue:callAvailable()
-    end
-
-    -- test for terminal state again before wait operation
-    if self.cur_simple_state == SimpleGoalState.DONE then
-      return true
-    end
-
     -- truncate wait-time if necessary
     if timeout > ZERO_DURATION and time_left < wait_timeout then
       wait_timeout = time_left
     end
+    -- dispatch incoming calls
+    self.callback_queue:callAvailable(wait_timeout)
 
-    ros.spinOnce()
+    -- test for terminal state again before wait operation
+    if self.cur_simple_state == SimpleGoalState.DONE then
+      return true
+    elseif timeout > ZERO_DURATION and time_left < ZERO_DURATION then
+      return false -- timeout
+    end
   end
 
   return false
