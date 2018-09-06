@@ -107,7 +107,7 @@ end
 --- Set the nanoseconds part of the duration
 -- @tparam number nsec nanoseconds
 function Duration:set_nsec(nsec)
-  f.set_nesc(self.o, nsec)
+  f.set_nsec(self.o, nsec)
 end
 
 --- Add two durations and return the result

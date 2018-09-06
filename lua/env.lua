@@ -216,7 +216,7 @@ void ros_Time_assign(ros_Time *self, ros_Time *other);
 int ros_Time_get_sec(ros_Time *self);
 void ros_Time_set_sec(ros_Time *self, unsigned int sec);
 int ros_Time_get_nsec(ros_Time *self);
-void ros_Time_set_nesc(ros_Time *self, unsigned int nsec);
+void ros_Time_set_nsec(ros_Time *self, unsigned int nsec);
 bool ros_Time_lt(ros_Time *self, ros_Time *other);
 bool ros_Time_eq(ros_Time *self, ros_Time *other);
 void ros_Time_add_Duration(ros_Time *self, ros_Duration *duration, ros_Time *result);

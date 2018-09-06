@@ -100,8 +100,8 @@ function Time:get_nsec()
   return f.get_nsec(self.o)
 end
 
-function Time:set_nesc(nsec)
-  f.set_nesc(self.o, nsec)
+function Time:set_nsec(nsec)
+  f.set_nsec(self.o, nsec)
 end
 
 function Time:__lt(other)
