@@ -65,15 +65,22 @@ function ros.init(name, options, remappings)
 end
 
 ---  Will call all the callbacks waiting to be called at the moment.
--- @tparam[opt=false] bool no_default_callbacks If true, the callbacks waiting in the default callback queue will not be called
-function ros.spinOnce(no_default_callbacks)
+-- @tparam[opt=true] ros.Duration. Time to wait for callback.
+-- @tparam[opt=true] bool no_default_callbacks If true, the callbacks waiting in the default callback queue will not be called
+function ros.spinOnce(timeout, no_default_callbacks)
+  if torch.type(timeout) ==  'boolean' then
+    no_default_callbacks = timeout
+    timeout = nil
+  elseif torch.type(timeout) ==  'number' then
+    timeout = ros.Duration(timeout)
+  end
   f.spinOnce()
 
   if not no_default_callbacks then
     -- process pending callbacks on default queue
     local queue = ros.DEFAULT_CALLBACK_QUEUE
     if queue ~= nil and ros.ok() then
-      queue:callAvailable()
+      queue:callAvailable(timeout)
     end
   end
 end
