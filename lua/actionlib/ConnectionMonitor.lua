@@ -136,7 +136,7 @@ function ConnectionMonitor:waitForActionServerToStart(timeout, node_handle )
     return true
   end
 
-  while self.nh:ok() and not self.isServerConnected() do
+  while self.nh:ok() and not self:isServerConnected() do
     -- Determine how long we should wait
     local time_left = timeout_time - ros.Time.now()
 

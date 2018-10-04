@@ -71,6 +71,7 @@ function CallbackQueue:callSpinCallbacks()
     end
   end
 end
+jit.off(CallbackQueue.callSpinCallbacks)
 
 --- Pop a single callback off the front of the queue and invoke it. If the callback was not ready to be called, pushes it back onto the queue.
 -- @tparam ?number|ros:Duration timeout Timeout for the callback, either in seconds (fractional numbers like 1.5 possible) or as an instance of ros:Duration
@@ -79,12 +80,11 @@ function CallbackQueue:callOne(timeout)
     timeout = ros.Duration(timeout)
   end
 
-  jit.off()
   local result = f.callOne(self.o, utils.cdata(timeout))
-  jit.on()
 
   return result
 end
+jit.off(CallbackQueue.callOne)
 
 --- Invoke all callbacks currently in the queue.
 -- If a callback was not ready to be called, pushes it back onto the queue.
@@ -94,15 +94,13 @@ function CallbackQueue:callAvailable(timeout, no_spin_callbacks)
   if timeout and not torch.isTypeOf(timeout, ros.Duration) then
     timeout = ros.Duration(timeout)
   end
-
-  jit.off()
   f.callAvailable(self.o, utils.cdata(timeout))
-  jit.on()
 
   if not no_spin_callbacks then
     self:callSpinCallbacks()
   end
 end
+jit.off(CallbackQueue.callAvailable)
 
 --- Waits until the next callback is enqueued or the timeout is expired
 -- @tparam ?number|ros:Duration timeout Timeout for the callback, either in seconds (fractional numbers like 1.5 possible) or as an instance of ros:Duration
@@ -113,6 +111,7 @@ function CallbackQueue:waitCallAvailable(timeout)
   end
   return f.waitCallAvailable(self.o, utils.cdata(timeout))
 end
+jit.off(CallbackQueue.waitCallAvailable)
 
 --- Returns whether or not the queue is empty
 -- @treturn bool true if queue is empty, false otherwise
